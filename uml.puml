@@ -1,0 +1,22 @@
+@startuml
+class GameApp
+
+class PlayerShip
+
+class GraphicsHandler
+
+class Projectile
+
+class EnemyShip
+
+class Ship
+
+class PowerUp
+
+
+GameApp "*"-> Ship
+GameApp "*"-> Projectile
+PlayerShip "*"-> PowerUp
+EnemyShip -|> Ship
+PlayerShip -|> Ship
+@enduml
