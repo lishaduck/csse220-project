@@ -12,7 +12,7 @@ import javafx.stage.Stage;
  * Starter JavaFX app for CSSE220 Milestone 1.
  * Replace this simple window with the first version of your project.
  */
-public class StarterApp extends Application {
+public class GameApp extends Application {
 
     @Override
     public void start(Stage stage) {
