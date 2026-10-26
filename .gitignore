@@ -6,7 +6,8 @@ target/
 *.ear
 
 # IntelliJ IDEA
-.idea/
+.idea/*
+!.idea/codeStyles/
 *.iml
 *.ipr
 *.iws
