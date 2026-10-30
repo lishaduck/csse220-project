@@ -33,7 +33,7 @@ public class StartMenu {
     }
 
 
-    public  Scene getView() {
+    public Scene getView() {
         return scene;
     }
 }
