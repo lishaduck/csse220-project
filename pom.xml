@@ -33,7 +33,7 @@
                 <artifactId>javafx-maven-plugin</artifactId>
                 <version>0.0.8</version>
                 <configuration>
-                    <mainClass>finalproject.GameApp</mainClass>
+                    <mainClass>finalproject.app.GameApp</mainClass>
                 </configuration>
             </plugin>
         </plugins>
