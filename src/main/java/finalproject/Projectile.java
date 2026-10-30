@@ -1,6 +1,7 @@
 package finalproject;
 
-import java.awt.geom.Point2D;
+
+import javafx.geometry.Point2D;
 
 public class Projectile {
     Point2D position;
@@ -10,7 +11,7 @@ public class Projectile {
     int damage;
 
     Projectile() {
-        position = new Point2D.Double(50, 50);
+        position = new Point2D(50, 50);
         velocityY = -10;
         velocityX = 0;
         damage = 2;
@@ -47,6 +48,6 @@ public class Projectile {
     }
 
     void updatePosition() {
-        position.setLocation(new Point2D.Double(position.getX() + velocityX, position.getY() + velocityY));
+        position = (new Point2D(position.getX() + velocityX, position.getY() + velocityY));
     }
 }
