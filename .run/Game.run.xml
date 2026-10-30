@@ -5,14 +5,14 @@
                 <MavenRunnerParameters>
                     <option name="goals">
                         <list>
-                            <option value="clean" />
-                            <option value="javafx:run" />
+                            <option value="clean"/>
+                            <option value="javafx:run"/>
                         </list>
                     </option>
-                    <option name="workingDirPath" value="$PROJECT_DIR$" />
+                    <option name="workingDirPath" value="$PROJECT_DIR$"/>
                 </MavenRunnerParameters>
             </option>
         </MavenSettings>
-        <method v="2" />
+        <method v="2"/>
     </configuration>
 </component>
