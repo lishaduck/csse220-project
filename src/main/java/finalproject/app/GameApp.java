@@ -1,5 +1,9 @@
-package finalproject;
+package finalproject.app;
 
+import finalproject.model.PowerUp;
+import finalproject.model.Projectile;
+import finalproject.model.Ship;
+import finalproject.ui.GraphicsHandler;
 import javafx.application.Application;
 import javafx.stage.Stage;
 

@@ -1,4 +1,4 @@
-package finalproject;
+package finalproject.ui;
 
 import javafx.scene.Scene;
 import javafx.stage.Stage;

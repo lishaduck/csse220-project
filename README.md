@@ -23,7 +23,9 @@ Everyone keeps the project outside OneDrive, iCloud Drive, Dropbox, or Google Dr
 Follow the [full GitHub Desktop guide](https://obscrivn.github.io/csse220web/github-desktop-guide.html) for the exact sequence and checkpoints.
 
 ## Files
-- `src/main/java/finalproject/StarterApp.java`: working minimal JavaFX app.
+- `src/main/java/finalproject/app/GameApp.java`: JavaFX entry point.
+- `src/main/java/finalproject/model/`: ships, projectiles, power-ups, and their game behavior.
+- `src/main/java/finalproject/ui/`: start menu and window setup.
 - `pom.xml`: Java 21, JavaFX controls, and Maven launch configuration.
 - `.gitignore`: excludes build output, IDE settings, and OS files.
 

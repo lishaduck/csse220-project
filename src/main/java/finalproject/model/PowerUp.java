@@ -1,4 +1,4 @@
-package finalproject;
+package finalproject.model;
 
 
 import javafx.geometry.Point2D;
