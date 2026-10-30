@@ -1,9 +1,10 @@
 package finalproject;
 
+import javafx.geometry.Point2D;
+
 public class PlayerShip extends Ship {
     public PlayerShip() {
-        x = 50;
-        y = 50;
+        position = new Point2D(50, 50);
         health = 5;
     }
 }

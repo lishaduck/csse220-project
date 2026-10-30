@@ -1,16 +1,17 @@
 package finalproject;
 
+import javafx.geometry.Point2D;
+
 public class Ship {
-    double x;
-    double y;
+    Point2D position = Point2D.ZERO;
     int health;
 
     public void translateX(int distance) {
-        x += distance;
+        position = position.add(distance, 0);
     }
 
     public void translateY(int distance) {
-        y += distance;
+        position = position.add(0, distance);
     }
 
     public void spawnProjectile(int type) {
@@ -20,4 +21,3 @@ public class Ship {
         health -= projectile.damage;
     }
 }
-
