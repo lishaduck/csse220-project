@@ -5,37 +5,32 @@ import javafx.geometry.Point2D;
 
 public class PowerUp {
     Point2D position;
-    double velocityY;
-    double velocityX;
+    Point2D velocity;
     int type;
 
 
     PowerUp() {
         position = new Point2D(50, 50);
-        velocityY = 10;
-        velocityX = 0;
+        velocity = new Point2D(0, 10);
     }
 
     PowerUp(Point2D p) {
         position = p;
-        velocityY = 10;
-        velocityX = 0;
+        velocity = new Point2D(0, 10);
     }
 
-    PowerUp(Point2D p, double x, double y) {
+    PowerUp(Point2D p, Point2D velocity) {
         position = p;
-        velocityY = y;
-        velocityX = x;
+        this.velocity = velocity;
     }
 
-    PowerUp(Point2D p, double x, double y, int s) {
+    PowerUp(Point2D p, Point2D velocity, int s) {
         position = p;
-        velocityY = y;
-        velocityX = x;
+        this.velocity = velocity;
         type = s;
     }
 
     void UpdatePosition() {
-        position = new Point2D(position.getX() + velocityX, position.getY() + velocityY);
+        position = position.add(velocity);
     }
 }
