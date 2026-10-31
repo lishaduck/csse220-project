@@ -8,6 +8,7 @@ target/
 # IntelliJ IDEA
 .idea/*
 !.idea/codeStyles/
+!.idea/inspectionProfiles/
 *.iml
 *.ipr
 *.iws

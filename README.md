@@ -6,7 +6,7 @@
 3. Trust the project if prompted and allow Maven to load dependencies (internet required on first run).
 4. Select JDK 21 as the project SDK and Maven runner JRE. IntelliJ bundles Maven; a separate Maven install is unnecessary for this IDE workflow.
 5. Open View → Tool Windows → Maven. If the project is missing, use Add Maven Projects and select `pom.xml`.
-6. In the Maven tool window choose Execute Maven Goal and enter `clean javafx:run`.
+6. Select the shared **Game** run configuration and click Run. It executes Maven `clean javafx:run` from the project root. Alternatively, in the Maven tool window choose Execute Maven Goal and enter `clean javafx:run`.
 7. Expect a window titled “CSSE220 Team Starter”. Click “Tap to update status”; the message should change to “Your team has launched the shared starter.” Close the window to stop the app.
 
 Use the Maven goal as the shared launch method. Running StarterApp directly can require extra JavaFX runtime configuration.
