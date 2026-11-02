@@ -45,6 +45,10 @@ public class Battle {
                 - (pressedKeys.contains(KeyCode.A) ? 1 : 0);
         model.resizePlayfield(view.getWidth(), view.getHeight());
         model.movePlayer(direction * PLAYER_SPEED * elapsed);
+        if (pressedKeys.contains(KeyCode.SPACE)) {
+            model.addPlayerProjectile();
+        }
+        model.updateProjectiles();
     }
 
     public void start() {

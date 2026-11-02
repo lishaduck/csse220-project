@@ -41,7 +41,10 @@ public class Projectile {
         damage = d;
     }
 
-    void updatePosition() {
+    public boolean updatePosition() {
         position = position.add(velocity);
+        return position.getY() < 0;
+//        The below print statement is to test if the projectiles are removed after reaching the top of the screen
+        //System.out.println("I still exist");
     }
 }

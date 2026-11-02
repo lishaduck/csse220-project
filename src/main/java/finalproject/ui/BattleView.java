@@ -25,6 +25,8 @@ class BattleView extends Pane {
         canvas.widthProperty().bind(widthProperty());
         canvas.heightProperty().bind(heightProperty());
         getChildren().add(canvas);
+
+        
     }
 
     void render(Ship player) {
