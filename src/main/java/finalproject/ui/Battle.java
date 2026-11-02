@@ -46,9 +46,16 @@ public class Battle {
         model.resizePlayfield(view.getWidth(), view.getHeight());
         model.movePlayer(direction * PLAYER_SPEED * elapsed);
         if (pressedKeys.contains(KeyCode.SPACE)) {
-            model.addPlayerProjectile();
+            if (model.isRefireable()) {
+                model.addPlayerProjectile();
+                System.out.println("Added projectile at: " + elapsed);
+            } else {
+                System.out.println("This attempted projectile spawn was blocked by the cooldown!");
+            }
+
         }
-        model.updateProjectiles();
+
+        model.updateProjectiles(elapsed);
     }
 
     public void start() {

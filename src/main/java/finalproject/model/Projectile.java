@@ -11,13 +11,13 @@ public class Projectile {
 
     Projectile() {
         position = new Point2D(50, 50);
-        velocity = new Point2D(0, -10);
+        velocity = new Point2D(0, -600);
         damage = 2;
     }
 
     Projectile(Point2D p) {
         position = p;
-        velocity = new Point2D(0, -10);
+        velocity = new Point2D(0, -600);
         damage = 2;
     }
 
@@ -41,10 +41,15 @@ public class Projectile {
         damage = d;
     }
 
-    public boolean updatePosition() {
-        position = position.add(velocity);
+    public Point2D getPosition() {
+        return position;
+    }
+
+    public boolean updatePosition(double elapsed) {
+        position = position.add(velocity.multiply(elapsed));
+
+        // The below print statement is to test if the projectiles are removed after reaching the top of the screen
+        //System.out.println(position + " <- I am here");
         return position.getY() < 0;
-//        The below print statement is to test if the projectiles are removed after reaching the top of the screen
-        //System.out.println("I still exist");
     }
 }
