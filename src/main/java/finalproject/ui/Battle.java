@@ -1,47 +1,64 @@
 package finalproject.ui;
 
+import finalproject.model.GameModel;
 import javafx.animation.AnimationTimer;
 import javafx.scene.Scene;
-import javafx.scene.canvas.Canvas;
 import javafx.scene.input.KeyCode;
 
 import java.util.HashSet;
 import java.util.Set;
 
-
 public class Battle {
+    private static final double PLAYER_SPEED = 300;
+
+    private final GameModel model;
+    private final BattleView view;
     private final Set<KeyCode> pressedKeys = new HashSet<>();
     private final Scene scene;
+    private final AnimationTimer gameLoop;
 
+    public Battle(GameModel model) {
+        this.model = model;
+        view = new BattleView(model.getPlayfield());
+        scene = new Scene(view);
 
-    public Battle() {
-        Canvas root = new Canvas();
-        var gc = root.getGraphicsContext2D();
+        gameLoop = new AnimationTimer() {
+            private long previousFrame;
 
-        // TODO 4: Set the window title and size.
-        scene = new Scene(root.getParent(), 420, 220);
-
-        // TODO 5: Replace this starter view with your real app design.
-
-
-        AnimationTimer gameLoop = new AnimationTimer() {
             @Override
             public void handle(long now) {
-                if (pressedKeys.contains(KeyCode.W)) ;
-                if (pressedKeys.contains(KeyCode.A)) ;
-                if (pressedKeys.contains(KeyCode.S)) ;
-                if (pressedKeys.contains(KeyCode.D)) ;
-                if (pressedKeys.contains(KeyCode.SPACE)) ;
+                double elapsed = previousFrame == 0
+                        ? 0
+                        : Math.min((now - previousFrame) / 1_000_000_000.0, 0.05);
+                previousFrame = now;
+                update(elapsed);
+                view.render(model.getPlayer());
             }
         };
-        gameLoop.start();
-
 
         scene.setOnKeyPressed(event -> pressedKeys.add(event.getCode()));
         scene.setOnKeyReleased(event -> pressedKeys.remove(event.getCode()));
-
     }
 
+    private void update(double elapsed) {
+        int direction = (pressedKeys.contains(KeyCode.D) ? 1 : 0)
+                - (pressedKeys.contains(KeyCode.A) ? 1 : 0);
+        model.resizePlayfield(view.getWidth(), view.getHeight());
+        model.movePlayer(direction * PLAYER_SPEED * elapsed);
+    }
+
+    public void start() {
+        gameLoop.start();
+    }
+
+    public void clearInput() {
+        pressedKeys.clear();
+    }
+
+    public void stop() {
+        gameLoop.stop();
+        clearInput();
+    }
 
     public Scene getView() {
         return scene;
