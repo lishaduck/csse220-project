@@ -1,12 +1,38 @@
 package finalproject.model;
 
-import java.util.ArrayList;
+import javafx.geometry.Dimension2D;
 
 /**
- * Owns the ships, power-ups, and projectiles in the game.
+ * Coordinates the player and the playfield for each game update.
  */
-public class GameModel {
-    private final ArrayList<Ship> ships = new ArrayList<>();
-    private final ArrayList<PowerUp> powerUps = new ArrayList<>();
-    private final ArrayList<Projectile> projectiles = new ArrayList<>();
+public final class GameModel {
+    private Dimension2D playfield;
+    private final PlayerShip player;
+
+    public GameModel(Dimension2D playfield) {
+        this.playfield = playfield;
+        player = new PlayerShip(playfield);
+    }
+
+    public PlayerShip getPlayer() {
+        return player;
+    }
+
+    public Dimension2D getPlayfield() {
+        return playfield;
+    }
+
+    /** Fits the player to the current visible playfield dimensions. */
+    public void resizePlayfield(double width, double height) {
+        if (width != playfield.getWidth() || height != playfield.getHeight()) {
+            playfield = new Dimension2D(width, height);
+            player.resizePlayfield(playfield);
+            player.fitToPlayfield();
+        }
+    }
+
+    /** Moves the player in pixels within the playfield. */
+    public void movePlayer(double distance) {
+        player.translateX(distance);
+    }
 }

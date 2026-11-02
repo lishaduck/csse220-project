@@ -1,4 +1,9 @@
-# Milestone 1 JavaFX starter
+# Flapping finches: Milestone 2 MVP
+
+The MVP has one core interaction: hold A to move the player ship left and D to move
+right. The entire ship stays within the horizontal playfield boundaries. Releasing
+the keys stops movement; holding both keys cancels movement. The playfield fits
+the window and contains no shooting, enemies, or scoring.
 
 ## Open and run in IntelliJ IDEA
 1. Unzip/extract the ZIP first (Windows: right-click → Extract All; macOS: double-click). Find the extracted folder directly containing `pom.xml`, `README.md`, `.gitignore`, and `src/`. If there is an extra outer folder, open it to find this project folder.
@@ -7,9 +12,9 @@
 4. Select JDK 21 as the project SDK and Maven runner JRE. IntelliJ bundles Maven; a separate Maven install is unnecessary for this IDE workflow.
 5. Open View → Tool Windows → Maven. If the project is missing, use Add Maven Projects and select `pom.xml`.
 6. Select the shared **Game** run configuration and click Run. It executes Maven `clean javafx:run` from the project root. Alternatively, in the Maven tool window choose Execute Maven Goal and enter `clean javafx:run`.
-7. Expect a window titled “CSSE220 Team Starter”. Click “Tap to update status”; the message should change to “Your team has launched the shared starter.” Close the window to stop the app.
+7. Expect a window titled “Flapping finches” with a visible ship and A/D instructions. Hold each key to move to its boundary, keep holding, then reverse direction. The ship should stay fully visible and move away immediately. Close the window to stop the app.
 
-Use the Maven goal as the shared launch method. Running StarterApp directly can require extra JavaFX runtime configuration.
+Use the Maven goal as the shared launch method. Running GameApp directly can require extra JavaFX runtime configuration.
 
 ## Team setup
 **TEAM LEAD ONLY:** download/extract the starter, run it, and initialize the shared project. In GitHub Desktop choose **File → New Repository**. Enter Name `Milestone1Starter` and Local Path equal to its parent `CSSE220FinalProject` folder. The combined path must point to the existing folder containing `pom.xml`, not a nested `Milestone1Starter/Milestone1Starter` folder.
@@ -24,12 +29,12 @@ Follow the [full GitHub Desktop guide](https://obscrivn.github.io/csse220web/git
 
 ## Files
 - `src/main/java/finalproject/app/GameApp.java`: JavaFX entry point.
-- `src/main/java/finalproject/model/`: ships, projectiles, power-ups, and their game behavior.
-- `src/main/java/finalproject/ui/`: start menu and window setup.
+- `src/main/java/finalproject/model/`: `GameModel` stores playfield dimensions as a JavaFX `Dimension2D`, `Ship` bounds translation using each ship's dimensions, and `PlayerShip` supplies player placement.
+- `src/main/java/finalproject/ui/`: `Battle` translates keyboard input and runs the frame loop; `BattleView` owns the canvas, layout, and GIF rendering.
+- `src/main/resources/PlayerShip.gif`: player artwork packaged on the classpath.
+- `src/test/java/finalproject/model/`: movement and boundary regression test (`mvn verify`).
 - `pom.xml`: Java 21, JavaFX controls, and Maven launch configuration.
 - `.gitignore`: excludes build output, IDE settings, and OS files.
-
-The TODO comments suggest future customization; they do not mean the baseline app is broken. First confirm the unchanged app runs. For the initial Git exercise, create separate documentation files so teammates do not all edit StarterApp.java.
 
 ## Troubleshooting
 - “release version 21 not supported”: check both project SDK and Maven runner JRE.
