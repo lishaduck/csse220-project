@@ -13,9 +13,14 @@ public final class PlayerShip extends Ship {
     private static final double BOTTOM_MARGIN = 24;
 
     PlayerShip(Dimension2D playfield) {
-        super(playfield, new Dimension2D(WIDTH, HEIGHT));
-        translateX((playfield.getWidth() - getWidth()) / 2);
-        fitToPlayfield();
+        super(
+                playfield,
+                new Dimension2D(WIDTH, HEIGHT),
+                new Point2D(
+                        (playfield.getWidth() - WIDTH) / 2,
+                        playfield.getHeight() - HEIGHT - BOTTOM_MARGIN
+                )
+        );
     }
 
     void fitToPlayfield() {
