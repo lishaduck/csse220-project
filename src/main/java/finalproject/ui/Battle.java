@@ -31,7 +31,7 @@ public class Battle {
                         : Math.min((now - previousFrame) / 1_000_000_000.0, 0.05);
                 previousFrame = now;
                 update(elapsed);
-                view.render(model.getPlayer());
+                view.render(model);
             }
         };
 

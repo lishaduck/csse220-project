@@ -2,6 +2,7 @@
 class GameApp
 class Battle
 class BattleView
+class PlayerView
 class GameModel
 abstract class Ship
 class PlayerShip
@@ -20,6 +21,8 @@ Ship <|-- PlayerShip
 Ship <|-- EnemyShip
 Ship --> Dimension2D
 PlayerShip ..> HorizontalDirection
-BattleView ..> Ship
+BattleView ..> GameModel
 BattleView ..> Dimension2D
+BattleView *-- PlayerView
+PlayerView ..> PlayerShip
 @enduml
