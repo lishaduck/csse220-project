@@ -29,7 +29,7 @@ Follow the [full GitHub Desktop guide](https://obscrivn.github.io/csse220web/git
 
 ## Files
 - `src/main/java/finalproject/app/GameApp.java`: JavaFX entry point.
-- `src/main/java/finalproject/model/`: `GameModel` stores playfield dimensions as a JavaFX `Dimension2D`, `Ship` bounds translation using each ship's dimensions, and `PlayerShip` supplies player placement.
+- `src/main/java/finalproject/model/`: `GameModel` coordinates updates with playfield dimensions stored as a JavaFX `Dimension2D`, `Ship` bounds translation using each ship's dimensions, `PlayerShip` supplies player speed and placement, and `HorizontalDirection` represents input-independent movement intent.
 - `src/main/java/finalproject/ui/`: `Battle` translates keyboard input and runs the frame loop; `BattleView` owns the canvas, layout, and GIF rendering.
 - `src/main/resources/PlayerShip.gif`: player artwork packaged on the classpath.
 - `src/test/java/finalproject/model/`: movement and boundary regression test (`mvn verify`).

@@ -36,9 +36,9 @@ class ShipTest {
         ship.translateY(6.75);
         assertEquals(new Point2D(5.25, 6.75), ship.getPosition());
 
-        ship.resizePlayfield(new Dimension2D(101, 97));
         ship.translateX(1000);
         ship.translateY(1000);
+        ship.resizePlayfield(new Dimension2D(101, 97));
         assertEquals(new Point2D(101 - width, 97 - height), ship.getPosition());
     }
 }

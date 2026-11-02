@@ -26,14 +26,15 @@ public final class GameModel {
     }
 
     /**
-     * Fits the player to the current visible playfield dimensions.
+     * Updates movement within the current visible playfield dimensions.
      */
-    public void resizePlayfield(double width, double height) {
+    public void update(HorizontalDirection direction, double elapsed, double width, double height) {
         if (width != playfield.getWidth() || height != playfield.getHeight()) {
             playfield = new Dimension2D(width, height);
             player.resizePlayfield(playfield);
             player.fitToPlayfield();
         }
+        player.move(direction, elapsed);
     }
 
     public void addPlayerProjectile() {
@@ -55,12 +56,5 @@ public final class GameModel {
             return true;
         }
         return (projectiles.getLast().getPosition().getY() < player.getPosition().getY() - 200);
-    }
-
-    /**
-     * Moves the player in pixels within the playfield.
-     */
-    public void movePlayer(double distance) {
-        player.translateX(distance);
     }
 }
