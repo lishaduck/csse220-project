@@ -13,6 +13,10 @@ import javafx.stage.Stage;
 public class GameApp extends Application {
     private final GameModel model = new GameModel(new Dimension2D(640, 480));
 
+    public static void main(String[] args) {
+        Application.launch(args);
+    }
+
     public void start(Stage stage) {
         stage.setTitle("Flapping finches");
 
@@ -28,9 +32,5 @@ public class GameApp extends Application {
         stage.setOnHidden(event -> battle.stop());
         stage.show();
         battle.start();
-    }
-
-    public static void main(String[] args) {
-        Application.launch(args);
     }
 }

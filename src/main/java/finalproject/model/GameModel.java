@@ -6,8 +6,8 @@ import javafx.geometry.Dimension2D;
  * Coordinates the player and the playfield for each game update.
  */
 public final class GameModel {
-    private Dimension2D playfield;
     private final PlayerShip player;
+    private Dimension2D playfield;
 
     public GameModel(Dimension2D playfield) {
         this.playfield = playfield;
@@ -22,7 +22,9 @@ public final class GameModel {
         return playfield;
     }
 
-    /** Fits the player to the current visible playfield dimensions. */
+    /**
+     * Fits the player to the current visible playfield dimensions.
+     */
     public void resizePlayfield(double width, double height) {
         if (width != playfield.getWidth() || height != playfield.getHeight()) {
             playfield = new Dimension2D(width, height);
@@ -31,7 +33,9 @@ public final class GameModel {
         }
     }
 
-    /** Moves the player in pixels within the playfield. */
+    /**
+     * Moves the player in pixels within the playfield.
+     */
     public void movePlayer(double distance) {
         player.translateX(distance);
     }
