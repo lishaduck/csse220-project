@@ -37,10 +37,9 @@ public final class GameModel {
     public void update(PlayerInput input, double elapsed, Dimension2D visiblePlayfield) {
         if (!visiblePlayfield.equals(playfield)) {
             playfield = visiblePlayfield;
-            player.resizePlayfield(playfield);
-            player.fitToPlayfield();
+            player.fitToPlayfield(playfield);
         }
-        player.move(input.direction(), elapsed);
+        player.move(input.direction(), elapsed, playfield);
         if (input.firing() && isRefireable()) {
             projectiles.add(player.spawnProjectile());
         }

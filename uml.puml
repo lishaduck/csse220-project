@@ -20,10 +20,11 @@ Battle ..> PlayerInput
 PlayerInput --> HorizontalDirection
 GameModel ..> PlayerInput
 GameModel *-- PlayerShip
-GameModel --> Dimension2D
+GameModel --> Dimension2D : playfield
 Ship <|-- PlayerShip
 Ship <|-- EnemyShip
-Ship --> Dimension2D
+Ship --> Dimension2D : size
+Ship ..> Dimension2D : supplied bounds
 PlayerShip ..> HorizontalDirection
 BattleView ..> GameModel
 BattleView ..> Dimension2D
