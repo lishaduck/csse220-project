@@ -2,7 +2,9 @@ package finalproject.ui;
 
 import finalproject.model.GameModel;
 import finalproject.model.HorizontalDirection;
+import finalproject.model.PlayerInput;
 import javafx.animation.AnimationTimer;
+import javafx.geometry.Dimension2D;
 import javafx.scene.Scene;
 import javafx.scene.input.KeyCode;
 
@@ -46,18 +48,8 @@ public class Battle {
         if (left != right) {
             direction = left ? HorizontalDirection.LEFT : HorizontalDirection.RIGHT;
         }
-        model.update(direction, elapsed, view.getWidth(), view.getHeight());
-        if (pressedKeys.contains(KeyCode.SPACE)) {
-            if (model.isRefireable()) {
-                model.addPlayerProjectile();
-                System.out.println("Added projectile at: " + elapsed);
-            } else {
-                System.out.println("This attempted projectile spawn was blocked by the cooldown!");
-            }
-
-        }
-
-        model.updateProjectiles(elapsed);
+        PlayerInput input = new PlayerInput(direction, pressedKeys.contains(KeyCode.SPACE));
+        model.update(input, elapsed, new Dimension2D(view.getWidth(), view.getHeight()));
     }
 
     public void start() {

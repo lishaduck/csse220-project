@@ -3,9 +3,11 @@ package finalproject.model;
 import javafx.geometry.Dimension2D;
 
 import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
 
 /**
- * Coordinates the player and the playfield for each game update.
+ * Advances player movement, firing, and projectiles within the visible playfield.
  */
 public final class GameModel {
     private final PlayerShip player;
@@ -25,23 +27,27 @@ public final class GameModel {
         return playfield;
     }
 
+    public List<Projectile> getProjectiles() {
+        return Collections.unmodifiableList(projectiles);
+    }
+
     /**
-     * Updates movement within the current visible playfield dimensions.
+     * Fits and moves the player, handles firing, then advances all projectiles.
      */
-    public void update(HorizontalDirection direction, double elapsed, double width, double height) {
-        if (width != playfield.getWidth() || height != playfield.getHeight()) {
-            playfield = new Dimension2D(width, height);
+    public void update(PlayerInput input, double elapsed, Dimension2D visiblePlayfield) {
+        if (!visiblePlayfield.equals(playfield)) {
+            playfield = visiblePlayfield;
             player.resizePlayfield(playfield);
             player.fitToPlayfield();
         }
-        player.move(direction, elapsed);
+        player.move(input.direction(), elapsed);
+        if (input.firing() && isRefireable()) {
+            projectiles.add(player.spawnProjectile());
+        }
+        updateProjectiles(elapsed);
     }
 
-    public void addPlayerProjectile() {
-        projectiles.add(player.spawnProjectile());
-    }
-
-    public void updateProjectiles(double elapsed) {
+    private void updateProjectiles(double elapsed) {
         for (int i = 0; i < projectiles.size(); i++) {
             if (i == -1) break;
             if (projectiles.get(i).updatePosition(elapsed)) {
@@ -51,7 +57,7 @@ public final class GameModel {
         }
     }
 
-    public boolean isRefireable() {
+    private boolean isRefireable() {
         if (projectiles.isEmpty()) {
             return true;
         }
