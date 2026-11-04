@@ -8,9 +8,9 @@ import java.util.ArrayList;
  * Coordinates the player and the playfield for each game update.
  */
 public final class GameModel {
-    private Dimension2D playfield;
     private final PlayerShip player;
     private final ArrayList<Projectile> projectiles = new ArrayList<>();
+    private Dimension2D playfield;
 
     public GameModel(Dimension2D playfield) {
         this.playfield = playfield;

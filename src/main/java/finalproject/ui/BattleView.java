@@ -12,7 +12,9 @@ import javafx.scene.text.Font;
 import java.net.URL;
 import java.util.Objects;
 
-/** Owns the playfield's canvas, layout, and drawing. */
+/**
+ * Owns the playfield's canvas, layout, and drawing.
+ */
 class BattleView extends Pane {
     private final Canvas canvas = new Canvas();
     private final Image playerImage;
@@ -25,8 +27,6 @@ class BattleView extends Pane {
         canvas.widthProperty().bind(widthProperty());
         canvas.heightProperty().bind(heightProperty());
         getChildren().add(canvas);
-
-        
     }
 
     void render(Ship player) {

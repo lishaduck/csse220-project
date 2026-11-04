@@ -3,7 +3,9 @@ package finalproject.model;
 import javafx.geometry.Dimension2D;
 import javafx.geometry.Point2D;
 
-/** Owns player movement rules within its playfield. */
+/**
+ * Owns player movement rules within its playfield.
+ */
 public final class PlayerShip extends Ship {
     public static final double WIDTH = 64;
     public static final double HEIGHT = 64;
