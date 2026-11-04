@@ -2,11 +2,14 @@ package finalproject.model;
 
 import javafx.geometry.Dimension2D;
 
+import java.util.ArrayList;
+
 /**
  * Coordinates the player and the playfield for each game update.
  */
 public final class GameModel {
     private final PlayerShip player;
+    private final ArrayList<Projectile> projectiles = new ArrayList<>();
     private Dimension2D playfield;
 
     public GameModel(Dimension2D playfield) {
@@ -31,6 +34,27 @@ public final class GameModel {
             player.resizePlayfield(playfield);
             player.fitToPlayfield();
         }
+    }
+
+    public void addPlayerProjectile() {
+        projectiles.add(player.spawnProjectile());
+    }
+
+    public void updateProjectiles(double elapsed) {
+        for (int i = 0; i < projectiles.size(); i++) {
+            if (i == -1) break;
+            if (projectiles.get(i).updatePosition(elapsed)) {
+                projectiles.remove(i);
+                i--;
+            }
+        }
+    }
+
+    public boolean isRefireable() {
+        if (projectiles.isEmpty()) {
+            return true;
+        }
+        return (projectiles.getLast().getPosition().getY() < player.getPosition().getY() - 200);
     }
 
     /**

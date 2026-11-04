@@ -52,6 +52,10 @@ public abstract class Ship {
         setPosition(position);
     }
 
+    public Projectile spawnProjectile() {
+        return new Projectile(position);
+    }
+
     public void spawnProjectile(int type) {
     }
 
