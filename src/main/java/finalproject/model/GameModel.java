@@ -49,7 +49,6 @@ public final class GameModel {
 
     private void updateProjectiles(double elapsed) {
         for (int i = 0; i < projectiles.size(); i++) {
-            if (i == -1) break;
             if (projectiles.get(i).updatePosition(elapsed)) {
                 projectiles.remove(i);
                 i--;
