@@ -1,6 +1,5 @@
 package finalproject.ui;
 
-import finalproject.model.PlayerShip;
 import finalproject.model.Projectile;
 import javafx.geometry.Point2D;
 import javafx.scene.canvas.GraphicsContext;
@@ -9,14 +8,14 @@ import javafx.scene.image.Image;
 import java.net.URL;
 import java.util.Objects;
 
-/** Loads player artwork and draws the player at its model position and size. */
+/** Loads laser artwork and draws each projectile at its model position and size. */
 public class LaserView {
     private final Image laserImage;
 
     public LaserView() {
         URL laserResource = Objects.requireNonNull(
                 LaserView.class.getResource("/laser.png"),
-                "Missing player ship resource: /laser.png"
+                "Missing laser resource: /laser.png"
         );
         laserImage = new Image(laserResource.toExternalForm());
     }

@@ -3,7 +3,6 @@ package finalproject.model;
 
 import javafx.geometry.Point2D;
 
-
 public class Projectile {
     Point2D position;
     Point2D velocity;
