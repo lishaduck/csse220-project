@@ -3,6 +3,7 @@ package finalproject.model;
 
 import javafx.geometry.Point2D;
 
+
 public class Projectile {
     Point2D position;
     Point2D velocity;
@@ -49,5 +50,13 @@ public class Projectile {
         position = position.add(velocity.multiply(elapsed));
 
         return position.getY() < 0;
+    }
+
+    public final double getWidth() {
+        return 20;
+    }
+
+    public final double getHeight() {
+        return 50;
     }
 }
