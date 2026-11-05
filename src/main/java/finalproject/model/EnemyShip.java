@@ -2,6 +2,7 @@ package finalproject.model;
 
 import javafx.geometry.Dimension2D;
 import javafx.geometry.Point2D;
+
 import java.util.Random;
 
 public class EnemyShip extends Ship {
@@ -9,7 +10,7 @@ public class EnemyShip extends Ship {
     Point2D target;
     int speed;
     int cycle;
-    Random random=new Random();
+    Random random = new Random();
 
     public EnemyShip(
             Dimension2D playfield,
@@ -25,51 +26,52 @@ public class EnemyShip extends Ship {
         this.type = type;
         this.health = health;
         this.speed = speed;
-        this.cycle=0;
-        target=new Point2D(targetX, targetY);
+        this.cycle = 0;
+        target = new Point2D(targetX, targetY);
     }
-    public void goTowardsTarget(Dimension2D playfield){
-        double distance=Math.sqrt(Math.pow(getPosition().getX()-target.getX(), 2)+Math.pow(getPosition().getY()-target.getY(), 2));
-        double angle=Math.atan((target.getY()-getPosition().getY())/(target.getX()-getPosition().getX()));
-        if(distance<speed){
+
+    public void goTowardsTarget(Dimension2D playfield) {
+        double distance = Math.sqrt(Math.pow(getPosition().getX() - target.getX(), 2) + Math.pow(getPosition().getY() - target.getY(), 2));
+        double angle = Math.atan((target.getY() - getPosition().getY()) / (target.getX() - getPosition().getX()));
+        if (distance < speed) {
             setPosition(target, playfield);
-        }
-        else{
-            translateX(Math.cos(angle)*speed, playfield);
-            translateY(Math.sin(angle)*speed, playfield);
+        } else {
+            translateX(Math.cos(angle) * speed, playfield);
+            translateY(Math.sin(angle) * speed, playfield);
         }
     }
-    public void enemyAI(Point2D playerPosition, Dimension2D playfield){
+
+    public void enemyAI(Point2D playerPosition, Dimension2D playfield) {
         cycle++;
-        double angle=Math.atan((playerPosition.getY()-getPosition().getY())/(playerPosition.getX()-getPosition().getX()));
-        if(type==0){
+        double angle = Math.atan((playerPosition.getY() - getPosition().getY()) / (playerPosition.getX() - getPosition().getX()));
+        if (type == 0) {
             goTowardsTarget(playfield);
-            if(cycle%100==0){
+            if (cycle % 100 == 0) {
                 spawnProjectile(new Point2D(0, 600));
             }
-            if(getPosition().getX()==playfield.getWidth()){
+            if (getPosition().getX() == playfield.getWidth()) {
                 target.add(-playfield.getWidth(), 0);
             }
-            if(getPosition().getX()==0){
+            if (getPosition().getX() == 0) {
                 target.add(playfield.getWidth(), 0);
             }
         }
-        if(type==1){
+        if (type == 1) {
             goTowardsTarget(playfield);
-            if(getPosition()==target){
-                if(cycle>200)
-                    cycle=0;
-                if(cycle==50 || cycle==150) {
+            if (getPosition() == target) {
+                if (cycle > 200)
+                    cycle = 0;
+                if (cycle == 50 || cycle == 150) {
                     spawnProjectile(new Point2D(600 * Math.cos(angle), 600 * Math.sin(angle)));
-                    spawnProjectile(new Point2D(600 * Math.cos(angle+(Math.PI/6)), 600 * Math.sin(angle+(Math.PI/6))));
-                    spawnProjectile(new Point2D(600 * Math.cos(angle-(Math.PI/6)), 600 * Math.sin(angle-(Math.PI/6))));
+                    spawnProjectile(new Point2D(600 * Math.cos(angle + (Math.PI / 6)), 600 * Math.sin(angle + (Math.PI / 6))));
+                    spawnProjectile(new Point2D(600 * Math.cos(angle - (Math.PI / 6)), 600 * Math.sin(angle - (Math.PI / 6))));
                 }
-                if(cycle==100) {
-                    spawnProjectile(new Point2D(600 * Math.cos(angle+(Math.PI/12)), 600 * Math.sin(angle+(Math.PI/12))));
-                    spawnProjectile(new Point2D(600 * Math.cos(angle-(Math.PI/12)), 600 * Math.sin(angle-(Math.PI/12))));
+                if (cycle == 100) {
+                    spawnProjectile(new Point2D(600 * Math.cos(angle + (Math.PI / 12)), 600 * Math.sin(angle + (Math.PI / 12))));
+                    spawnProjectile(new Point2D(600 * Math.cos(angle - (Math.PI / 12)), 600 * Math.sin(angle - (Math.PI / 12))));
                 }
-                if(cycle==200)
-                    target=new Point2D(random.nextInt((int)playfield.getWidth()),random.nextInt((int)(playfield.getHeight()/2)));
+                if (cycle == 200)
+                    target = new Point2D(random.nextInt((int) playfield.getWidth()), random.nextInt((int) (playfield.getHeight() / 2)));
             }
         }
     }
