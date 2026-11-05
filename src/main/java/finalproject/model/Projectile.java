@@ -1,9 +1,11 @@
 package finalproject.model;
 
 
+import javafx.geometry.Dimension2D;
 import javafx.geometry.Point2D;
 
 public class Projectile {
+    private final Dimension2D size = new Dimension2D(20, 50);
     private final Ship source;
     private Point2D position;
     Point2D velocity;
@@ -36,10 +38,10 @@ public class Projectile {
     }
 
     public final double getWidth() {
-        return 20;
+        return size.getWidth();
     }
 
     public final double getHeight() {
-        return 50;
+        return size.getHeight();
     }
 }
