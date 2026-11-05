@@ -2,11 +2,16 @@ package finalproject.model;
 
 import javafx.geometry.Dimension2D;
 
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
+
 /**
- * Coordinates the player and the playfield for each game update.
+ * Advances player movement, firing, and projectiles within the visible playfield.
  */
 public final class GameModel {
     private final PlayerShip player;
+    private final ArrayList<Projectile> projectiles = new ArrayList<>();
     private Dimension2D playfield;
 
     public GameModel(Dimension2D playfield) {
@@ -22,21 +27,38 @@ public final class GameModel {
         return playfield;
     }
 
-    /**
-     * Fits the player to the current visible playfield dimensions.
-     */
-    public void resizePlayfield(double width, double height) {
-        if (width != playfield.getWidth() || height != playfield.getHeight()) {
-            playfield = new Dimension2D(width, height);
-            player.resizePlayfield(playfield);
-            player.fitToPlayfield();
-        }
+    public List<Projectile> getProjectiles() {
+        return Collections.unmodifiableList(projectiles);
     }
 
     /**
-     * Moves the player in pixels within the playfield.
+     * Fits and moves the player, handles firing, then advances all projectiles.
      */
-    public void movePlayer(double distance) {
-        player.translateX(distance);
+    public void update(PlayerInput input, double elapsed, Dimension2D visiblePlayfield) {
+        if (!visiblePlayfield.equals(playfield)) {
+            playfield = visiblePlayfield;
+            player.fitToPlayfield(playfield);
+        }
+        player.move(input.direction(), elapsed, playfield);
+        if (input.firing() && isRefireable()) {
+            projectiles.add(player.spawnProjectile());
+        }
+        updateProjectiles(elapsed);
+    }
+
+    private void updateProjectiles(double elapsed) {
+        for (int i = 0; i < projectiles.size(); i++) {
+            if (projectiles.get(i).updatePosition(elapsed)) {
+                projectiles.remove(i);
+                i--;
+            }
+        }
+    }
+
+    private boolean isRefireable() {
+        if (projectiles.isEmpty()) {
+            return true;
+        }
+        return (projectiles.getLast().getPosition().getY() < player.getPosition().getY() - 200);
     }
 }

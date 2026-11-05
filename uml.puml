@@ -2,21 +2,32 @@
 class GameApp
 class Battle
 class BattleView
+class PlayerView
 class GameModel
 abstract class Ship
 class PlayerShip
 class EnemyShip
-class Dimension2D <<JavaFX>>
+class Dimension2D
+class PlayerInput <<record>>
+enum HorizontalDirection
 
 GameApp --> GameModel
 GameApp --> Battle
 Battle *-- BattleView
 Battle --> GameModel
+Battle ..> HorizontalDirection
+Battle ..> PlayerInput
+PlayerInput --> HorizontalDirection
+GameModel ..> PlayerInput
 GameModel *-- PlayerShip
-GameModel --> Dimension2D
+GameModel --> Dimension2D : playfield
 Ship <|-- PlayerShip
 Ship <|-- EnemyShip
-Ship --> Dimension2D
-BattleView ..> Ship
+Ship --> Dimension2D : size
+Ship ..> Dimension2D : supplied bounds
+PlayerShip ..> HorizontalDirection
+BattleView ..> GameModel
 BattleView ..> Dimension2D
+BattleView *-- PlayerView
+PlayerView ..> PlayerShip
 @enduml

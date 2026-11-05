@@ -11,13 +11,13 @@ public class Projectile {
 
     Projectile() {
         position = new Point2D(50, 50);
-        velocity = new Point2D(0, -10);
+        velocity = new Point2D(0, -600);
         damage = 2;
     }
 
     Projectile(Point2D p) {
         position = p;
-        velocity = new Point2D(0, -10);
+        velocity = new Point2D(0, -600);
         damage = 2;
     }
 
@@ -41,7 +41,13 @@ public class Projectile {
         damage = d;
     }
 
-    void updatePosition() {
-        position = position.add(velocity);
+    public Point2D getPosition() {
+        return position;
+    }
+
+    public boolean updatePosition(double elapsed) {
+        position = position.add(velocity.multiply(elapsed));
+
+        return position.getY() < 0;
     }
 }
