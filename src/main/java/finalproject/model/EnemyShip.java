@@ -13,8 +13,7 @@ public class EnemyShip extends Ship {
             int type,
             int health
     ) {
-        super(playfield, size);
-        setPosition(position);
+        super(playfield, size, position);
         this.type = type;
         this.health = health;
     }

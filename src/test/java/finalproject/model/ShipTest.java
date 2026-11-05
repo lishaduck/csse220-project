@@ -12,7 +12,7 @@ class ShipTest {
     @CsvSource({"83, 27", "19, 91"})
     void boundsTranslationByTheShipsOwnSizeAndCanReverseAtEveryEdge(double width, double height) {
         Dimension2D playfield = new Dimension2D(301, 197);
-        Ship ship = new Ship(playfield, new Dimension2D(width, height)) {};
+        Ship ship = new Ship(playfield, new Dimension2D(width, height), Point2D.ZERO) {};
 
         ship.translateX(17.5);
         ship.translateY(11.25);
@@ -36,9 +36,9 @@ class ShipTest {
         ship.translateY(6.75);
         assertEquals(new Point2D(5.25, 6.75), ship.getPosition());
 
-        ship.resizePlayfield(new Dimension2D(101, 97));
         ship.translateX(1000);
         ship.translateY(1000);
+        ship.resizePlayfield(new Dimension2D(101, 97));
         assertEquals(new Point2D(101 - width, 97 - height), ship.getPosition());
     }
 }
