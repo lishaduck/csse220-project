@@ -17,8 +17,7 @@ public class EnemyShip extends Ship {
             int health,
             int speed
     ) {
-        super(playfield, size);
-        setPosition(position);
+        super(playfield, size, position);
         this.type = type;
         this.health = health;
         this.speed = speed;

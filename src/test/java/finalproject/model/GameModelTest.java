@@ -1,42 +1,88 @@
 package finalproject.model;
 
 import javafx.geometry.Dimension2D;
+import javafx.geometry.Point2D;
 import org.junit.jupiter.api.Test;
 
+import static finalproject.model.HorizontalDirection.LEFT;
+import static finalproject.model.HorizontalDirection.NONE;
+import static finalproject.model.HorizontalDirection.RIGHT;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 class GameModelTest {
+    private static final PlayerInput MOVE_LEFT = new PlayerInput(LEFT, false);
+    private static final PlayerInput MOVE_RIGHT = new PlayerInput(RIGHT, false);
+    private static final PlayerInput IDLE = new PlayerInput(NONE, false);
+
+    @Test
+    void preservesProjectileSpawningCooldownAndRemovalAlongsidePlayerMovement() {
+        Dimension2D playfield = new Dimension2D(640, 480);
+        GameModel model = new GameModel(playfield);
+        model.update(new PlayerInput(RIGHT, true), 0.125, playfield);
+        assertEquals(1, model.getProjectiles().size());
+        assertEquals(new Point2D(325.5, 317), model.getProjectiles().getFirst().getPosition());
+
+        model.update(new PlayerInput(LEFT, true), 0.2, playfield);
+        assertEquals(1, model.getProjectiles().size());
+        assertEquals(new Point2D(325.5, 197), model.getProjectiles().getFirst().getPosition());
+        model.update(new PlayerInput(LEFT, true), 1.0 / 120, playfield);
+        assertEquals(1, model.getProjectiles().size());
+        assertEquals(new Point2D(325.5, 192), model.getProjectiles().getFirst().getPosition());
+        model.update(new PlayerInput(LEFT, true), 1.0 / 600, playfield);
+        assertEquals(1, model.getProjectiles().size());
+        assertEquals(new Point2D(325.5, 191), model.getProjectiles().getFirst().getPosition());
+
+        model.update(new PlayerInput(RIGHT, true), 0.05, playfield);
+        assertEquals(2, model.getProjectiles().size());
+        assertEquals(new Point2D(325.5, 161), model.getProjectiles().getFirst().getPosition());
+        assertEquals(new Point2D(277.5, 362), model.getProjectiles().getLast().getPosition());
+
+        model.update(IDLE, 0.05, playfield);
+        assertEquals(2, model.getProjectiles().size());
+        assertEquals(new Point2D(325.5, 131), model.getProjectiles().getFirst().getPosition());
+        assertEquals(new Point2D(277.5, 332), model.getProjectiles().getLast().getPosition());
+        model.update(IDLE, 1, playfield);
+        assertTrue(model.getProjectiles().isEmpty());
+
+        Dimension2D resized = new Dimension2D(499, 320);
+        model.update(new PlayerInput(RIGHT, true), 0.125, resized);
+        assertEquals(1, model.getProjectiles().size());
+        assertEquals(new Point2D(315, 157), model.getProjectiles().getFirst().getPosition());
+    }
+
     @Test
     void fitsTheVisiblePlayfieldWhenTheWindowManagerChangesItsSize() {
         Dimension2D playfield = new Dimension2D(640, 480);
         GameModel model = new GameModel(playfield);
         Ship player = model.getPlayer();
-        model.movePlayer(3000);
+        model.update(MOVE_RIGHT, 10, playfield);
 
-        model.resizePlayfield(499, 320);
-        assertEquals(new Dimension2D(499, 320), model.getPlayfield());
+        Dimension2D resized = new Dimension2D(499, 320);
+        model.update(IDLE, 0, resized);
+        assertEquals(resized, model.getPlayfield());
         assertEquals(499, player.getPosition().getX() + PlayerShip.WIDTH);
         assertEquals(296, player.getPosition().getY() + PlayerShip.HEIGHT);
         for (int i = 0; i < 1000; i++) {
-            model.movePlayer(15);
+            model.update(MOVE_RIGHT, 0.05, resized);
         }
         assertEquals(499, player.getPosition().getX() + PlayerShip.WIDTH);
-        model.movePlayer(-37.5);
+        model.update(MOVE_LEFT, 0.125, resized);
         assertEquals(499 - PlayerShip.WIDTH - 37.5, player.getPosition().getX());
 
-        model.resizePlayfield(800, 600);
-        model.movePlayer(3000);
+        Dimension2D expanded = new Dimension2D(800, 600);
+        model.update(MOVE_RIGHT, 10, expanded);
         assertEquals(800, player.getPosition().getX() + PlayerShip.WIDTH);
-        model.movePlayer(-3000);
+        model.update(MOVE_LEFT, 10, expanded);
         assertEquals(0, player.getPosition().getX());
-        model.movePlayer(37.5);
+        model.update(MOVE_RIGHT, 0.125, expanded);
         assertEquals(37.5, player.getPosition().getX());
     }
 
     @Test
     void movesHorizontallyAndCanLeaveBothBoundariesAfterRepeatedInput() {
-        GameModel model = new GameModel(new Dimension2D(640, 480));
+        Dimension2D playfield = new Dimension2D(640, 480);
+        GameModel model = new GameModel(playfield);
         PlayerShip player = model.getPlayer();
         double initialX = player.getPosition().getX();
         double initialY = player.getPosition().getY();
@@ -45,31 +91,31 @@ class GameModelTest {
         assertTrue(initialY >= 0);
         assertTrue(initialY + PlayerShip.HEIGHT <= 480);
 
-        model.movePlayer(-37.5);
+        model.update(MOVE_LEFT, 0.125, playfield);
         assertEquals(initialX - 37.5, player.getPosition().getX());
-        model.movePlayer(18.75);
+        model.update(MOVE_RIGHT, 0.0625, playfield);
         assertEquals(initialX - 18.75, player.getPosition().getX());
 
         for (int i = 0; i < 1000; i++) {
-            model.movePlayer(-15);
+            model.update(MOVE_LEFT, 0.05, playfield);
         }
         assertEquals(0, player.getPosition().getX());
-        model.movePlayer(37.5);
+        model.update(MOVE_RIGHT, 0.125, playfield);
         assertEquals(37.5, player.getPosition().getX());
 
         for (int i = 0; i < 1000; i++) {
-            model.movePlayer(22.5);
+            model.update(MOVE_RIGHT, 0.075, playfield);
         }
         assertEquals(
                 640,
                 player.getPosition().getX() + PlayerShip.WIDTH
         );
-        model.movePlayer(-18.75);
+        model.update(MOVE_LEFT, 0.0625, playfield);
         assertEquals(
                 640 - PlayerShip.WIDTH - 18.75,
                 player.getPosition().getX()
         );
-        model.movePlayer(0);
+        model.update(IDLE, 0.2, playfield);
         assertEquals(
                 640 - PlayerShip.WIDTH - 18.75,
                 player.getPosition().getX()

@@ -1,7 +1,10 @@
 package finalproject.ui;
 
 import finalproject.model.GameModel;
+import finalproject.model.HorizontalDirection;
+import finalproject.model.PlayerInput;
 import javafx.animation.AnimationTimer;
+import javafx.geometry.Dimension2D;
 import javafx.scene.Scene;
 import javafx.scene.input.KeyCode;
 
@@ -9,8 +12,6 @@ import java.util.HashSet;
 import java.util.Set;
 
 public class Battle {
-    private static final double PLAYER_SPEED = 300;
-
     private final GameModel model;
     private final BattleView view;
     private final Set<KeyCode> pressedKeys = new HashSet<>();
@@ -32,7 +33,7 @@ public class Battle {
                         : Math.min((now - previousFrame) / 1_000_000_000.0, 0.05);
                 previousFrame = now;
                 update(elapsed);
-                view.render(model.getPlayer());
+                view.render(model);
             }
         };
 
@@ -41,21 +42,14 @@ public class Battle {
     }
 
     private void update(double elapsed) {
-        int direction = (pressedKeys.contains(KeyCode.D) ? 1 : 0)
-                - (pressedKeys.contains(KeyCode.A) ? 1 : 0);
-        model.resizePlayfield(view.getWidth(), view.getHeight());
-        model.movePlayer(direction * PLAYER_SPEED * elapsed);
-        if (pressedKeys.contains(KeyCode.SPACE)) {
-            if (model.isRefireable()) {
-                model.addPlayerProjectile();
-                System.out.println("Added projectile at: " + elapsed);
-            } else {
-                System.out.println("This attempted projectile spawn was blocked by the cooldown!");
-            }
-
+        boolean left = pressedKeys.contains(KeyCode.A);
+        boolean right = pressedKeys.contains(KeyCode.D);
+        HorizontalDirection direction = HorizontalDirection.NONE;
+        if (left != right) {
+            direction = left ? HorizontalDirection.LEFT : HorizontalDirection.RIGHT;
         }
-
-        model.updateProjectiles(elapsed);
+        PlayerInput input = new PlayerInput(direction, pressedKeys.contains(KeyCode.SPACE));
+        model.update(input, elapsed, new Dimension2D(view.getWidth(), view.getHeight()));
     }
 
     public void start() {
