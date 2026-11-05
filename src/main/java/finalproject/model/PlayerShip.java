@@ -4,7 +4,7 @@ import javafx.geometry.Dimension2D;
 import javafx.geometry.Point2D;
 
 /**
- * Owns player movement rules within its playfield.
+ * Owns player movement speed and bottom alignment.
  */
 public final class PlayerShip extends Ship {
     public static final double WIDTH = 64;
@@ -24,15 +24,14 @@ public final class PlayerShip extends Ship {
         );
     }
 
-    void move(HorizontalDirection direction, double elapsed) {
+    void move(HorizontalDirection direction, double elapsed, Dimension2D playfield) {
         double distance = direction.getSign() * SPEED * elapsed;
-        translateX(distance);
+        translateX(distance, playfield);
     }
 
-    void fitToPlayfield() {
-        Dimension2D playfield = getPlayfield();
+    void fitToPlayfield(Dimension2D playfield) {
         Point2D position = getPosition();
         double destinationY = playfield.getHeight() - getHeight() - BOTTOM_MARGIN;
-        translateY(destinationY - position.getY());
+        translateY(destinationY - position.getY(), playfield);
     }
 }

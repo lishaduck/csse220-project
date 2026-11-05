@@ -48,8 +48,6 @@ public class Projectile {
     public boolean updatePosition(double elapsed) {
         position = position.add(velocity.multiply(elapsed));
 
-        // The below print statement is to test if the projectiles are removed after reaching the top of the screen
-        //System.out.println(position + " <- I am here");
         return position.getY() < 0;
     }
 }
