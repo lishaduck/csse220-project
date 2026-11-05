@@ -34,11 +34,11 @@ public abstract class Ship {
         return size.getHeight();
     }
 
-    public final void translateX(double distance, Dimension2D playfield) {
+    protected final void translateX(double distance, Dimension2D playfield) {
         setPosition(position.add(distance, 0), playfield);
     }
 
-    public final void translateY(double distance, Dimension2D playfield) {
+    protected final void translateY(double distance, Dimension2D playfield) {
         setPosition(position.add(0, distance), playfield);
     }
 
