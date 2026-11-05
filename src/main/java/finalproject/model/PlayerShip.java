@@ -7,8 +7,7 @@ import javafx.geometry.Point2D;
  * Owns player movement speed and bottom alignment.
  */
 public final class PlayerShip extends Ship {
-    public static final double WIDTH = 64;
-    public static final double HEIGHT = 64;
+    public static final Dimension2D SIZE = new Dimension2D(64, 64);
 
     private static final double SPEED = 300;
     private static final double BOTTOM_MARGIN = 24;
@@ -16,10 +15,10 @@ public final class PlayerShip extends Ship {
     PlayerShip(Dimension2D playfield) {
         super(
                 playfield,
-                new Dimension2D(WIDTH, HEIGHT),
+                SIZE,
                 new Point2D(
-                        (playfield.getWidth() - WIDTH) / 2,
-                        playfield.getHeight() - HEIGHT - BOTTOM_MARGIN
+                        (playfield.getWidth() - SIZE.getWidth()) / 2,
+                        playfield.getHeight() - SIZE.getHeight() - BOTTOM_MARGIN
                 )
         );
     }

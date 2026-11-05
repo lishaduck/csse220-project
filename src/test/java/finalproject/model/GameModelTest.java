@@ -62,18 +62,18 @@ class GameModelTest {
         Dimension2D resized = new Dimension2D(499, 320);
         model.update(IDLE, 0, resized);
         assertEquals(resized, model.getPlayfield());
-        assertEquals(499, player.getPosition().getX() + PlayerShip.WIDTH);
-        assertEquals(296, player.getPosition().getY() + PlayerShip.HEIGHT);
+        assertEquals(499, player.getPosition().getX() + PlayerShip.SIZE.getWidth());
+        assertEquals(296, player.getPosition().getY() + PlayerShip.SIZE.getHeight());
         for (int i = 0; i < 1000; i++) {
             model.update(MOVE_RIGHT, 0.05, resized);
         }
-        assertEquals(499, player.getPosition().getX() + PlayerShip.WIDTH);
+        assertEquals(499, player.getPosition().getX() + PlayerShip.SIZE.getWidth());
         model.update(MOVE_LEFT, 0.125, resized);
-        assertEquals(499 - PlayerShip.WIDTH - 37.5, player.getPosition().getX());
+        assertEquals(499 - PlayerShip.SIZE.getWidth() - 37.5, player.getPosition().getX());
 
         Dimension2D expanded = new Dimension2D(800, 600);
         model.update(MOVE_RIGHT, 10, expanded);
-        assertEquals(800, player.getPosition().getX() + PlayerShip.WIDTH);
+        assertEquals(800, player.getPosition().getX() + PlayerShip.SIZE.getWidth());
         model.update(MOVE_LEFT, 10, expanded);
         assertEquals(0, player.getPosition().getX());
         model.update(MOVE_RIGHT, 0.125, expanded);
@@ -88,9 +88,9 @@ class GameModelTest {
         double initialX = player.getPosition().getX();
         double initialY = player.getPosition().getY();
         assertTrue(initialX > 0);
-        assertTrue(initialX + PlayerShip.WIDTH < 640);
+        assertTrue(initialX + PlayerShip.SIZE.getWidth() < 640);
         assertTrue(initialY >= 0);
-        assertTrue(initialY + PlayerShip.HEIGHT <= 480);
+        assertTrue(initialY + PlayerShip.SIZE.getHeight() <= 480);
 
         model.update(MOVE_LEFT, 0.125, playfield);
         assertEquals(initialX - 37.5, player.getPosition().getX());
@@ -109,16 +109,16 @@ class GameModelTest {
         }
         assertEquals(
                 640,
-                player.getPosition().getX() + PlayerShip.WIDTH
+                player.getPosition().getX() + PlayerShip.SIZE.getWidth()
         );
         model.update(MOVE_LEFT, 0.0625, playfield);
         assertEquals(
-                640 - PlayerShip.WIDTH - 18.75,
+                640 - PlayerShip.SIZE.getWidth() - 18.75,
                 player.getPosition().getX()
         );
         model.update(IDLE, 0.2, playfield);
         assertEquals(
-                640 - PlayerShip.WIDTH - 18.75,
+                640 - PlayerShip.SIZE.getWidth() - 18.75,
                 player.getPosition().getX()
         );
         assertEquals(initialY, player.getPosition().getY());
