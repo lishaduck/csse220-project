@@ -20,7 +20,7 @@ public abstract class Ship {
         return position;
     }
 
-    private void setPosition(Point2D position, Dimension2D playfield) {
+    protected void setPosition(Point2D position, Dimension2D playfield) {
         double x = Math.clamp(position.getX(), 0, Math.max(0, playfield.getWidth() - getWidth()));
         double y = Math.clamp(position.getY(), 0, Math.max(0, playfield.getHeight() - getHeight()));
         this.position = new Point2D(x, y);
@@ -44,6 +44,9 @@ public abstract class Ship {
 
     public Projectile spawnProjectile() {
         return new Projectile(position);
+    }
+    public Projectile spawnProjectile(Point2D velocity) {
+        return new Projectile(position, velocity);
     }
 
     public void spawnProjectile(int type) {
