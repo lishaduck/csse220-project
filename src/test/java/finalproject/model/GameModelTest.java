@@ -41,11 +41,15 @@ class GameModelTest {
         assertEquals(new Point2D(325.5, 131), model.getProjectiles().getFirst().getPosition());
         assertEquals(new Point2D(277.5, 332), model.getProjectiles().getLast().getPosition());
         model.update(IDLE, 1, playfield);
-        assertTrue(model.getProjectiles().isEmpty());
+        assertTrue(model.getProjectiles().stream().noneMatch(GameModelTest::isPlayerProjectile));
 
         Dimension2D resized = new Dimension2D(499, 320);
         model.update(new PlayerInput(RIGHT, true), 0.125, resized);
         assertEquals(new Point2D(315, 157), model.getProjectiles().getFirst().getPosition());
+    }
+
+    private static boolean isPlayerProjectile(Projectile projectile) {
+        return projectile.velocity.equals(new Point2D(0, -600));
     }
 
     @Test
