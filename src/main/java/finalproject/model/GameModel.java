@@ -68,8 +68,8 @@ public final class GameModel {
         if (input.firing() && isRefireable()) {
             projectiles.add(player.spawnProjectile());
         }
-        for (EnemyShip i : enemies) {
-            i.enemyAI(player.getPosition(), playfield, elapsed, projectiles);
+        for (EnemyShip enemy : enemies) {
+            enemy.update(player.getPosition(), playfield, elapsed, projectiles);
         }
         updateProjectiles(elapsed);
     }
