@@ -8,18 +8,16 @@ import java.util.ArrayList;
 public final class SkiLiftShip extends EnemyShip {
     public SkiLiftShip(
             Dimension2D playfield,
-            Dimension2D size,
             Point2D position,
+            Point2D target,
             int health,
-            int speed,
-            Point2D target
+            int speed
     ) {
-        super(playfield, size, position, health, speed, target);
+        super(playfield, new Dimension2D(50, 50), position, target, health, speed);
     }
 
-    public ArrayList<Projectile> enemyAI(Point2D playerPosition, Dimension2D playfield, double elapsed, ArrayList<Projectile> projectiles) {
+    public void enemyAI(Point2D playerPosition, Dimension2D playfield, double elapsed, ArrayList<Projectile> projectiles) {
         cycle += elapsed;
-        double angle = Math.atan2((playerPosition.getY() - getPosition().getY()), (playerPosition.getX() - getPosition().getX()));
         goTowardsTarget(playfield, elapsed);
         if (cycle > 2 && cycle - elapsed <= 2) {
             projectiles.add(spawnProjectile(new Point2D(0, 400)));
@@ -31,7 +29,6 @@ public final class SkiLiftShip extends EnemyShip {
         if (getPosition().getX() <= 0) {
             target = new Point2D(playfield.getWidth(), 100);
         }
-        return projectiles;
     }
 
 }

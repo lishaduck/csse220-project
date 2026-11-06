@@ -8,16 +8,15 @@ import java.util.ArrayList;
 public final class SpreadshotShip extends EnemyShip {
     public SpreadshotShip(
             Dimension2D playfield,
-            Dimension2D size,
             Point2D position,
+            Point2D target,
             int health,
-            int speed,
-            Point2D target
+            int speed
     ) {
-        super(playfield, size, position, health, speed, target);
+        super(playfield, new Dimension2D(50, 50), position, target, health, speed);
     }
 
-    public ArrayList<Projectile> enemyAI(Point2D playerPosition, Dimension2D playfield, double elapsed, ArrayList<Projectile> projectiles) {
+    public void enemyAI(Point2D playerPosition, Dimension2D playfield, double elapsed, ArrayList<Projectile> projectiles) {
         cycle += elapsed;
         double angle = Math.atan2((playerPosition.getY() - getPosition().getY()), (playerPosition.getX() - getPosition().getX()));
 
@@ -39,7 +38,5 @@ public final class SpreadshotShip extends EnemyShip {
                 target = new Point2D(random.nextInt((int) playfield.getWidth() - 50), random.nextInt((int) (playfield.getHeight() / 3)));
             }
         }
-
-        return projectiles;
     }
 }

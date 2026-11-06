@@ -23,21 +23,19 @@ public final class GameModel {
         enemies.add(
                 new SkiLiftShip(
                         playfield,
-                        new Dimension2D(50, 50),
                         new Point2D(0, 100),
+                        new Point2D(200, 100),
                         20,
-                        50,
-                        new Point2D(200, 100)
+                        50
                 )
         );
         enemies.add(
                 new SpreadshotShip(
                         playfield,
-                        new Dimension2D(50, 50),
                         new Point2D(0, 100),
+                        new Point2D(200, 100),
                         20,
-                        200,
-                        new Point2D(200, 100)
+                        200
                 )
         );
     }

@@ -16,9 +16,9 @@ abstract sealed public class EnemyShip extends Ship permits SkiLiftShip, Spreads
             Dimension2D playfield,
             Dimension2D size,
             Point2D position,
+            Point2D target,
             int health,
-            int speed,
-            Point2D target
+            int speed
     ) {
         super(playfield, size, position);
         this.health = health;
@@ -27,7 +27,6 @@ abstract sealed public class EnemyShip extends Ship permits SkiLiftShip, Spreads
         this.target = target;
     }
 
-    //everything below here is not tested and may be broken
     public void goTowardsTarget(Dimension2D playfield, double elapsed) {
         double distance = Math.sqrt(Math.pow(getPosition().getX() - target.getX(), 2) + Math.pow(getPosition().getY() - target.getY(), 2));
         double angle = Math.atan2((target.getY() - getPosition().getY()), (target.getX() - getPosition().getX()));
@@ -39,5 +38,5 @@ abstract sealed public class EnemyShip extends Ship permits SkiLiftShip, Spreads
         }
     }
 
-    abstract public ArrayList<Projectile> enemyAI(Point2D playerPosition, Dimension2D playfield, double elapsed, ArrayList<Projectile> projectiles);
+    abstract public void enemyAI(Point2D playerPosition, Dimension2D playfield, double elapsed, ArrayList<Projectile> projectiles);
 }
