@@ -20,7 +20,8 @@ public final class GameModel {
     public GameModel(Dimension2D playfield) {
         this.playfield = playfield;
         player = new PlayerShip(playfield);
-        enemies.add(new EnemyShip(playfield, new Dimension2D(5, 5), new Point2D(0, 0), 0, 20, 5, 0, 100));
+        enemies.add(new EnemyShip(playfield, new Dimension2D(50, 50), new Point2D(0, 100), 0, 20, 50, 0, 100));
+        enemies.add(new EnemyShip(playfield, new Dimension2D(50, 50), new Point2D(0, 100), 1, 20, 200, 0, 100));
     }
 
     public PlayerShip getPlayer() {
@@ -33,6 +34,10 @@ public final class GameModel {
 
     public List<Projectile> getProjectiles() {
         return Collections.unmodifiableList(projectiles);
+    }
+
+    public List<EnemyShip> getEnemies() {
+        return Collections.unmodifiableList(enemies);
     }
 
     /**
@@ -48,7 +53,7 @@ public final class GameModel {
             projectiles.add(player.spawnProjectile());
         }
         for (EnemyShip i : enemies) {
-            i.enemyAI(player.getPosition(), playfield, elapsed);
+            i.enemyAI(player.getPosition(), playfield, elapsed, projectiles);
         }
         updateProjectiles(elapsed);
     }
