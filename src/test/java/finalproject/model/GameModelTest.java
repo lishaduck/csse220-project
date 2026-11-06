@@ -45,7 +45,11 @@ class GameModelTest {
 
         Dimension2D resized = new Dimension2D(499, 320);
         model.update(new PlayerInput(RIGHT, true), 0.125, resized);
-        assertEquals(new Point2D(315, 157), model.getProjectiles().getFirst().getPosition());
+        Projectile playerProjectile = model.getProjectiles().stream()
+                .filter(GameModelTest::isPlayerProjectile)
+                .findFirst()
+                .orElseThrow();
+        assertEquals(new Point2D(315, 157), playerProjectile.getPosition());
     }
 
     private static boolean isPlayerProjectile(Projectile projectile) {
