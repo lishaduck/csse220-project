@@ -14,8 +14,8 @@ import java.util.List;
 public final class GameModel {
     private final PlayerShip player;
     private final ArrayList<Projectile> projectiles = new ArrayList<>();
+    private final ArrayList<EnemyShip> enemies = new ArrayList<>();
     private Dimension2D playfield;
-    private ArrayList<EnemyShip> enemies = new ArrayList<>();
 
     public GameModel(Dimension2D playfield) {
         this.playfield = playfield;
