@@ -15,6 +15,7 @@ public final class GameModel {
     private final PlayerShip player;
     private final ArrayList<Projectile> projectiles = new ArrayList<>();
     private final ArrayList<EnemyShip> enemies = new ArrayList<>();
+    private Projectile lastPlayerProjectile;
     private Dimension2D playfield;
 
     public GameModel(Dimension2D playfield) {
@@ -66,7 +67,8 @@ public final class GameModel {
         }
         player.move(input.direction(), elapsed, playfield);
         if (input.firing() && isRefireable()) {
-            projectiles.add(player.spawnProjectile());
+            lastPlayerProjectile = player.spawnProjectile();
+            projectiles.add(lastPlayerProjectile);
         }
         for (EnemyShip enemy : enemies) {
             enemy.update(player.getPosition(), playfield, elapsed, projectiles);
@@ -84,9 +86,8 @@ public final class GameModel {
     }
 
     private boolean isRefireable() {
-        if (projectiles.isEmpty()) {
-            return true;
-        }
-        return (projectiles.getLast().getPosition().getY() < player.getPosition().getY() - 200);
+        return lastPlayerProjectile == null
+                || !projectiles.contains(lastPlayerProjectile)
+                || lastPlayerProjectile.getPosition().getY() < player.getPosition().getY() - 200;
     }
 }
