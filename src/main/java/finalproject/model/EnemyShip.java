@@ -30,6 +30,7 @@ public class EnemyShip extends Ship {
         target = new Point2D(targetX, targetY);
     }
 
+    //everything below here is not tested and may be broken
     public void goTowardsTarget(Dimension2D playfield, double elapsed) {
         double distance = Math.sqrt(Math.pow(getPosition().getX() - target.getX(), 2) + Math.pow(getPosition().getY() - target.getY(), 2));
         double angle = Math.atan((target.getY() - getPosition().getY()) / (target.getX() - getPosition().getX()));
