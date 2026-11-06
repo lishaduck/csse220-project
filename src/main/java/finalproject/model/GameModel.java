@@ -1,10 +1,12 @@
 package finalproject.model;
 
 import javafx.geometry.Dimension2D;
+import javafx.geometry.Point2D;
 
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
+
 
 /**
  * Advances player movement, firing, and projectiles within the visible playfield.
@@ -13,10 +15,12 @@ public final class GameModel {
     private final PlayerShip player;
     private final ArrayList<Projectile> projectiles = new ArrayList<>();
     private Dimension2D playfield;
+    private ArrayList<EnemyShip> enemies = new ArrayList<>();
 
     public GameModel(Dimension2D playfield) {
         this.playfield = playfield;
         player = new PlayerShip(playfield);
+        enemies.add(new EnemyShip(playfield, new Dimension2D(5, 5), new Point2D(0, 0), 0, 20, 5, 0, 100));
     }
 
     public PlayerShip getPlayer() {
@@ -42,6 +46,9 @@ public final class GameModel {
         player.move(input.direction(), elapsed, playfield);
         if (input.firing() && isRefireable()) {
             projectiles.add(player.spawnProjectile());
+        }
+        for (EnemyShip i : enemies) {
+            i.enemyAI(player.getPosition(), playfield, elapsed);
         }
         updateProjectiles(elapsed);
     }
