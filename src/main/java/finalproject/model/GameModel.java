@@ -20,8 +20,26 @@ public final class GameModel {
     public GameModel(Dimension2D playfield) {
         this.playfield = playfield;
         player = new PlayerShip(playfield);
-        enemies.add(new EnemyShip(playfield, new Dimension2D(50, 50), new Point2D(0, 100), 0, 20, 50, 0, 100));
-        enemies.add(new EnemyShip(playfield, new Dimension2D(50, 50), new Point2D(0, 100), 1, 20, 200, 0, 100));
+        enemies.add(
+                new SkiLiftShip(
+                        playfield,
+                        new Dimension2D(50, 50),
+                        new Point2D(0, 100),
+                        20,
+                        50,
+                        new Point2D(200, 100)
+                )
+        );
+        enemies.add(
+                new SpreadshotShip(
+                        playfield,
+                        new Dimension2D(50, 50),
+                        new Point2D(0, 100),
+                        20,
+                        200,
+                        new Point2D(200, 100)
+                )
+        );
     }
 
     public PlayerShip getPlayer() {
