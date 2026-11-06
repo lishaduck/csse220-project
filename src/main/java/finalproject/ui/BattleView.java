@@ -1,6 +1,7 @@
 package finalproject.ui;
 
 import finalproject.model.GameModel;
+import finalproject.model.Projectile;
 import javafx.geometry.Dimension2D;
 import javafx.scene.canvas.Canvas;
 import javafx.scene.layout.Pane;
@@ -13,6 +14,7 @@ import javafx.scene.text.Font;
 class BattleView extends Pane {
     private final Canvas canvas = new Canvas();
     private final PlayerView playerView = new PlayerView();
+    private final LaserView laserView = new LaserView();
 
     BattleView(Dimension2D playfield) {
         setPrefSize(playfield.getWidth(), playfield.getHeight());
@@ -29,6 +31,9 @@ class BattleView extends Pane {
         gc.setFont(Font.font(16));
         gc.fillText("Hold A / D to move", 24, 32);
 
+        for (Projectile projectile : model.getProjectiles()) {
+            laserView.render(gc, projectile);
+        }
         playerView.render(gc, model.getPlayer());
     }
 }

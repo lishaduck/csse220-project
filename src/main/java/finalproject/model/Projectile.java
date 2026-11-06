@@ -50,4 +50,12 @@ public class Projectile {
 
         return position.getY() < 0;
     }
+
+    public final double getWidth() {
+        return 20;
+    }
+
+    public final double getHeight() {
+        return 50;
+    }
 }
