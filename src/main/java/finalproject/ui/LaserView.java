@@ -26,8 +26,8 @@ public class LaserView {
                 laserImage,
                 position.getX(),
                 position.getY(),
-                laser.getWidth(),
-                laser.getHeight()
+                Projectile.SIZE.getWidth(),
+                Projectile.SIZE.getHeight()
         );
     }
 }
