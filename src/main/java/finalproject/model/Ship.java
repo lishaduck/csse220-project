@@ -43,10 +43,11 @@ public abstract class Ship {
     }
 
     public Projectile spawnProjectile() {
-        return new Projectile(position);
+        return new Projectile(this, position);
     }
+
     public Projectile spawnProjectile(Point2D velocity) {
-        return new Projectile(position, velocity);
+        return new Projectile(this, position, velocity);
     }
 
     public void spawnProjectile(int type) {

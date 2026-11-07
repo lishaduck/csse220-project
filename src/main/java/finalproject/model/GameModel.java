@@ -20,7 +20,24 @@ public final class GameModel {
     public GameModel(Dimension2D playfield) {
         this.playfield = playfield;
         player = new PlayerShip(playfield);
-        enemies.add(new EnemyShip(playfield, new Dimension2D(5, 5), new Point2D(0, 0), 0, 20, 5, 0, 100));
+        enemies.add(
+                new SkiLiftShip(
+                        playfield,
+                        new Point2D(0, 100),
+                        new Point2D(200, 100),
+                        20,
+                        50
+                )
+        );
+        enemies.add(
+                new SpreadshotShip(
+                        playfield,
+                        new Point2D(0, 100),
+                        new Point2D(200, 100),
+                        20,
+                        200
+                )
+        );
     }
 
     public PlayerShip getPlayer() {
@@ -35,6 +52,10 @@ public final class GameModel {
         return Collections.unmodifiableList(projectiles);
     }
 
+    public List<EnemyShip> getEnemies() {
+        return Collections.unmodifiableList(enemies);
+    }
+
     /**
      * Fits and moves the player, handles firing, then advances all projectiles.
      */
@@ -47,8 +68,8 @@ public final class GameModel {
         if (input.firing() && isRefireable()) {
             projectiles.add(player.spawnProjectile());
         }
-        for (EnemyShip i : enemies) {
-            i.enemyAI(player.getPosition(), playfield, elapsed);
+        for (EnemyShip enemy : enemies) {
+            enemy.update(player.getPosition(), playfield, elapsed, projectiles);
         }
         updateProjectiles(elapsed);
     }
@@ -63,9 +84,12 @@ public final class GameModel {
     }
 
     private boolean isRefireable() {
-        if (projectiles.isEmpty()) {
-            return true;
+        for (int i = projectiles.size() - 1; i >= 0; i--) {
+            Projectile projectile = projectiles.get(i);
+            if (projectile.getSource() == player) {
+                return projectile.getPosition().getY() < player.getPosition().getY() - 200;
+            }
         }
-        return (projectiles.getLast().getPosition().getY() < player.getPosition().getY() - 200);
+        return true;
     }
 }

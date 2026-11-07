@@ -4,9 +4,7 @@ import javafx.geometry.Dimension2D;
 import javafx.geometry.Point2D;
 import org.junit.jupiter.api.Test;
 
-import static finalproject.model.HorizontalDirection.LEFT;
-import static finalproject.model.HorizontalDirection.NONE;
-import static finalproject.model.HorizontalDirection.RIGHT;
+import static finalproject.model.HorizontalDirection.*;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
@@ -43,12 +41,15 @@ class GameModelTest {
         assertEquals(new Point2D(325.5, 131), model.getProjectiles().getFirst().getPosition());
         assertEquals(new Point2D(277.5, 332), model.getProjectiles().getLast().getPosition());
         model.update(IDLE, 1, playfield);
-        assertTrue(model.getProjectiles().isEmpty());
+        assertTrue(model.getProjectiles().stream().noneMatch(projectile -> projectile.getSource() == model.getPlayer()));
 
         Dimension2D resized = new Dimension2D(499, 320);
         model.update(new PlayerInput(RIGHT, true), 0.125, resized);
-        assertEquals(1, model.getProjectiles().size());
-        assertEquals(new Point2D(315, 157), model.getProjectiles().getFirst().getPosition());
+        Projectile playerProjectile = model.getProjectiles().stream()
+                .filter(projectile -> projectile.getSource() == model.getPlayer())
+                .findFirst()
+                .orElseThrow();
+        assertEquals(new Point2D(315, 157), playerProjectile.getPosition());
     }
 
     @Test

@@ -3,79 +3,58 @@ package finalproject.model;
 import javafx.geometry.Dimension2D;
 import javafx.geometry.Point2D;
 
-import java.util.Random;
+import java.util.List;
 
-public class EnemyShip extends Ship {
-    int type;
-    Point2D target;
-    int speed;
-    double cycle;
-    Random random = new Random();
+abstract sealed public class EnemyShip extends Ship permits SkiLiftShip, SpreadshotShip {
+    protected Point2D target;
+    private final double movementSpeed;
 
     public EnemyShip(
             Dimension2D playfield,
             Dimension2D size,
             Point2D position,
-            int type,
+            Point2D target,
             int health,
-            int speed,
-            int targetX,
-            int targetY
+            double movementSpeed
     ) {
         super(playfield, size, position);
-        this.type = type;
         this.health = health;
-        this.speed = speed;
-        this.cycle = 0;
-        target = new Point2D(targetX, targetY);
+        this.movementSpeed = movementSpeed;
+        this.target = target;
     }
 
-    //everything below here is not tested and may be broken
-    public void goTowardsTarget(Dimension2D playfield, double elapsed) {
-        double distance = Math.sqrt(Math.pow(getPosition().getX() - target.getX(), 2) + Math.pow(getPosition().getY() - target.getY(), 2));
-        double angle = Math.atan((target.getY() - getPosition().getY()) / (target.getX() - getPosition().getX()));
-        if (distance < speed * elapsed) {
+    protected final boolean moveTowardTarget(Dimension2D playfield, double elapsedSeconds) {
+        Point2D displacement = target.subtract(getPosition());
+        double distanceToTarget = displacement.magnitude();
+        double travelDistance = movementSpeed * elapsedSeconds;
+        if (distanceToTarget <= travelDistance) {
             setPosition(target, playfield);
+            return true;
         } else {
-            translateX(Math.cos(angle) * speed * elapsed, playfield);
-            translateY(Math.sin(angle) * speed * elapsed, playfield);
+            Point2D movement = displacement.normalize().multiply(travelDistance);
+            translateX(movement.getX(), playfield);
+            translateY(movement.getY(), playfield);
+            return false;
         }
     }
 
-    public void enemyAI(Point2D playerPosition, Dimension2D playfield, double elapsed) {
-        double oldCycle = cycle;
-        cycle += elapsed;
-        double angle = Math.atan((playerPosition.getY() - getPosition().getY()) / (playerPosition.getX() - getPosition().getX()));
-        if (type == 0) {
-            goTowardsTarget(playfield, elapsed);
-            if (cycle > 100 && oldCycle <= 100) {
-                spawnProjectile(new Point2D(0, 600));
-                cycle = 0;
-            }
-            if (getPosition().getX() == playfield.getWidth()) {
-                target.add(-playfield.getWidth(), 0);
-            }
-            if (getPosition().getX() == 0) {
-                target.add(playfield.getWidth(), 0);
-            }
-        }
-        if (type == 1) {
-            goTowardsTarget(playfield, elapsed);
-            if (getPosition() == target) {
-                if (cycle > 200)
-                    cycle = 0;
-                if ((cycle > 50 && oldCycle <= 50) || (cycle > 150 && oldCycle <= 150)) {
-                    spawnProjectile(new Point2D(600 * Math.cos(angle), 600 * Math.sin(angle)));
-                    spawnProjectile(new Point2D(600 * Math.cos(angle + (Math.PI / 6)), 600 * Math.sin(angle + (Math.PI / 6))));
-                    spawnProjectile(new Point2D(600 * Math.cos(angle - (Math.PI / 6)), 600 * Math.sin(angle - (Math.PI / 6))));
-                }
-                if (cycle > 100 && oldCycle <= 100) {
-                    spawnProjectile(new Point2D(600 * Math.cos(angle + (Math.PI / 12)), 600 * Math.sin(angle + (Math.PI / 12))));
-                    spawnProjectile(new Point2D(600 * Math.cos(angle - (Math.PI / 12)), 600 * Math.sin(angle - (Math.PI / 12))));
-                }
-                if (cycle > 200 && oldCycle <= 200)
-                    target = new Point2D(random.nextInt((int) playfield.getWidth()), random.nextInt((int) (playfield.getHeight() / 2)));
-            }
-        }
+    protected final Point2D velocityToward(Point2D destination, double projectileSpeed) {
+        Point2D direction = destination.subtract(getPosition());
+        return direction.magnitude() == 0 ? Point2D.ZERO : direction.normalize().multiply(projectileSpeed);
     }
+
+    protected final void fireProjectile(List<Projectile> projectiles, Point2D velocity) {
+        projectiles.add(spawnProjectile(velocity));
+    }
+
+    protected static boolean crossedThreshold(double previousElapsed, double elapsed, double threshold) {
+        return previousElapsed < threshold && previousElapsed + elapsed >= threshold;
+    }
+
+    public abstract void update(
+            Point2D playerPosition,
+            Dimension2D playfield,
+            double elapsedSeconds,
+            List<Projectile> projectiles
+    );
 }
