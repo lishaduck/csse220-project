@@ -3,32 +3,50 @@ package finalproject.model;
 import javafx.geometry.Dimension2D;
 import javafx.geometry.Point2D;
 
-import java.util.ArrayList;
+import java.util.List;
 
 public final class SkiLiftShip extends EnemyShip {
+    private static final Dimension2D SIZE = new Dimension2D(50, 50);
+    private static final double SHOT_INTERVAL_SECONDS = 2;
+    private static final double PROJECTILE_SPEED = 400;
+    private static final double PATROL_Y = 100;
+
+    private double elapsedSinceLastShot;
+
     public SkiLiftShip(
             Dimension2D playfield,
             Point2D position,
             Point2D target,
             int health,
-            int speed
+            double movementSpeed
     ) {
-        super(playfield, new Dimension2D(50, 50), position, target, health, speed);
+        super(playfield, SIZE, position, target, health, movementSpeed);
     }
 
-    public void enemyAI(Point2D playerPosition, Dimension2D playfield, double elapsed, ArrayList<Projectile> projectiles) {
-        cycle += elapsed;
-        goTowardsTarget(playfield, elapsed);
-        if (cycle > 2 && cycle - elapsed <= 2) {
-            projectiles.add(spawnProjectile(new Point2D(0, 400)));
-            cycle = 0;
+    @Override
+    public void update(
+            Point2D playerPosition,
+            Dimension2D playfield,
+            double elapsedSeconds,
+            List<Projectile> projectiles
+    ) {
+        double previousShotElapsed = elapsedSinceLastShot;
+        elapsedSinceLastShot += elapsedSeconds;
+        moveTowardTarget(playfield, elapsedSeconds);
+
+        if (crossedThreshold(previousShotElapsed, elapsedSeconds, SHOT_INTERVAL_SECONDS)) {
+            fireProjectile(projectiles, new Point2D(0, PROJECTILE_SPEED));
+            elapsedSinceLastShot = 0;
         }
-        if (getPosition().getX() >= playfield.getWidth() - 50) {
-            target = new Point2D(-playfield.getWidth(), 100);
-        }
-        if (getPosition().getX() <= 0) {
-            target = new Point2D(playfield.getWidth(), 100);
-        }
+
+        updatePatrolTarget(playfield);
     }
 
+    private void updatePatrolTarget(Dimension2D playfield) {
+        if (getPosition().getX() >= playfield.getWidth() - getWidth()) {
+            target = new Point2D(-playfield.getWidth(), PATROL_Y);
+        } else if (getPosition().getX() <= 0) {
+            target = new Point2D(playfield.getWidth(), PATROL_Y);
+        }
+    }
 }

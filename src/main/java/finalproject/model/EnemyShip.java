@@ -3,14 +3,11 @@ package finalproject.model;
 import javafx.geometry.Dimension2D;
 import javafx.geometry.Point2D;
 
-import java.util.ArrayList;
-import java.util.Random;
+import java.util.List;
 
 abstract sealed public class EnemyShip extends Ship permits SkiLiftShip, SpreadshotShip {
-    Point2D target;
-    int speed;
-    double cycle;
-    Random random = new Random();
+    protected Point2D target;
+    private final double movementSpeed;
 
     public EnemyShip(
             Dimension2D playfield,
@@ -18,25 +15,46 @@ abstract sealed public class EnemyShip extends Ship permits SkiLiftShip, Spreads
             Point2D position,
             Point2D target,
             int health,
-            int speed
+            double movementSpeed
     ) {
         super(playfield, size, position);
         this.health = health;
-        this.speed = speed;
-        this.cycle = 0;
+        this.movementSpeed = movementSpeed;
         this.target = target;
     }
 
-    public void goTowardsTarget(Dimension2D playfield, double elapsed) {
-        double distance = Math.sqrt(Math.pow(getPosition().getX() - target.getX(), 2) + Math.pow(getPosition().getY() - target.getY(), 2));
-        double angle = Math.atan2((target.getY() - getPosition().getY()), (target.getX() - getPosition().getX()));
-        if (distance < speed * elapsed) {
+    protected final boolean moveTowardTarget(Dimension2D playfield, double elapsedSeconds) {
+        Point2D displacement = target.subtract(getPosition());
+        double distanceToTarget = displacement.magnitude();
+        double travelDistance = movementSpeed * elapsedSeconds;
+        if (distanceToTarget <= travelDistance) {
             setPosition(target, playfield);
+            return true;
         } else {
-            translateX(Math.cos(angle) * speed * elapsed, playfield);
-            translateY(Math.sin(angle) * speed * elapsed, playfield);
+            Point2D movement = displacement.normalize().multiply(travelDistance);
+            translateX(movement.getX(), playfield);
+            translateY(movement.getY(), playfield);
+            return false;
         }
     }
 
-    abstract public void enemyAI(Point2D playerPosition, Dimension2D playfield, double elapsed, ArrayList<Projectile> projectiles);
+    protected final Point2D velocityToward(Point2D destination, double projectileSpeed) {
+        Point2D direction = destination.subtract(getPosition());
+        return direction.magnitude() == 0 ? Point2D.ZERO : direction.normalize().multiply(projectileSpeed);
+    }
+
+    protected final void fireProjectile(List<Projectile> projectiles, Point2D velocity) {
+        projectiles.add(spawnProjectile(velocity));
+    }
+
+    protected static boolean crossedThreshold(double previousElapsed, double elapsed, double threshold) {
+        return previousElapsed < threshold && previousElapsed + elapsed >= threshold;
+    }
+
+    public abstract void update(
+            Point2D playerPosition,
+            Dimension2D playfield,
+            double elapsedSeconds,
+            List<Projectile> projectiles
+    );
 }

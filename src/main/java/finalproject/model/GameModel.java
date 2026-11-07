@@ -68,8 +68,8 @@ public final class GameModel {
         if (input.firing() && isRefireable()) {
             projectiles.add(player.spawnProjectile());
         }
-        for (EnemyShip i : enemies) {
-            i.enemyAI(player.getPosition(), playfield, elapsed, projectiles);
+        for (EnemyShip enemy : enemies) {
+            enemy.update(player.getPosition(), playfield, elapsed, projectiles);
         }
         updateProjectiles(elapsed);
     }
@@ -84,9 +84,12 @@ public final class GameModel {
     }
 
     private boolean isRefireable() {
-        if (projectiles.isEmpty()) {
-            return true;
+        for (int i = projectiles.size() - 1; i >= 0; i--) {
+            Projectile projectile = projectiles.get(i);
+            if (projectile.getSource() == player) {
+                return projectile.getPosition().getY() < player.getPosition().getY() - 200;
+            }
         }
-        return (projectiles.getLast().getPosition().getY() < player.getPosition().getY() - 200);
+        return true;
     }
 }

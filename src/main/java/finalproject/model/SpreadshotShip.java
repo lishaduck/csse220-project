@@ -3,40 +3,84 @@ package finalproject.model;
 import javafx.geometry.Dimension2D;
 import javafx.geometry.Point2D;
 
-import java.util.ArrayList;
+import java.util.List;
+import java.util.Random;
 
 public final class SpreadshotShip extends EnemyShip {
+    private static final Dimension2D SIZE = new Dimension2D(50, 50);
+    private static final double PROJECTILE_SPEED = 200;
+    private static final double ATTACK_SEQUENCE_SECONDS = 2.1;
+    private static final double FIRST_VOLLEY_SECONDS = 0.5;
+    private static final double SECOND_VOLLEY_SECONDS = 1;
+    private static final double THIRD_VOLLEY_SECONDS = 1.5;
+    private static final double RETARGET_SECONDS = 2;
+    private static final double WIDE_SPREAD_ANGLE = Math.PI / 8;
+    private static final double NARROW_SPREAD_ANGLE = Math.PI / 16;
+
+    private final Random random = new Random();
+    private double attackSequenceElapsed;
+
     public SpreadshotShip(
             Dimension2D playfield,
             Point2D position,
             Point2D target,
             int health,
-            int speed
+            double movementSpeed
     ) {
-        super(playfield, new Dimension2D(50, 50), position, target, health, speed);
+        super(playfield, SIZE, position, target, health, movementSpeed);
     }
 
-    public void enemyAI(Point2D playerPosition, Dimension2D playfield, double elapsed, ArrayList<Projectile> projectiles) {
-        cycle += elapsed;
-        double angle = Math.atan2((playerPosition.getY() - getPosition().getY()), (playerPosition.getX() - getPosition().getX()));
-
-        goTowardsTarget(playfield, elapsed);
-        if (getPosition().equals(target)) {
-            if (cycle > 2.1) {
-                cycle = 0;
-            }
-            if ((cycle > 0.5 && cycle - elapsed <= 0.5) || (cycle > 1.5 && cycle - elapsed <= 1.5)) {
-                projectiles.add(spawnProjectile(new Point2D(200 * Math.cos(angle), 200 * Math.sin(angle))));
-                projectiles.add(spawnProjectile(new Point2D(200 * Math.cos(angle + (Math.PI / 8)), 200 * Math.sin(angle + (Math.PI / 8)))));
-                projectiles.add(spawnProjectile(new Point2D(200 * Math.cos(angle - (Math.PI / 8)), 200 * Math.sin(angle - (Math.PI / 8)))));
-            }
-            if (cycle > 1 && cycle - elapsed <= 1) {
-                projectiles.add(spawnProjectile(new Point2D(200 * Math.cos(angle + (Math.PI / 16)), 200 * Math.sin(angle + (Math.PI / 16)))));
-                projectiles.add(spawnProjectile(new Point2D(200 * Math.cos(angle - (Math.PI / 16)), 200 * Math.sin(angle - (Math.PI / 16)))));
-            }
-            if (cycle > 2 && cycle - elapsed <= 2) {
-                target = new Point2D(random.nextInt((int) playfield.getWidth() - 50), random.nextInt((int) (playfield.getHeight() / 3)));
-            }
+    @Override
+    public void update(
+            Point2D playerPosition,
+            Dimension2D playfield,
+            double elapsedSeconds,
+            List<Projectile> projectiles
+    ) {
+        boolean reachedTarget = moveTowardTarget(playfield, elapsedSeconds);
+        if (!reachedTarget) {
+            return;
         }
+
+        double previousAttackElapsed = attackSequenceElapsed;
+        attackSequenceElapsed += elapsedSeconds;
+        if (crossedThreshold(previousAttackElapsed, elapsedSeconds, FIRST_VOLLEY_SECONDS)
+                || crossedThreshold(previousAttackElapsed, elapsedSeconds, THIRD_VOLLEY_SECONDS)) {
+            fireWideVolley(playerPosition, projectiles);
+        }
+        if (crossedThreshold(previousAttackElapsed, elapsedSeconds, SECOND_VOLLEY_SECONDS)) {
+            fireNarrowVolley(playerPosition, projectiles);
+        }
+        if (crossedThreshold(previousAttackElapsed, elapsedSeconds, RETARGET_SECONDS)) {
+            target = chooseNextTarget(playfield);
+        }
+        if (attackSequenceElapsed >= ATTACK_SEQUENCE_SECONDS) {
+            attackSequenceElapsed = 0;
+        }
+    }
+
+    private void fireWideVolley(Point2D playerPosition, List<Projectile> projectiles) {
+        fireProjectile(projectiles, velocityToward(playerPosition, PROJECTILE_SPEED));
+        fireProjectile(projectiles, velocityAtOffset(playerPosition, WIDE_SPREAD_ANGLE));
+        fireProjectile(projectiles, velocityAtOffset(playerPosition, -WIDE_SPREAD_ANGLE));
+    }
+
+    private void fireNarrowVolley(Point2D playerPosition, List<Projectile> projectiles) {
+        fireProjectile(projectiles, velocityAtOffset(playerPosition, NARROW_SPREAD_ANGLE));
+        fireProjectile(projectiles, velocityAtOffset(playerPosition, -NARROW_SPREAD_ANGLE));
+    }
+
+    private Point2D velocityAtOffset(Point2D playerPosition, double angleOffset) {
+        Point2D velocity = velocityToward(playerPosition, PROJECTILE_SPEED);
+        return new Point2D(
+                velocity.getX() * Math.cos(angleOffset) - velocity.getY() * Math.sin(angleOffset),
+                velocity.getX() * Math.sin(angleOffset) + velocity.getY() * Math.cos(angleOffset)
+        );
+    }
+
+    private Point2D chooseNextTarget(Dimension2D playfield) {
+        int maximumX = Math.max(0, (int) Math.floor(playfield.getWidth() - getWidth()));
+        int maximumY = Math.max(0, (int) Math.floor(playfield.getHeight() / 3 - getHeight()));
+        return new Point2D(random.nextInt(maximumX + 1), random.nextInt(maximumY + 1));
     }
 }

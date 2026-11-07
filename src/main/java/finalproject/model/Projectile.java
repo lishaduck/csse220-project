@@ -4,41 +4,25 @@ package finalproject.model;
 import javafx.geometry.Point2D;
 
 public class Projectile {
-    Point2D position;
+    private final Ship source;
+    private Point2D position;
     Point2D velocity;
     int[] special;
     int damage;
 
-    Projectile() {
-        position = new Point2D(50, 50);
-        velocity = new Point2D(0, -600);
-        damage = 2;
+    Projectile(Ship source, Point2D position) {
+        this(source, position, new Point2D(0, -600));
     }
 
-    Projectile(Point2D p) {
-        position = p;
-        velocity = new Point2D(0, -600);
-        damage = 2;
-    }
-
-    Projectile(Point2D p, Point2D velocity) {
-        position = p;
+    Projectile(Ship source, Point2D position, Point2D velocity) {
+        this.source = source;
+        this.position = position;
         this.velocity = velocity;
         damage = 2;
     }
 
-    Projectile(Point2D p, Point2D velocity, int[] s) {
-        position = p;
-        this.velocity = velocity;
-        special = s;
-        damage = 2;
-    }
-
-    Projectile(Point2D p, Point2D velocity, int[] s, int d) {
-        position = p;
-        this.velocity = velocity;
-        special = s;
-        damage = d;
+    public Ship getSource() {
+        return source;
     }
 
     public Point2D getPosition() {
