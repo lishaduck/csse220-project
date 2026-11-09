@@ -7,7 +7,7 @@ import javafx.geometry.Point2D;
  * Owns player movement speed and bottom alignment.
  */
 public final class PlayerShip extends Ship {
-    public static final Dimension2D SIZE = new Dimension2D(64, 64);
+    public static final Dimension2D SIZE = new Dimension2D(48, 44);
     static final Point2D PROJECTILE_VELOCITY = new Point2D(0, -600);
 
     private static final double SPEED = 300;

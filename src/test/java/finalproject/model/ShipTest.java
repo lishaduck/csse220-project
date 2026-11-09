@@ -41,18 +41,18 @@ class ShipTest {
 
     @ParameterizedTest
     @CsvSource({
-            "50, 50, 30, 0, false",
-            "50, 50, -40, 0, true",
-            "50, 50, 19.9, 0, true",
-            "50, 50, 20, 0, false",
-            "50, 50, -49.9, 0, true",
-            "50, 50, -50, 0, false",
-            "64, 64, 0, 49.9, true",
-            "64, 64, 0, 50, false",
-            "64, 64, 0, -63.9, true",
-            "64, 64, 0, -64, false",
-            "50, 50, -40, 50, false",
-            "50, 50, 20, -40, false"
+            "48, 36, 30, 0, false",
+            "48, 36, -40, 0, true",
+            "48, 36, 3.9, 0, true",
+            "48, 36, 4, 0, false",
+            "48, 36, -47.9, 0, true",
+            "48, 36, -48, 0, false",
+            "32, 16, 0, 19.9, true",
+            "32, 16, 0, 20, false",
+            "32, 16, 0, -15.9, true",
+            "32, 16, 0, -16, false",
+            "48, 36, -40, 20, false",
+            "48, 36, 4, -30, false"
     })
     void projectilesDamageShipsOnlyWhenTheirTopLeftBoundsOverlap(
             double width, double height, double dx, double dy, boolean hit

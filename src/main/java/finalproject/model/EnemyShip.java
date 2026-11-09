@@ -9,6 +9,7 @@ abstract sealed public class EnemyShip extends Ship permits SkiLiftShip, Spreads
     private final double movementSpeed;
     protected Point2D target;
 
+
     public EnemyShip(
             Dimension2D playfield,
             Dimension2D size,
@@ -50,6 +51,8 @@ abstract sealed public class EnemyShip extends Ship permits SkiLiftShip, Spreads
     protected final void fireProjectile(List<Projectile> projectiles, Point2D velocity) {
         projectiles.add(new Projectile(this, velocity));
     }
+
+    public abstract java.net.URL getImage();
 
     public abstract void update(
             Point2D playerPosition,

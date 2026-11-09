@@ -16,6 +16,19 @@ class EnemyShipTest {
     private static final Point2D PLAYER_POSITION = new Point2D(100, 300);
 
     @Test
+    void enemyTypesUseTheirOwnSpriteAndHitboxDimensions() {
+        EnemyShip skiLift = new SkiLiftShip(PLAYFIELD, Point2D.ZERO, Point2D.ZERO, 20, 50);
+        EnemyShip spreadshot = new SpreadshotShip(PLAYFIELD, Point2D.ZERO, Point2D.ZERO, 20, 50);
+
+        assertEquals(48, skiLift.getWidth());
+        assertEquals(36, skiLift.getHeight());
+        assertEquals(EnemyShipTest.class.getResource("/EnemyShip.gif"), skiLift.getImage());
+        assertEquals(32, spreadshot.getWidth());
+        assertEquals(16, spreadshot.getHeight());
+        assertEquals(EnemyShipTest.class.getResource("/EnemyShip2.gif"), spreadshot.getImage());
+    }
+
+    @Test
     void skiLiftFiresAtItsNamedShotInterval() {
         SkiLiftShip enemy = new SkiLiftShip(
                 PLAYFIELD,

@@ -20,27 +20,27 @@ class GameModelTest {
         GameModel model = new GameModel(playfield);
         model.update(new PlayerInput(RIGHT, true), 0.125, playfield);
         assertEquals(1, model.getProjectiles().size());
-        assertEquals(new Point2D(325.5, 317), model.getProjectiles().getFirst().getPosition());
+        assertEquals(new Point2D(333.5, 337), model.getProjectiles().getFirst().getPosition());
 
         model.update(new PlayerInput(LEFT, true), 0.2, playfield);
         assertEquals(1, model.getProjectiles().size());
-        assertEquals(new Point2D(325.5, 197), model.getProjectiles().getFirst().getPosition());
+        assertEquals(new Point2D(333.5, 217), model.getProjectiles().getFirst().getPosition());
         model.update(new PlayerInput(LEFT, true), 1.0 / 120, playfield);
         assertEquals(1, model.getProjectiles().size());
-        assertEquals(new Point2D(325.5, 192), model.getProjectiles().getFirst().getPosition());
+        assertEquals(new Point2D(333.5, 212), model.getProjectiles().getFirst().getPosition());
         model.update(new PlayerInput(LEFT, true), 1.0 / 600, playfield);
         assertEquals(1, model.getProjectiles().size());
-        assertEquals(new Point2D(325.5, 191), model.getProjectiles().getFirst().getPosition());
+        assertEquals(new Point2D(333.5, 211), model.getProjectiles().getFirst().getPosition());
 
         model.update(new PlayerInput(RIGHT, true), 0.05, playfield);
         assertEquals(2, model.getProjectiles().size());
-        assertEquals(new Point2D(325.5, 161), model.getProjectiles().getFirst().getPosition());
-        assertEquals(new Point2D(277.5, 362), model.getProjectiles().getLast().getPosition());
+        assertEquals(new Point2D(333.5, 181), model.getProjectiles().getFirst().getPosition());
+        assertEquals(new Point2D(285.5, 382), model.getProjectiles().getLast().getPosition());
 
         model.update(IDLE, 0.05, playfield);
         assertEquals(2, model.getProjectiles().size());
-        assertEquals(new Point2D(325.5, 131), model.getProjectiles().getFirst().getPosition());
-        assertEquals(new Point2D(277.5, 332), model.getProjectiles().getLast().getPosition());
+        assertEquals(new Point2D(333.5, 151), model.getProjectiles().getFirst().getPosition());
+        assertEquals(new Point2D(285.5, 352), model.getProjectiles().getLast().getPosition());
         model.update(IDLE, 1, playfield);
         assertTrue(model.getProjectiles().stream().noneMatch(projectile -> projectile.getSource() == model.getPlayer()));
         assertEquals(5, model.getProjectiles().size());
@@ -52,7 +52,7 @@ class GameModelTest {
                 .filter(projectile -> projectile.getSource() == model.getPlayer())
                 .findFirst()
                 .orElseThrow();
-        assertEquals(new Point2D(315, 157), playerProjectile.getPosition());
+        assertEquals(new Point2D(323, 177), playerProjectile.getPosition());
     }
 
     @Test
