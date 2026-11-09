@@ -66,27 +66,25 @@ public final class GameModel {
         }
         player.move(input.direction(), elapsed, playfield);
         if (input.firing() && isRefireable()) {
-            projectiles.add(player.spawnProjectile(false));
+            projectiles.add(new Projectile(player, PlayerShip.PROJECTILE_VELOCITY));
         }
         for (EnemyShip enemy : enemies) {
             enemy.update(player.getPosition(), playfield, elapsed, projectiles);
-            if (!enemy.isAlive()) {
-                enemies.remove(enemy);
-            }
         }
+        enemies.removeIf(enemy -> !enemy.isAlive());
         updateProjectiles(elapsed);
     }
 
     private void updateProjectiles(double elapsed) {
-        for (int i = 0; i < projectiles.size(); i++) {
-            if (projectiles.get(i).updatePosition(elapsed)) {
-                projectiles.remove(i);
-                i--;
+        projectiles.removeIf(projectile -> {
+            if (projectile.updatePosition(elapsed)) {
+                return true;
             }
-            if (projectiles.get(i).collide(player, enemies)) {
-                projectiles.remove(i);
+            if (projectile.getSource() == player) {
+                return enemies.stream().anyMatch(projectile::collide);
             }
-        }
+            return projectile.collide(player);
+        });
     }
 
     private boolean isRefireable() {

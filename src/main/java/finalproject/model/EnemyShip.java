@@ -48,7 +48,7 @@ abstract sealed public class EnemyShip extends Ship permits SkiLiftShip, Spreads
     }
 
     protected final void fireProjectile(List<Projectile> projectiles, Point2D velocity) {
-        projectiles.add(spawnProjectile(velocity, true));
+        projectiles.add(new Projectile(this, velocity));
     }
 
     public abstract void update(

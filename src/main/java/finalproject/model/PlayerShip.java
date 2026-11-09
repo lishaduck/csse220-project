@@ -8,6 +8,7 @@ import javafx.geometry.Point2D;
  */
 public final class PlayerShip extends Ship {
     public static final Dimension2D SIZE = new Dimension2D(64, 64);
+    static final Point2D PROJECTILE_VELOCITY = new Point2D(0, -600);
 
     private static final double SPEED = 300;
     private static final double BOTTOM_MARGIN = 24;
