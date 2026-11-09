@@ -5,7 +5,7 @@ import javafx.geometry.Dimension2D;
 import javafx.geometry.Point2D;
 
 public class Projectile {
-    public static final Dimension2D SIZE = new Dimension2D(20, 50);
+    public static final Dimension2D SIZE = new Dimension2D(4, 20);
     private final Ship source;
     Point2D velocity;
     int[] special;

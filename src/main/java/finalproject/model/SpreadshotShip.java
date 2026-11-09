@@ -3,11 +3,13 @@ package finalproject.model;
 import javafx.geometry.Dimension2D;
 import javafx.geometry.Point2D;
 
+import java.net.URL;
 import java.util.List;
+import java.util.Objects;
 import java.util.Random;
 
 public final class SpreadshotShip extends EnemyShip {
-    private static final Dimension2D SIZE = new Dimension2D(50, 50);
+    private static final Dimension2D SIZE = new Dimension2D(32, 16);
     private static final double PROJECTILE_SPEED = 200;
     private static final double ATTACK_SEQUENCE_SECONDS = 2.1;
     private static final double FIRST_VOLLEY_SECONDS = 0.5;
@@ -82,5 +84,13 @@ public final class SpreadshotShip extends EnemyShip {
         int maximumX = Math.max(0, (int) Math.floor(playfield.getWidth() - getWidth()));
         int maximumY = Math.max(0, (int) Math.floor(playfield.getHeight() / 3 - getHeight()));
         return new Point2D(random.nextInt(maximumX + 1), random.nextInt(maximumY + 1));
+    }
+
+    @Override
+    public URL getImage() {
+        return Objects.requireNonNull(
+                getClass().getResource("/EnemyShip2.gif"),
+                "Missing laser resource: /EnemyShip.gif"
+        );
     }
 }

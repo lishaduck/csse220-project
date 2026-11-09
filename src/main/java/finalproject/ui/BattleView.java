@@ -16,7 +16,6 @@ class BattleView extends Pane {
     private final Canvas canvas = new Canvas();
     private final PlayerView playerView = new PlayerView();
     private final LaserView laserView = new LaserView();
-    private final EnemyView enemyView = new EnemyView();
 
     BattleView(Dimension2D playfield) {
         setPrefSize(playfield.getWidth(), playfield.getHeight());
@@ -37,7 +36,8 @@ class BattleView extends Pane {
             laserView.render(gc, projectile);
         }
         for (EnemyShip enemy : model.getEnemies()) {
-            enemyView.render(gc, enemy);
+            EnemyView enemyView = new EnemyView(enemy);
+            enemyView.render(gc);
         }
         playerView.render(gc, model.getPlayer());
     }

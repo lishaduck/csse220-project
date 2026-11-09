@@ -5,24 +5,19 @@ import javafx.geometry.Point2D;
 import javafx.scene.canvas.GraphicsContext;
 import javafx.scene.image.Image;
 
-import java.net.URL;
-import java.util.Objects;
-
 /**
  * Loads laser artwork and draws each projectile at its model position and size.
  */
 public class EnemyView {
     private final Image enemyImage;
+    private final EnemyShip enemy;
 
-    public EnemyView() {
-        URL enemyResource = Objects.requireNonNull(
-                EnemyView.class.getResource("/EnemyShip.gif"),
-                "Missing laser resource: /EnemyShip.gif"
-        );
-        enemyImage = new Image(enemyResource.toExternalForm());
+    public EnemyView(EnemyShip enemy) {
+        enemyImage = new Image(enemy.getImage().toExternalForm());
+        this.enemy = enemy;
     }
 
-    public void render(GraphicsContext gc, EnemyShip enemy) {
+    public void render(GraphicsContext gc) {
         Point2D position = enemy.getPosition();
         gc.drawImage(
                 enemyImage,

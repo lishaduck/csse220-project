@@ -3,10 +3,12 @@ package finalproject.model;
 import javafx.geometry.Dimension2D;
 import javafx.geometry.Point2D;
 
+import java.net.URL;
 import java.util.List;
+import java.util.Objects;
 
 public final class SkiLiftShip extends EnemyShip {
-    private static final Dimension2D SIZE = new Dimension2D(50, 50);
+    private static final Dimension2D SIZE = new Dimension2D(48, 36);
     private static final double SHOT_INTERVAL_SECONDS = 2;
     private static final double PROJECTILE_SPEED = 400;
     private static final double PATROL_Y = 100;
@@ -48,5 +50,13 @@ public final class SkiLiftShip extends EnemyShip {
         } else if (getPosition().getX() <= 0) {
             target = new Point2D(playfield.getWidth(), PATROL_Y);
         }
+    }
+
+    @Override
+    public URL getImage() {
+        return Objects.requireNonNull(
+                getClass().getResource("/EnemyShip.gif"),
+                "Missing laser resource: /EnemyShip.gif"
+        );
     }
 }
