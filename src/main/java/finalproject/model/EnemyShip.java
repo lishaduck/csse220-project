@@ -6,8 +6,8 @@ import javafx.geometry.Point2D;
 import java.util.List;
 
 abstract sealed public class EnemyShip extends Ship permits SkiLiftShip, SpreadshotShip {
-    protected Point2D target;
     private final double movementSpeed;
+    protected Point2D target;
 
     public EnemyShip(
             Dimension2D playfield,
@@ -21,6 +21,10 @@ abstract sealed public class EnemyShip extends Ship permits SkiLiftShip, Spreads
         this.health = health;
         this.movementSpeed = movementSpeed;
         this.target = target;
+    }
+
+    protected static boolean crossedThreshold(double previousElapsed, double elapsed, double threshold) {
+        return previousElapsed < threshold && previousElapsed + elapsed >= threshold;
     }
 
     protected final boolean moveTowardTarget(Dimension2D playfield, double elapsedSeconds) {
@@ -44,11 +48,7 @@ abstract sealed public class EnemyShip extends Ship permits SkiLiftShip, Spreads
     }
 
     protected final void fireProjectile(List<Projectile> projectiles, Point2D velocity) {
-        projectiles.add(spawnProjectile(velocity));
-    }
-
-    protected static boolean crossedThreshold(double previousElapsed, double elapsed, double threshold) {
-        return previousElapsed < threshold && previousElapsed + elapsed >= threshold;
+        projectiles.add(spawnProjectile(velocity, true));
     }
 
     public abstract void update(

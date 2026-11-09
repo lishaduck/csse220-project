@@ -42,12 +42,12 @@ public abstract class Ship {
         setPosition(position.add(0, distance), playfield);
     }
 
-    public Projectile spawnProjectile() {
-        return new Projectile(this, position);
+    public Projectile spawnProjectile(boolean isEnemy) {
+        return new Projectile(this, position, isEnemy);
     }
 
-    public Projectile spawnProjectile(Point2D velocity) {
-        return new Projectile(this, position, velocity);
+    public Projectile spawnProjectile(Point2D velocity, boolean isEnemy) {
+        return new Projectile(this, position, velocity, isEnemy);
     }
 
     public void spawnProjectile(int type) {
@@ -55,5 +55,9 @@ public abstract class Ship {
 
     public void collideWithProjectile(Projectile projectile) {
         health -= projectile.damage;
+    }
+
+    public boolean isAlive() {
+        return health > 0;
     }
 }

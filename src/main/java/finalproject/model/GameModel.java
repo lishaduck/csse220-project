@@ -66,10 +66,13 @@ public final class GameModel {
         }
         player.move(input.direction(), elapsed, playfield);
         if (input.firing() && isRefireable()) {
-            projectiles.add(player.spawnProjectile());
+            projectiles.add(player.spawnProjectile(false));
         }
         for (EnemyShip enemy : enemies) {
             enemy.update(player.getPosition(), playfield, elapsed, projectiles);
+            if (!enemy.isAlive()) {
+                enemies.remove(enemy);
+            }
         }
         updateProjectiles(elapsed);
     }
@@ -79,6 +82,9 @@ public final class GameModel {
             if (projectiles.get(i).updatePosition(elapsed)) {
                 projectiles.remove(i);
                 i--;
+            }
+            if (projectiles.get(i).collide(player, enemies)) {
+                projectiles.remove(i);
             }
         }
     }
