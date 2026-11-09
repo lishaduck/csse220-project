@@ -15,6 +15,76 @@ class GameModelTest {
     private static final PlayerInput IDLE = new PlayerInput(NONE, false);
 
     @Test
+    void startsPlayersWithTwentyHealthAndKeepsDamageSeparateFromScore() {
+        Dimension2D playfield = new Dimension2D(640, 480);
+        GameModel model = new GameModel(playfield);
+        PlayerShip player = model.getPlayer();
+        assertEquals(20, player.getHealth());
+        assertTrue(player.isAlive());
+
+        player.collideWithProjectile(new Projectile(model.getEnemies().getFirst(), Point2D.ZERO));
+        assertEquals(18, player.getHealth());
+        assertTrue(player.isAlive());
+        assertEquals(0, model.getScore());
+        assertEquals(20, new GameModel(playfield).getPlayer().getHealth());
+    }
+
+    @Test
+    void scoresKillsRatherThanDamageAndKeepsScoreReadableAfterRemoval() {
+        Dimension2D playfield = new Dimension2D(640, 480);
+        GameModel model = new GameModel(playfield);
+        EnemyShip enemy = model.getEnemies().getFirst();
+        enemy.health = 3;
+        enemy.setPosition(model.getPlayer().getPosition(), playfield);
+        enemy.target = enemy.getPosition();
+        assertEquals(0, model.getScore());
+
+        model.update(new PlayerInput(NONE, true), 0, playfield);
+        assertEquals(1, enemy.getHealth());
+        assertEquals(0, model.getScore());
+
+        model.update(new PlayerInput(NONE, true), 0, playfield);
+        assertEquals(-1, enemy.getHealth());
+        assertFalse(enemy.isAlive());
+        assertEquals(1, model.getScore());
+        assertEquals(1, model.getScore());
+        assertEquals(2, model.getEnemies().size());
+
+        for (int i = 0; i < 3; i++) {
+            model.update(IDLE, 0, playfield);
+            assertEquals(1, model.getScore());
+            assertEquals(1, model.getEnemies().size());
+        }
+        assertEquals(0, new GameModel(playfield).getScore());
+    }
+
+    @Test
+    void multipleProjectilesHittingTheSameDeadEnemyAwardOnlyOneKill() {
+        Dimension2D playfield = new Dimension2D(640, 480);
+        GameModel model = new GameModel(playfield);
+        model.update(new PlayerInput(NONE, true), 0, playfield);
+        model.update(new PlayerInput(NONE, true), 0.34, playfield);
+        model.update(new PlayerInput(NONE, true), 0, playfield);
+        model.getProjectiles().getLast().updatePosition(0.34);
+
+        EnemyShip first = model.getEnemies().getFirst();
+        EnemyShip second = model.getEnemies().getLast();
+        first.health = 1;
+        for (EnemyShip enemy : model.getEnemies()) {
+            enemy.setPosition(model.getProjectiles().getFirst().getPosition(), playfield);
+            enemy.target = enemy.getPosition();
+        }
+
+        model.update(IDLE, 0, playfield);
+        assertTrue(model.getProjectiles().isEmpty());
+        assertEquals(-3, first.getHealth());
+        assertEquals(20, second.getHealth());
+        assertEquals(1, model.getScore());
+        model.update(IDLE, 0, playfield);
+        assertEquals(1, model.getScore());
+    }
+
+    @Test
     void preservesProjectileSpawningCooldownAndRemovalAlongsidePlayerMovement() {
         Dimension2D playfield = new Dimension2D(640, 480);
         GameModel model = new GameModel(playfield);
@@ -80,9 +150,11 @@ class GameModelTest {
         model.update(IDLE, 0, playfield);
         assertTrue(model.getProjectiles().isEmpty());
         assertTrue(model.getEnemies().stream().noneMatch(Ship::isAlive));
+        assertEquals(2, model.getScore());
 
         model.update(IDLE, 0, playfield);
         assertTrue(model.getEnemies().isEmpty());
+        assertEquals(2, model.getScore());
     }
 
     @Test
@@ -107,6 +179,8 @@ class GameModelTest {
         model.getPlayer().setPosition(skiLiftShot.getPosition(), playfield);
         model.update(IDLE, 0, playfield);
         assertFalse(model.getPlayer().isAlive());
+        assertEquals(0, model.getPlayer().getHealth());
+        assertEquals(0, model.getScore());
         assertFalse(model.getProjectiles().contains(skiLiftShot));
         assertTrue(model.getEnemies().stream().allMatch(Ship::isAlive));
     }

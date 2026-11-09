@@ -16,6 +16,7 @@ public final class GameModel {
     private final ArrayList<Projectile> projectiles = new ArrayList<>();
     private final ArrayList<EnemyShip> enemies = new ArrayList<>();
     private Dimension2D playfield;
+    private int score;
 
     public GameModel(Dimension2D playfield) {
         this.playfield = playfield;
@@ -42,6 +43,13 @@ public final class GameModel {
 
     public PlayerShip getPlayer() {
         return player;
+    }
+
+    /**
+     * Returns the number of enemies killed by player projectiles.
+     */
+    public int getScore() {
+        return score;
     }
 
     public Dimension2D getPlayfield() {
@@ -82,7 +90,11 @@ public final class GameModel {
             }
             if (projectile.getSource() == player) {
                 for (EnemyShip enemy : enemies) {
+                    boolean wasAlive = enemy.isAlive();
                     if (projectile.collide(enemy)) {
+                        if (wasAlive && !enemy.isAlive()) {
+                            score++;
+                        }
                         return true;
                     }
                 }

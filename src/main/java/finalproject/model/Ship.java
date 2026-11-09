@@ -34,6 +34,10 @@ public abstract class Ship {
         return size.getHeight();
     }
 
+    public final int getHealth() {
+        return health;
+    }
+
     protected final void translateX(double distance, Dimension2D playfield) {
         setPosition(position.add(distance, 0), playfield);
     }

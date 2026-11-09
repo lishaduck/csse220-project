@@ -22,6 +22,7 @@ public final class PlayerShip extends Ship {
                         playfield.getHeight() - SIZE.getHeight() - BOTTOM_MARGIN
                 )
         );
+        health = 20;
     }
 
     void move(HorizontalDirection direction, double elapsed, Dimension2D playfield) {
