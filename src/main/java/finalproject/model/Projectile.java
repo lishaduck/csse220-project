@@ -35,8 +35,8 @@ public class Projectile {
 
     public boolean collide(Ship target) {
         Point2D displacement = target.getPosition().subtract(position);
-        if (Math.abs(displacement.getX()) < (target.getWidth() + SIZE.getWidth()) / 2
-                && Math.abs(displacement.getY()) < (target.getHeight() + SIZE.getHeight()) / 2) {
+        if (displacement.getX() > -target.getWidth() && displacement.getX() < SIZE.getWidth()
+                && displacement.getY() > -target.getHeight() && displacement.getY() < SIZE.getHeight()) {
             target.collideWithProjectile(this);
             return true;
         }
