@@ -7,18 +7,14 @@ import javafx.geometry.Point2D;
 public class Projectile {
     public static final Dimension2D SIZE = new Dimension2D(20, 50);
     private final Ship source;
-    private Point2D position;
     Point2D velocity;
     int[] special;
     int damage;
+    private Point2D position;
 
-    Projectile(Ship source, Point2D position) {
-        this(source, position, new Point2D(0, -600));
-    }
-
-    Projectile(Ship source, Point2D position, Point2D velocity) {
+    Projectile(Ship source, Point2D velocity) {
         this.source = source;
-        this.position = position;
+        this.position = source.getPosition();
         this.velocity = velocity;
         damage = 2;
     }
@@ -35,5 +31,15 @@ public class Projectile {
         position = position.add(velocity.multiply(elapsed));
 
         return position.getY() < 0;
+    }
+
+    public boolean collide(Ship target) {
+        Point2D displacement = target.getPosition().subtract(position);
+        if (displacement.getX() > -target.getWidth() && displacement.getX() < SIZE.getWidth()
+                && displacement.getY() > -target.getHeight() && displacement.getY() < SIZE.getHeight()) {
+            target.collideWithProjectile(this);
+            return true;
+        }
+        return false;
     }
 }
