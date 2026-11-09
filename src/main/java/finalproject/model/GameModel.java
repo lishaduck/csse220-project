@@ -6,6 +6,7 @@ import javafx.geometry.Point2D;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
+import java.util.Random;
 
 
 /**
@@ -16,13 +17,15 @@ public final class GameModel {
     private final ArrayList<Projectile> projectiles = new ArrayList<>();
     private final ArrayList<EnemyShip> enemies = new ArrayList<>();
     private final ArrayList<Integer> powerups = new ArrayList<>();
+    Random random = new Random();
+    int wave = 1;
     private Dimension2D playfield;
     private int score;
 
     public GameModel(Dimension2D playfield) {
         this.playfield = playfield;
         player = new PlayerShip(playfield);
-        enemies.add(
+        /*enemies.add(
                 new SkiLiftShip(
                         playfield,
                         new Point2D(0, 100),
@@ -39,7 +42,7 @@ public final class GameModel {
                         20,
                         200
                 )
-        );
+        );*/
     }
 
     public void addScore(int num) {
@@ -96,6 +99,9 @@ public final class GameModel {
             enemy.update(player.getPosition(), playfield, elapsed, projectiles, powerups);
             return !enemy.isAlive();
         });
+        if (enemies.size() == 0) {
+            spawnWave();
+        }
         updateProjectiles(elapsed);
     }
 
@@ -155,5 +161,46 @@ public final class GameModel {
         if (type == 7) {
             addScore(100);
         }
+    }
+
+    public void spawnWave() {
+        double spreadshots = random.nextDouble(wave / 5.0);
+        if (wave != 5) {
+            for (int i = 0; i < wave - (spreadshots * 2); i++) {
+                if (i >= spreadshots || wave < 5) {
+                    double targetY = random.nextDouble(playfield.getHeight() / 3);
+                    enemies.add(
+                            new SkiLiftShip(
+                                    playfield,
+                                    new Point2D(random.nextDouble(playfield.getWidth()), targetY),
+                                    new Point2D(0, targetY),
+                                    wave,
+                                    wave * 2.5
+                            )
+                    );
+                } else {
+                    enemies.add(
+                            new SpreadshotShip(
+                                    playfield,
+                                    new Point2D(random.nextDouble(playfield.getWidth()), random.nextDouble(playfield.getHeight() / 3)),
+                                    new Point2D(random.nextDouble(playfield.getWidth()), random.nextDouble(playfield.getHeight() / 3)),
+                                    wave,
+                                    wave * 10
+                            )
+                    );
+                }
+            }
+        } else {
+            enemies.add(
+                    new SpreadshotShip(
+                            playfield,
+                            new Point2D(random.nextDouble(playfield.getWidth()), random.nextDouble(playfield.getHeight() / 3)),
+                            new Point2D(random.nextDouble(playfield.getWidth()), random.nextDouble(playfield.getHeight() / 3)),
+                            wave,
+                            wave * 10
+                    )
+            );
+        }
+        wave++;
     }
 }

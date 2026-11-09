@@ -11,7 +11,7 @@ public final class SkiLiftShip extends EnemyShip {
     private static final Dimension2D SIZE = new Dimension2D(48, 36);
     private static final double SHOT_INTERVAL_SECONDS = 2;
     private static final double PROJECTILE_SPEED = 400;
-    private static final double PATROL_Y = 100;
+    private static double PATROL_Y;
 
     private double elapsedSinceLastShot;
 
@@ -23,6 +23,8 @@ public final class SkiLiftShip extends EnemyShip {
             double movementSpeed
     ) {
         super(playfield, SIZE, position, target, health, movementSpeed);
+        PATROL_Y = position.getY();
+        target = new Point2D(playfield.getWidth(), PATROL_Y);
     }
 
     @Override
