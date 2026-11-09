@@ -68,10 +68,10 @@ public final class GameModel {
         if (input.firing() && isRefireable()) {
             projectiles.add(new Projectile(player, PlayerShip.PROJECTILE_VELOCITY));
         }
-        for (EnemyShip enemy : enemies) {
+        enemies.removeIf(enemy -> {
             enemy.update(player.getPosition(), playfield, elapsed, projectiles);
-        }
-        enemies.removeIf(enemy -> !enemy.isAlive());
+            return !enemy.isAlive();
+        });
         updateProjectiles(elapsed);
     }
 
@@ -81,7 +81,12 @@ public final class GameModel {
                 return true;
             }
             if (projectile.getSource() == player) {
-                return enemies.stream().anyMatch(projectile::collide);
+                for (EnemyShip enemy : enemies) {
+                    if (projectile.collide(enemy)) {
+                        return true;
+                    }
+                }
+                return false;
             }
             return projectile.collide(player);
         });
