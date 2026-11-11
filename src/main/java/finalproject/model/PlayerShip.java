@@ -35,4 +35,8 @@ public final class PlayerShip extends Ship {
         double destinationY = playfield.getHeight() - getHeight() - BOTTOM_MARGIN;
         translateY(destinationY - position.getY(), playfield);
     }
+
+    public void heal(int num){
+        health+=num;
+    }
 }

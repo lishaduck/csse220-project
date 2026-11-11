@@ -12,11 +12,12 @@ import java.util.List;
  * Advances player movement, firing, and projectiles within the visible playfield.
  */
 public final class GameModel {
+    private static int score;
     private final PlayerShip player;
     private final ArrayList<Projectile> projectiles = new ArrayList<>();
     private final ArrayList<EnemyShip> enemies = new ArrayList<>();
+    private final ArrayList<Integer> powerups = new ArrayList<>();
     private Dimension2D playfield;
-    private int score;
 
     public GameModel(Dimension2D playfield) {
         this.playfield = playfield;
@@ -39,6 +40,10 @@ public final class GameModel {
                         200
                 )
         );
+    }
+
+    public static void addScore(int num) {
+        score += num;
     }
 
     public PlayerShip getPlayer() {
@@ -74,10 +79,21 @@ public final class GameModel {
         }
         player.move(input.direction(), elapsed, playfield);
         if (input.firing() && isRefireable()) {
-            projectiles.add(new Projectile(player, PlayerShip.PROJECTILE_VELOCITY));
+            int projDamage = 2;
+            if (powerups.contains(3)) {
+                projDamage += 1;
+            }
+            if (powerups.contains(5)) {
+                projDamage += 3;
+            }
+            if (powerups.contains(4)) {
+                projectiles.add(new Projectile(player, new Point2D(PlayerShip.PROJECTILE_VELOCITY.getX(), PlayerShip.PROJECTILE_VELOCITY.getY() * 2), projDamage));
+            } else {
+                projectiles.add(new Projectile(player, PlayerShip.PROJECTILE_VELOCITY, projDamage));
+            }
         }
         enemies.removeIf(enemy -> {
-            enemy.update(player.getPosition(), playfield, elapsed, projectiles);
+            enemy.update(player.getPosition(), playfield, elapsed, projectiles, powerups);
             return !enemy.isAlive();
         });
         updateProjectiles(elapsed);
@@ -93,7 +109,14 @@ public final class GameModel {
                     boolean wasAlive = enemy.isAlive();
                     if (projectile.collide(enemy)) {
                         if (wasAlive && !enemy.isAlive()) {
-                            score++;
+                            int addscore = 10;
+                            if (powerups.contains(0)) {
+                                addscore += 3;
+                            }
+                            if (powerups.contains(3)) {
+                                addscore *= 2;
+                            }
+                            score += addscore;
                         }
                         return true;
                     }
@@ -105,10 +128,17 @@ public final class GameModel {
     }
 
     private boolean isRefireable() {
+        int minDis = 200;
+        if (powerups.contains(4)) {
+            minDis *= 2;
+        }
+        if (powerups.contains(6)) {
+            minDis /= 2;
+        }
         for (int i = projectiles.size() - 1; i >= 0; i--) {
             Projectile projectile = projectiles.get(i);
             if (projectile.getSource() == player) {
-                return projectile.getPosition().getY() < player.getPosition().getY() - 200;
+                return projectile.getPosition().getY() < player.getPosition().getY() - minDis;
             }
         }
         return true;

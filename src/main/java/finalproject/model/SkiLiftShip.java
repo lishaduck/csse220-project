@@ -30,14 +30,18 @@ public final class SkiLiftShip extends EnemyShip {
             Point2D playerPosition,
             Dimension2D playfield,
             double elapsedSeconds,
-            List<Projectile> projectiles
+            List<Projectile> projectiles,
+            List<Integer> powerUps
     ) {
+        if (powerUps.contains(8)) {
+            elapsedSeconds /= 1.5;
+        }
         double previousShotElapsed = elapsedSinceLastShot;
         elapsedSinceLastShot += elapsedSeconds;
         moveTowardTarget(playfield, elapsedSeconds);
 
         if (crossedThreshold(previousShotElapsed, elapsedSeconds, SHOT_INTERVAL_SECONDS)) {
-            fireProjectile(projectiles, new Point2D(0, PROJECTILE_SPEED));
+            fireProjectile(projectiles, new Point2D(0, PROJECTILE_SPEED), powerUps);
             elapsedSinceLastShot = 0;
         }
 

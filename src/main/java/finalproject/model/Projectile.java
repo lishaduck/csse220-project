@@ -12,11 +12,11 @@ public class Projectile {
     int damage;
     private Point2D position;
 
-    Projectile(Ship source, Point2D velocity) {
+    Projectile(Ship source, Point2D velocity, int damage) {
         this.source = source;
         this.position = source.getPosition();
         this.velocity = velocity;
-        damage = 2;
+        this.damage = damage;
     }
 
     public Ship getSource() {

@@ -33,4 +33,16 @@ public class PowerUp {
     void UpdatePosition() {
         position = position.add(velocity);
     }
+
+    public void triggerPowerUp(PlayerShip player) { // call this when a powerup is gotten to trigger any one time effects
+        if (type == 1) {
+            player.heal(2);
+        }
+        if (type == 5) {
+            player.heal(-1);
+        }
+        if (type == 7) {
+            GameModel.addScore(100);
+        }
+    }
 }

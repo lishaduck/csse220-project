@@ -48,8 +48,12 @@ abstract sealed public class EnemyShip extends Ship permits SkiLiftShip, Spreads
         return direction.magnitude() == 0 ? Point2D.ZERO : direction.normalize().multiply(projectileSpeed);
     }
 
-    protected final void fireProjectile(List<Projectile> projectiles, Point2D velocity) {
-        projectiles.add(new Projectile(this, velocity));
+    protected final void fireProjectile(List<Projectile> projectiles, Point2D velocity, List<Integer> powerUps) {
+        if (powerUps.contains(8)) {
+            projectiles.add(new Projectile(this, new Point2D(velocity.getX() / 1.5, velocity.getY() / 1.5), 2));
+        } else {
+            projectiles.add(new Projectile(this, velocity, 2));
+        }
     }
 
     public abstract java.net.URL getImage();
@@ -58,6 +62,7 @@ abstract sealed public class EnemyShip extends Ship permits SkiLiftShip, Spreads
             Point2D playerPosition,
             Dimension2D playfield,
             double elapsedSeconds,
-            List<Projectile> projectiles
+            List<Projectile> projectiles,
+            List<Integer> powerUps
     );
 }

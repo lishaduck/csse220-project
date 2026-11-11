@@ -37,8 +37,12 @@ public final class SpreadshotShip extends EnemyShip {
             Point2D playerPosition,
             Dimension2D playfield,
             double elapsedSeconds,
-            List<Projectile> projectiles
+            List<Projectile> projectiles,
+            List<Integer> powerUps
     ) {
+        if (powerUps.contains(8)) {
+            elapsedSeconds /= 1.5;
+        }
         boolean reachedTarget = moveTowardTarget(playfield, elapsedSeconds);
         if (!reachedTarget) {
             return;
@@ -48,10 +52,10 @@ public final class SpreadshotShip extends EnemyShip {
         attackSequenceElapsed += elapsedSeconds;
         if (crossedThreshold(previousAttackElapsed, elapsedSeconds, FIRST_VOLLEY_SECONDS)
                 || crossedThreshold(previousAttackElapsed, elapsedSeconds, THIRD_VOLLEY_SECONDS)) {
-            fireWideVolley(playerPosition, projectiles);
+            fireWideVolley(playerPosition, projectiles, powerUps);
         }
         if (crossedThreshold(previousAttackElapsed, elapsedSeconds, SECOND_VOLLEY_SECONDS)) {
-            fireNarrowVolley(playerPosition, projectiles);
+            fireNarrowVolley(playerPosition, projectiles, powerUps);
         }
         if (crossedThreshold(previousAttackElapsed, elapsedSeconds, RETARGET_SECONDS)) {
             target = chooseNextTarget(playfield);
@@ -61,15 +65,15 @@ public final class SpreadshotShip extends EnemyShip {
         }
     }
 
-    private void fireWideVolley(Point2D playerPosition, List<Projectile> projectiles) {
-        fireProjectile(projectiles, velocityToward(playerPosition, PROJECTILE_SPEED));
-        fireProjectile(projectiles, velocityAtOffset(playerPosition, WIDE_SPREAD_ANGLE));
-        fireProjectile(projectiles, velocityAtOffset(playerPosition, -WIDE_SPREAD_ANGLE));
+    private void fireWideVolley(Point2D playerPosition, List<Projectile> projectiles, List<Integer> powerUps) {
+        fireProjectile(projectiles, velocityToward(playerPosition, PROJECTILE_SPEED), powerUps);
+        fireProjectile(projectiles, velocityAtOffset(playerPosition, WIDE_SPREAD_ANGLE), powerUps);
+        fireProjectile(projectiles, velocityAtOffset(playerPosition, -WIDE_SPREAD_ANGLE), powerUps);
     }
 
-    private void fireNarrowVolley(Point2D playerPosition, List<Projectile> projectiles) {
-        fireProjectile(projectiles, velocityAtOffset(playerPosition, NARROW_SPREAD_ANGLE));
-        fireProjectile(projectiles, velocityAtOffset(playerPosition, -NARROW_SPREAD_ANGLE));
+    private void fireNarrowVolley(Point2D playerPosition, List<Projectile> projectiles, List<Integer> powerUps) {
+        fireProjectile(projectiles, velocityAtOffset(playerPosition, NARROW_SPREAD_ANGLE), powerUps);
+        fireProjectile(projectiles, velocityAtOffset(playerPosition, -NARROW_SPREAD_ANGLE), powerUps);
     }
 
     private Point2D velocityAtOffset(Point2D playerPosition, double angleOffset) {
