@@ -1,36 +1,52 @@
 package finalproject.model;
 
+import java.util.function.Consumer;
 
-import javafx.geometry.Point2D;
+/**
+ * Named pickups with activation actions and repeatable collection effects.
+ */
+public enum PowerUp {
+    KILL_SCORE(effects -> effects.upgradeKillReward(3, 1)),
+    HEALTH {
+        @Override
+        void onCollect(GameModel game) {
+            game.getPlayer().heal(2);
+        }
+    },
+    DAMAGE_AND_SCORE(effects -> {
+        effects.upgradeWeapon(1, 1, 1);
+        effects.upgradeKillReward(0, 2);
+    }),
+    FAST_PROJECTILES(effects -> effects.upgradeWeapon(0, 2, 2)),
+    GLASS_CANNON(effects -> effects.upgradeWeapon(3, 1, 1)) {
+        @Override
+        void onCollect(GameModel game) {
+            game.getPlayer().heal(-1);
+        }
+    },
+    RAPID_FIRE(effects -> effects.upgradeWeapon(0, 1, 0.5)),
+    BONUS_POINTS {
+        @Override
+        void onCollect(GameModel game) {
+            game.addScore(100);
+        }
+    },
+    SLOW_ENEMIES(effects -> effects.slowEnemies(1.5));
 
-public class PowerUp {
-    Point2D position;
-    Point2D velocity;
-    int type;
-
+    private final Consumer<PowerUps> activation;
 
     PowerUp() {
-        position = new Point2D(50, 50);
-        velocity = new Point2D(0, 10);
+        this(effects -> {});
     }
 
-    PowerUp(Point2D p) {
-        position = p;
-        velocity = new Point2D(0, 10);
+    PowerUp(Consumer<PowerUps> activation) {
+        this.activation = activation;
     }
 
-    PowerUp(Point2D p, Point2D velocity) {
-        position = p;
-        this.velocity = velocity;
+    void activate(PowerUps effects) {
+        activation.accept(effects);
     }
 
-    PowerUp(Point2D p, Point2D velocity, int s) {
-        position = p;
-        this.velocity = velocity;
-        type = s;
-    }
-
-    void UpdatePosition() {
-        position = position.add(velocity);
+    void onCollect(GameModel game) {
     }
 }
