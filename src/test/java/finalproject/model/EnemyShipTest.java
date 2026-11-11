@@ -65,6 +65,25 @@ class EnemyShipTest {
     }
 
     @Test
+    void skiLiftsKeepTheirOwnPatrolHeightWhenTurning() {
+        SkiLiftShip lower = new SkiLiftShip(
+                PLAYFIELD, new Point2D(592, 70), new Point2D(592, 70), 20, 50
+        );
+        SkiLiftShip upper = new SkiLiftShip(
+                PLAYFIELD, new Point2D(592, 130), new Point2D(592, 130), 20, 50
+        );
+        List<Projectile> projectiles = new ArrayList<>();
+
+        lower.update(PLAYER_POSITION, PLAYFIELD, 0, projectiles, List.of());
+        upper.update(PLAYER_POSITION, PLAYFIELD, 0, projectiles, List.of());
+        lower.update(PLAYER_POSITION, PLAYFIELD, 1, projectiles, List.of());
+        upper.update(PLAYER_POSITION, PLAYFIELD, 1, projectiles, List.of());
+
+        assertEquals(new Point2D(542, 70), lower.getPosition());
+        assertEquals(new Point2D(542, 130), upper.getPosition());
+    }
+
+    @Test
     void spreadshotFiresWhenPositionMatchesTargetCoordinates() {
         SpreadshotShip enemy = new SpreadshotShip(
                 PLAYFIELD,

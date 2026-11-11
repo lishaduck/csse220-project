@@ -25,24 +25,6 @@ public final class GameModel {
     public GameModel(Dimension2D playfield) {
         this.playfield = playfield;
         player = new PlayerShip(playfield);
-        /*enemies.add(
-                new SkiLiftShip(
-                        playfield,
-                        new Point2D(0, 100),
-                        new Point2D(200, 100),
-                        20,
-                        50
-                )
-        );
-        enemies.add(
-                new SpreadshotShip(
-                        playfield,
-                        new Point2D(0, 100),
-                        new Point2D(200, 100),
-                        20,
-                        200
-                )
-        );*/
     }
 
     public void addScore(int num) {
@@ -99,7 +81,7 @@ public final class GameModel {
             enemy.update(player.getPosition(), playfield, elapsed, projectiles, powerups);
             return !enemy.isAlive();
         });
-        if (enemies.size() == 0) {
+        if (enemies.isEmpty()) {
             spawnWave();
         }
         updateProjectiles(elapsed);
