@@ -143,4 +143,17 @@ public final class GameModel {
         }
         return true;
     }
+
+    public void addPowerup(int type){
+        powerups.add(type);
+        if (type == 1) {
+            player.heal(2);
+        }
+        if (type == 5) {
+            player.heal(-1);
+        }
+        if (type == 7) {
+            GameModel.addScore(100);
+        }
+    }
 }
