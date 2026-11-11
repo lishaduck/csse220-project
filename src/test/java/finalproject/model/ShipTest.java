@@ -21,7 +21,7 @@ class ShipTest {
         EnemyShip spreadshot = new SpreadshotShip(playfield, origin, origin, 2, 0);
 
         for (EnemyShip enemy : List.of(skiLift, spreadshot)) {
-            Projectile enemyShot = new Projectile(enemy, new Point2D(17, 43));
+            Projectile enemyShot = new Projectile(enemy, new Point2D(17, 43), 2);
             assertSame(enemy, enemyShot.getSource());
             assertEquals(origin, enemyShot.getPosition());
             enemy.translateX(100, playfield);
@@ -30,7 +30,7 @@ class ShipTest {
             assertEquals(origin.add(8.5, 21.5), enemyShot.getPosition());
         }
 
-        Projectile playerShot = new Projectile(player, PlayerShip.PROJECTILE_VELOCITY);
+        Projectile playerShot = new Projectile(player, PlayerShip.PROJECTILE_VELOCITY, 2);
         assertSame(player, playerShot.getSource());
         assertEquals(origin, playerShot.getPosition());
         player.translateX(30, playfield);
@@ -63,7 +63,7 @@ class ShipTest {
         Ship target = new Ship(playfield, new Dimension2D(width, height), new Point2D(100 + dx, 100 + dy)) {};
         target.health = 2;
 
-        assertEquals(hit, new Projectile(player, PlayerShip.PROJECTILE_VELOCITY).collide(target));
+        assertEquals(hit, new Projectile(player, PlayerShip.PROJECTILE_VELOCITY, 2).collide(target));
         assertEquals(!hit, target.isAlive());
     }
 

@@ -12,12 +12,12 @@ import java.util.List;
  * Advances player movement, firing, and projectiles within the visible playfield.
  */
 public final class GameModel {
-    private static int score;
     private final PlayerShip player;
     private final ArrayList<Projectile> projectiles = new ArrayList<>();
     private final ArrayList<EnemyShip> enemies = new ArrayList<>();
     private final ArrayList<Integer> powerups = new ArrayList<>();
     private Dimension2D playfield;
+    private int score;
 
     public GameModel(Dimension2D playfield) {
         this.playfield = playfield;
@@ -42,7 +42,7 @@ public final class GameModel {
         );
     }
 
-    public static void addScore(int num) {
+    public void addScore(int num) {
         score += num;
     }
 
@@ -51,7 +51,7 @@ public final class GameModel {
     }
 
     /**
-     * Returns the number of enemies killed by player projectiles.
+     * Returns points earned from enemy kills and powerups.
      */
     public int getScore() {
         return score;
@@ -144,7 +144,7 @@ public final class GameModel {
         return true;
     }
 
-    public void addPowerup(int type){
+    public void addPowerup(int type) {
         powerups.add(type);
         if (type == 1) {
             player.heal(2);
@@ -153,7 +153,7 @@ public final class GameModel {
             player.heal(-1);
         }
         if (type == 7) {
-            GameModel.addScore(100);
+            addScore(100);
         }
     }
 }

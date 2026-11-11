@@ -36,7 +36,7 @@ public final class PlayerShip extends Ship {
         translateY(destinationY - position.getY(), playfield);
     }
 
-    public void heal(int num){
-        health+=num;
+    public void heal(int num) {
+        health += num;
     }
 }
