@@ -36,7 +36,8 @@ public enum PowerUp {
     private final Consumer<PowerUps> activation;
 
     PowerUp() {
-        this(effects -> {});
+        this(effects -> {
+        });
     }
 
     PowerUp(Consumer<PowerUps> activation) {
