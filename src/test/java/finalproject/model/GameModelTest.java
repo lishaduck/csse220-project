@@ -4,6 +4,8 @@ import javafx.geometry.Dimension2D;
 import javafx.geometry.Point2D;
 import org.junit.jupiter.api.Test;
 
+import java.util.List;
+
 import static finalproject.model.HorizontalDirection.*;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
@@ -18,6 +20,7 @@ class GameModelTest {
     void startsPlayersWithTwentyHealthAndKeepsDamageSeparateFromScore() {
         Dimension2D playfield = new Dimension2D(640, 480);
         GameModel model = new GameModel(playfield);
+        model.update(IDLE, 0, playfield);
         PlayerShip player = model.getPlayer();
         assertEquals(20, player.getHealth());
         assertTrue(player.isAlive());
@@ -33,6 +36,7 @@ class GameModelTest {
     void scoresKillsRatherThanDamageAndKeepsScoreReadableAfterRemoval() {
         Dimension2D playfield = new Dimension2D(640, 480);
         GameModel model = new GameModel(playfield);
+        model.update(IDLE, 0, playfield);
         EnemyShip enemy = model.getEnemies().getFirst();
         enemy.health = 3;
         enemy.setPosition(model.getPlayer().getPosition(), playfield);
@@ -48,12 +52,12 @@ class GameModelTest {
         assertFalse(enemy.isAlive());
         assertEquals(10, model.getScore());
         assertEquals(10, model.getScore());
-        assertEquals(2, model.getEnemies().size());
+        assertEquals(1, model.getEnemies().size());
 
         for (int i = 0; i < 3; i++) {
             model.update(IDLE, 0, playfield);
             assertEquals(10, model.getScore());
-            assertEquals(1, model.getEnemies().size());
+            assertEquals(2, model.getEnemies().size());
         }
         assertEquals(0, new GameModel(playfield).getScore());
     }
@@ -62,6 +66,7 @@ class GameModelTest {
     void powerupDamageAndScoreBonusesStayWithTheirGame() {
         Dimension2D playfield = new Dimension2D(640, 480);
         GameModel model = new GameModel(playfield);
+        model.update(IDLE, 0, playfield);
         model.addPowerup(7);
         assertEquals(100, model.getScore());
 
@@ -92,6 +97,10 @@ class GameModelTest {
     void multipleProjectilesHittingTheSameDeadEnemyAwardOnlyOneKill() {
         Dimension2D playfield = new Dimension2D(640, 480);
         GameModel model = new GameModel(playfield);
+        model.update(IDLE, 0, playfield);
+        model.getEnemies().getFirst().collideWithProjectile(new Projectile(model.getPlayer(), Point2D.ZERO, 2));
+        model.update(IDLE, 0, playfield);
+        assertEquals(2, model.getEnemies().size());
         model.update(new PlayerInput(NONE, true), 0, playfield);
         model.update(new PlayerInput(NONE, true), 0.34, playfield);
         model.update(new PlayerInput(NONE, true), 0, playfield);
@@ -108,7 +117,7 @@ class GameModelTest {
         model.update(IDLE, 0, playfield);
         assertTrue(model.getProjectiles().isEmpty());
         assertEquals(-3, first.getHealth());
-        assertEquals(20, second.getHealth());
+        assertEquals(2, second.getHealth());
         assertEquals(10, model.getScore());
         model.update(IDLE, 0, playfield);
         assertEquals(10, model.getScore());
@@ -118,6 +127,10 @@ class GameModelTest {
     void preservesProjectileSpawningCooldownAndRemovalAlongsidePlayerMovement() {
         Dimension2D playfield = new Dimension2D(640, 480);
         GameModel model = new GameModel(playfield);
+        model.update(IDLE, 0, playfield);
+        EnemyShip enemy = model.getEnemies().getFirst();
+        enemy.setPosition(new Point2D(100, 100), playfield);
+        enemy.target = enemy.getPosition();
         model.update(new PlayerInput(RIGHT, true), 0.125, playfield);
         assertEquals(1, model.getProjectiles().size());
         assertEquals(new Point2D(333.5, 337), model.getProjectiles().getFirst().getPosition());
@@ -143,8 +156,7 @@ class GameModelTest {
         assertEquals(new Point2D(285.5, 352), model.getProjectiles().getLast().getPosition());
         model.update(IDLE, 1, playfield);
         assertTrue(model.getProjectiles().stream().noneMatch(projectile -> projectile.getSource() == model.getPlayer()));
-        assertEquals(5, model.getProjectiles().size());
-        assertTrue(model.getProjectiles().stream().allMatch(projectile -> projectile.getPosition().getY() > 100));
+        assertTrue(model.getProjectiles().isEmpty());
 
         Dimension2D resized = new Dimension2D(499, 320);
         model.update(new PlayerInput(RIGHT, true), 0.125, resized);
@@ -159,6 +171,14 @@ class GameModelTest {
     void removesConsecutiveCollidingProjectilesAndDeadEnemies() {
         Dimension2D playfield = new Dimension2D(640, 480);
         GameModel model = new GameModel(playfield);
+        model.update(IDLE, 0, playfield);
+        model.getEnemies().getFirst().collideWithProjectile(new Projectile(model.getPlayer(), Point2D.ZERO, 2));
+        model.update(IDLE, 0, playfield);
+        assertEquals(2, model.getEnemies().size());
+        for (EnemyShip enemy : model.getEnemies()) {
+            enemy.setPosition(new Point2D(100, 100), playfield);
+            enemy.target = enemy.getPosition();
+        }
         model.update(new PlayerInput(NONE, true), 0, playfield);
         model.update(new PlayerInput(NONE, true), 0.34, playfield);
         model.update(new PlayerInput(NONE, true), 0, playfield);
@@ -166,10 +186,6 @@ class GameModelTest {
 
         EnemyShip first = model.getEnemies().getFirst();
         EnemyShip second = model.getEnemies().getLast();
-        for (int i = 0; i < 9; i++) {
-            first.collideWithProjectile(model.getProjectiles().getFirst());
-            second.collideWithProjectile(model.getProjectiles().getFirst());
-        }
         assertTrue(first.isAlive());
         assertTrue(second.isAlive());
         first.setPosition(model.getProjectiles().getFirst().getPosition(), playfield);
@@ -183,7 +199,10 @@ class GameModelTest {
         assertEquals(20, model.getScore());
 
         model.update(IDLE, 0, playfield);
-        assertTrue(model.getEnemies().isEmpty());
+        assertFalse(model.getEnemies().contains(first));
+        assertFalse(model.getEnemies().contains(second));
+        assertFalse(model.getEnemies().isEmpty());
+        assertTrue(model.getEnemies().stream().allMatch(Ship::isAlive));
         assertEquals(20, model.getScore());
     }
 
@@ -191,13 +210,17 @@ class GameModelTest {
     void enemyProjectilesIgnoreAlliesAndDamageThePlayer() {
         Dimension2D playfield = new Dimension2D(640, 480);
         GameModel model = new GameModel(playfield);
+        model.update(IDLE, 0, playfield);
+        model.getEnemies().getFirst().collideWithProjectile(new Projectile(model.getPlayer(), Point2D.ZERO, 2));
+        model.update(IDLE, 0, playfield);
+        assertEquals(2, model.getEnemies().size());
         Point2D origin = new Point2D(200, 100);
         for (EnemyShip enemy : model.getEnemies()) {
             enemy.setPosition(origin, playfield);
             enemy.target = origin;
             enemy.health = 2;
         }
-        model.getPlayer().health = 2;
+        model.getPlayer().health = 4;
 
         model.update(IDLE, 1.99, playfield);
         model.update(IDLE, 0.01, playfield);
@@ -213,6 +236,38 @@ class GameModelTest {
         assertEquals(0, model.getScore());
         assertFalse(model.getProjectiles().contains(skiLiftShot));
         assertTrue(model.getEnemies().stream().allMatch(Ship::isAlive));
+    }
+
+    @Test
+    void advancesClearedWavesThroughTheFifthWaveBoss() {
+        Dimension2D playfield = new Dimension2D(640, 480);
+        GameModel model = new GameModel(playfield);
+        Projectile shot = new Projectile(model.getPlayer(), Point2D.ZERO, 2);
+        model.update(IDLE, 0, playfield);
+
+        for (int wave = 1; wave <= 5; wave++) {
+            assertFalse(model.getEnemies().isEmpty());
+            if (wave == 5) {
+                assertEquals(1, model.getEnemies().size());
+                assertTrue(model.getEnemies().getFirst() instanceof SpreadshotShip);
+            } else {
+                assertTrue(model.getEnemies().stream().allMatch(enemy -> enemy instanceof SkiLiftShip));
+            }
+            List<EnemyShip> currentWave = List.copyOf(model.getEnemies());
+            model.update(IDLE, 0, playfield);
+            assertEquals(currentWave, model.getEnemies());
+            for (EnemyShip enemy : currentWave) {
+                for (int damage = 0; damage < wave; damage += 2) {
+                    assertTrue(enemy.isAlive());
+                    enemy.collideWithProjectile(shot);
+                }
+                assertFalse(enemy.isAlive());
+            }
+            model.update(IDLE, 0, playfield);
+            assertTrue(model.getEnemies().stream().noneMatch(currentWave::contains));
+            assertTrue(model.getEnemies().stream().allMatch(Ship::isAlive));
+        }
+        assertFalse(model.getEnemies().isEmpty());
     }
 
     @Test

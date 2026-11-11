@@ -11,18 +11,24 @@ public final class SkiLiftShip extends EnemyShip {
     private static final Dimension2D SIZE = new Dimension2D(48, 36);
     private static final double SHOT_INTERVAL_SECONDS = 2;
     private static final double PROJECTILE_SPEED = 400;
-    private static final double PATROL_Y = 100;
 
     private double elapsedSinceLastShot;
 
     public SkiLiftShip(
             Dimension2D playfield,
             Point2D position,
-            Point2D target,
+            double targetX,
             int health,
             double movementSpeed
     ) {
-        super(playfield, SIZE, position, target, health, movementSpeed);
+        super(
+                playfield,
+                SIZE,
+                position,
+                new Point2D(targetX, Math.clamp(position.getY(), 0, Math.max(0, playfield.getHeight() - SIZE.getHeight()))),
+                health,
+                movementSpeed
+        );
     }
 
     @Override
@@ -50,9 +56,9 @@ public final class SkiLiftShip extends EnemyShip {
 
     private void updatePatrolTarget(Dimension2D playfield) {
         if (getPosition().getX() >= playfield.getWidth() - getWidth()) {
-            target = new Point2D(-playfield.getWidth(), PATROL_Y);
+            target = new Point2D(-playfield.getWidth(), getPosition().getY());
         } else if (getPosition().getX() <= 0) {
-            target = new Point2D(playfield.getWidth(), PATROL_Y);
+            target = new Point2D(playfield.getWidth(), getPosition().getY());
         }
     }
 

@@ -3,6 +3,8 @@ package finalproject.model;
 import javafx.geometry.Dimension2D;
 import javafx.geometry.Point2D;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.CsvSource;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -15,7 +17,7 @@ class EnemyShipTest {
 
     @Test
     void enemyTypesUseTheirOwnSpriteAndHitboxDimensions() {
-        EnemyShip skiLift = new SkiLiftShip(PLAYFIELD, Point2D.ZERO, Point2D.ZERO, 20, 50);
+        EnemyShip skiLift = new SkiLiftShip(PLAYFIELD, Point2D.ZERO, 0, 20, 50);
         EnemyShip spreadshot = new SpreadshotShip(PLAYFIELD, Point2D.ZERO, Point2D.ZERO, 20, 50);
 
         assertEquals(48, skiLift.getWidth());
@@ -31,7 +33,7 @@ class EnemyShipTest {
         SkiLiftShip enemy = new SkiLiftShip(
                 PLAYFIELD,
                 new Point2D(100, 100),
-                new Point2D(200, 100),
+                200,
                 20,
                 50
         );
@@ -49,19 +51,39 @@ class EnemyShipTest {
         assertEquals(new Point2D(0, 400), projectiles.getFirst().velocity);
     }
 
-    @Test
-    void skiLiftMovesTowardTargetsToItsLeft() {
+    @ParameterizedTest
+    @CsvSource({"100, 100", "1000, 444"})
+    void skiLiftMovesHorizontallyTowardTargetsToItsLeft(double spawnY, double expectedY) {
         SkiLiftShip enemy = new SkiLiftShip(
                 PLAYFIELD,
-                new Point2D(300, 100),
-                new Point2D(100, 100),
+                new Point2D(300, spawnY),
+                100,
                 20,
                 50
         );
         List<Integer> powerUps = new ArrayList<>();
         enemy.update(PLAYER_POSITION, PLAYFIELD, 1, new ArrayList<>(), powerUps);
 
-        assertEquals(new Point2D(250, 100), enemy.getPosition());
+        assertEquals(new Point2D(250, expectedY), enemy.getPosition());
+    }
+
+    @Test
+    void skiLiftsKeepTheirOwnPatrolHeightWhenTurning() {
+        SkiLiftShip lower = new SkiLiftShip(
+                PLAYFIELD, new Point2D(592, 70), 592, 20, 50
+        );
+        SkiLiftShip upper = new SkiLiftShip(
+                PLAYFIELD, new Point2D(0, 130), 0, 20, 50
+        );
+        List<Projectile> projectiles = new ArrayList<>();
+
+        lower.update(PLAYER_POSITION, PLAYFIELD, 0, projectiles, List.of());
+        upper.update(PLAYER_POSITION, PLAYFIELD, 0, projectiles, List.of());
+        lower.update(PLAYER_POSITION, PLAYFIELD, 1, projectiles, List.of());
+        upper.update(PLAYER_POSITION, PLAYFIELD, 1, projectiles, List.of());
+
+        assertEquals(new Point2D(542, 70), lower.getPosition());
+        assertEquals(new Point2D(50, 130), upper.getPosition());
     }
 
     @Test
