@@ -43,3 +43,25 @@ Follow the [full GitHub Desktop guide](https://obscrivn.github.io/csse220web/git
 - No visible window: check whether the process is still starting and whether the window is behind the IDE; record any error in the Run console.
 
 Terminal alternative, only with Maven already installed: `mvn clean javafx:run` from the folder containing `pom.xml`.
+
+## Wave files
+
+Edit `src/main/resources/levels/levels.txt` and rerun to design waves without
+editing Java. The file is packaged as the classpath resource `/levels/levels.txt`
+and read once when a game is created. `WAVE name` begins a wave; each `SKILIFT` or
+`SPREADSHOT` line describes one enemy. The comments at the top specify the fields.
+Coordinates are fractions of the current playfield dimensions, health is a
+positive integer, and speed is a nonnegative number in pixels per second.
+Each coordinate accepts either a fixed number or a `minimum..maximum` random
+range, such as `0.2..0.8`. Ranges are sampled independently whenever a wave spawns,
+including replays. The minimum is inclusive and maximum exclusive; equal bounds
+specify a fixed coordinate. The bundled waves randomize starting positions across
+the playfield width and upper third, and spreadshot starting targets as well.
+Blank lines and whole-line `#` comments are supported.
+
+Waves play in file order when all enemies are defeated. Wave five contains a
+single spreadshot boss; the final mixed wave repeats indefinitely at its specified
+difficulty. Every replay creates fresh enemies. Enemy movement and attacks still
+run normally, including spreadshot retargeting. Missing files and malformed data
+display an error instead of starting a game; malformed lines include their line
+number. Each wave must contain at least one enemy.
