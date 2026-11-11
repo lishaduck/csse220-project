@@ -17,7 +17,7 @@ class ShipTest {
         Dimension2D playfield = new Dimension2D(640, 480);
         PlayerShip player = new PlayerShip(playfield);
         Point2D origin = player.getPosition();
-        EnemyShip skiLift = new SkiLiftShip(playfield, origin, origin, 2, 0);
+        EnemyShip skiLift = new SkiLiftShip(playfield, origin, origin.getX(), 2, 0);
         EnemyShip spreadshot = new SpreadshotShip(playfield, origin, origin, 2, 0);
 
         for (EnemyShip enemy : List.of(skiLift, spreadshot)) {

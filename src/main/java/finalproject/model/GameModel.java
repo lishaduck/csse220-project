@@ -155,7 +155,7 @@ public final class GameModel {
                             new SkiLiftShip(
                                     playfield,
                                     new Point2D(random.nextDouble(playfield.getWidth()), targetY),
-                                    new Point2D(0, targetY),
+                                    0,
                                     wave,
                                     wave * 2.5
                             )
