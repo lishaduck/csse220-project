@@ -29,10 +29,13 @@ public record Level(String name, List<Enemy> enemies) {
         return ships;
     }
 
-    public enum EnemyType { SKILIFT, SPREADSHOT }
+    public enum EnemyType {
+        SKILIFT, SPREADSHOT
+    }
 
     public record Enemy(EnemyType type, Coordinate x, Coordinate y, Coordinate targetX,
-                        Coordinate targetY, int health, double speed) { }
+                        Coordinate targetY, int health, double speed) {
+    }
 
     public record Coordinate(double minimum, double maximum) {
         public double sample(RandomGenerator random) {

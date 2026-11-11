@@ -9,7 +9,8 @@ import java.util.Scanner;
 
 /** Reads classpath wave files and reports invalid data with source line numbers. */
 public final class LevelLoader {
-    private LevelLoader() { }
+    private LevelLoader() {
+    }
 
     public static List<Level> load(String resourcePath) {
         InputStream input = LevelLoader.class.getResourceAsStream(resourcePath);
