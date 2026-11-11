@@ -22,7 +22,7 @@ class GameModelTest {
         assertEquals(20, player.getHealth());
         assertTrue(player.isAlive());
 
-        player.collideWithProjectile(new Projectile(model.getEnemies().getFirst(), Point2D.ZERO));
+        player.collideWithProjectile(new Projectile(model.getEnemies().getFirst(), Point2D.ZERO, 2));
         assertEquals(18, player.getHealth());
         assertTrue(player.isAlive());
         assertEquals(0, model.getScore());
@@ -46,16 +46,46 @@ class GameModelTest {
         model.update(new PlayerInput(NONE, true), 0, playfield);
         assertEquals(-1, enemy.getHealth());
         assertFalse(enemy.isAlive());
-        assertEquals(1, model.getScore());
-        assertEquals(1, model.getScore());
+        assertEquals(10, model.getScore());
+        assertEquals(10, model.getScore());
         assertEquals(2, model.getEnemies().size());
 
         for (int i = 0; i < 3; i++) {
             model.update(IDLE, 0, playfield);
-            assertEquals(1, model.getScore());
+            assertEquals(10, model.getScore());
             assertEquals(1, model.getEnemies().size());
         }
         assertEquals(0, new GameModel(playfield).getScore());
+    }
+
+    @Test
+    void powerupDamageAndScoreBonusesStayWithTheirGame() {
+        Dimension2D playfield = new Dimension2D(640, 480);
+        GameModel model = new GameModel(playfield);
+        model.addPowerup(7);
+        assertEquals(100, model.getScore());
+
+        GameModel otherGame = new GameModel(playfield);
+        assertEquals(0, otherGame.getScore());
+        assertEquals(100, model.getScore());
+
+        model.addPowerup(0);
+        model.addPowerup(3);
+        model.addPowerup(5);
+        EnemyShip enemy = model.getEnemies().getFirst();
+        enemy.health = 7;
+        enemy.setPosition(model.getPlayer().getPosition(), playfield);
+        enemy.target = enemy.getPosition();
+
+        model.update(new PlayerInput(NONE, true), 0, playfield);
+        assertEquals(1, enemy.getHealth());
+        assertEquals(100, model.getScore());
+        model.update(new PlayerInput(NONE, true), 0, playfield);
+        assertEquals(-5, enemy.getHealth());
+        assertEquals(126, model.getScore());
+        model.update(IDLE, 0, playfield);
+        assertEquals(126, model.getScore());
+        assertEquals(0, otherGame.getScore());
     }
 
     @Test
@@ -79,9 +109,9 @@ class GameModelTest {
         assertTrue(model.getProjectiles().isEmpty());
         assertEquals(-3, first.getHealth());
         assertEquals(20, second.getHealth());
-        assertEquals(1, model.getScore());
+        assertEquals(10, model.getScore());
         model.update(IDLE, 0, playfield);
-        assertEquals(1, model.getScore());
+        assertEquals(10, model.getScore());
     }
 
     @Test
@@ -150,11 +180,11 @@ class GameModelTest {
         model.update(IDLE, 0, playfield);
         assertTrue(model.getProjectiles().isEmpty());
         assertTrue(model.getEnemies().stream().noneMatch(Ship::isAlive));
-        assertEquals(2, model.getScore());
+        assertEquals(20, model.getScore());
 
         model.update(IDLE, 0, playfield);
         assertTrue(model.getEnemies().isEmpty());
-        assertEquals(2, model.getScore());
+        assertEquals(20, model.getScore());
     }
 
     @Test
