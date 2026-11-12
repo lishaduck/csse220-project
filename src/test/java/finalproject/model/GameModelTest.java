@@ -3,10 +3,14 @@ package finalproject.model;
 import javafx.geometry.Dimension2D;
 import javafx.geometry.Point2D;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.CsvSource;
+import org.junit.jupiter.params.provider.ValueSource;
 
 import java.util.List;
 
 import static finalproject.model.HorizontalDirection.*;
+import static finalproject.model.PowerUp.*;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertTrue;
@@ -67,16 +71,16 @@ class GameModelTest {
         Dimension2D playfield = new Dimension2D(640, 480);
         GameModel model = new GameModel(playfield);
         model.update(IDLE, 0, playfield);
-        model.addPowerup(7);
+        model.addPowerup(BONUS_POINTS);
         assertEquals(100, model.getScore());
 
         GameModel otherGame = new GameModel(playfield);
         assertEquals(0, otherGame.getScore());
         assertEquals(100, model.getScore());
 
-        model.addPowerup(0);
-        model.addPowerup(3);
-        model.addPowerup(5);
+        model.addPowerup(KILL_SCORE);
+        model.addPowerup(DAMAGE_AND_SCORE);
+        model.addPowerup(GLASS_CANNON);
         EnemyShip enemy = model.getEnemies().getFirst();
         enemy.health = 7;
         enemy.setPosition(model.getPlayer().getPosition(), playfield);
@@ -91,6 +95,133 @@ class GameModelTest {
         model.update(IDLE, 0, playfield);
         assertEquals(126, model.getScore());
         assertEquals(0, otherGame.getScore());
+
+        otherGame.update(IDLE, 0, playfield);
+        EnemyShip otherEnemy = otherGame.getEnemies().getFirst();
+        otherEnemy.health = 4;
+        otherEnemy.setPosition(otherGame.getPlayer().getPosition(), playfield);
+        otherEnemy.target = otherEnemy.getPosition();
+        otherGame.update(new PlayerInput(NONE, true), 0, playfield);
+        assertEquals(2, otherEnemy.getHealth());
+        assertEquals(0, otherGame.getScore());
+        otherGame.addPowerup(DAMAGE_AND_SCORE);
+        otherGame.update(new PlayerInput(NONE, true), 0, playfield);
+        assertEquals(-1, otherEnemy.getHealth());
+        assertEquals(20, otherGame.getScore());
+        assertEquals(126, model.getScore());
+    }
+
+    @ParameterizedTest
+    @CsvSource({"KILL_SCORE, 2, 13", "DAMAGE_AND_SCORE, 3, 20", "GLASS_CANNON, 5, 10"})
+    void damageAndScorePickupsKeepTheirIndividualEffects(PowerUp kind, int damage, int killScore) {
+        Dimension2D playfield = new Dimension2D(640, 480);
+        GameModel model = new GameModel(playfield);
+        model.update(IDLE, 0, playfield);
+        model.addPowerup(kind);
+        EnemyShip enemy = model.getEnemies().getFirst();
+        enemy.health = 1;
+        enemy.setPosition(model.getPlayer().getPosition(), playfield);
+        enemy.target = enemy.getPosition();
+
+        model.update(new PlayerInput(NONE, true), 0, playfield);
+        assertEquals(1 - damage, enemy.getHealth());
+        assertEquals(killScore, model.getScore());
+    }
+
+    @ParameterizedTest
+    @ValueSource(booleans = {false, true})
+    void repeatedPickupsRepeatInstantEffectsButNotPersistentBonuses(boolean reverseOrder) {
+        Dimension2D playfield = new Dimension2D(640, 480);
+        GameModel model = new GameModel(playfield);
+        model.update(IDLE, 0, playfield);
+        List<PowerUp> pickups = List.of(KILL_SCORE, DAMAGE_AND_SCORE, GLASS_CANNON);
+        if (reverseOrder) {
+            pickups = pickups.reversed();
+        }
+        for (int i = 0; i < 2; i++) {
+            model.addPowerup(HEALTH);
+            model.addPowerup(BONUS_POINTS);
+            for (PowerUp pickup : pickups) {
+                model.addPowerup(pickup);
+            }
+        }
+        assertEquals(22, model.getPlayer().getHealth());
+        assertEquals(200, model.getScore());
+
+        EnemyShip enemy = model.getEnemies().getFirst();
+        enemy.health = 7;
+        enemy.setPosition(model.getPlayer().getPosition(), playfield);
+        enemy.target = enemy.getPosition();
+        model.update(new PlayerInput(NONE, true), 0, playfield);
+        assertEquals(1, enemy.getHealth());
+        assertEquals(200, model.getScore());
+        model.update(new PlayerInput(NONE, true), 0, playfield);
+        assertEquals(-5, enemy.getHealth());
+        assertEquals(226, model.getScore());
+    }
+
+    @ParameterizedTest
+    @CsvSource({"false, false, 600, 200", "true, false, 1200, 400",
+            "false, true, 600, 100", "true, true, 1200, 200"})
+    void projectileSpeedAndRefireBoundaryComposeWithoutStacking(
+            boolean fastProjectiles, boolean rapidFire, double speed, double distance
+    ) {
+        Dimension2D playfield = new Dimension2D(640, 480);
+        GameModel model = new GameModel(playfield);
+        model.update(IDLE, 0, playfield);
+        EnemyShip enemy = model.getEnemies().getFirst();
+        enemy.setPosition(new Point2D(10, 10), playfield);
+        enemy.target = enemy.getPosition();
+        if (rapidFire) {
+            model.addPowerup(RAPID_FIRE);
+            model.addPowerup(RAPID_FIRE);
+        }
+        if (fastProjectiles) {
+            model.addPowerup(FAST_PROJECTILES);
+            model.addPowerup(FAST_PROJECTILES);
+        }
+
+        model.update(new PlayerInput(NONE, true), 0, playfield);
+        Point2D origin = model.getPlayer().getPosition();
+        model.update(IDLE, distance / speed, playfield);
+        assertEquals(origin.add(0, -distance), model.getProjectiles().getFirst().getPosition());
+        model.update(new PlayerInput(NONE, true), 0, playfield);
+        assertEquals(1, model.getProjectiles().size());
+
+        model.update(IDLE, 1 / speed, playfield);
+        model.update(new PlayerInput(NONE, true), 0, playfield);
+        assertEquals(2, model.getProjectiles().size());
+        assertEquals(origin, model.getProjectiles().getLast().getPosition());
+    }
+
+    @Test
+    void slowEnemiesAffectsMovementFiringAndNewShotsWithoutStackingOrLeaking() {
+        Dimension2D playfield = new Dimension2D(640, 480);
+        GameModel model = new GameModel(playfield);
+        GameModel otherGame = new GameModel(playfield);
+        model.addPowerup(SLOW_ENEMIES);
+        model.addPowerup(SLOW_ENEMIES);
+        for (GameModel game : List.of(model, otherGame)) {
+            game.update(IDLE, 0, playfield);
+            EnemyShip enemy = game.getEnemies().getFirst();
+            enemy.setPosition(new Point2D(100, 100), playfield);
+            enemy.target = new Point2D(300, 100);
+        }
+
+        model.update(IDLE, 1.5, playfield);
+        otherGame.update(IDLE, 1.5, playfield);
+        assertEquals(new Point2D(102.5, 100), model.getEnemies().getFirst().getPosition());
+        assertEquals(new Point2D(103.75, 100), otherGame.getEnemies().getFirst().getPosition());
+        assertTrue(model.getProjectiles().isEmpty());
+        model.update(IDLE, 0.75, playfield);
+        otherGame.update(IDLE, 0.75, playfield);
+        assertTrue(model.getProjectiles().isEmpty());
+        assertEquals(1, otherGame.getProjectiles().size());
+        model.update(IDLE, 0.75, playfield);
+        assertEquals(1, model.getProjectiles().size());
+        Projectile shot = model.getProjectiles().getFirst();
+        assertEquals(new Point2D(105, 300), shot.getPosition());
+        assertEquals(20, model.getPlayer().getHealth());
     }
 
     @Test

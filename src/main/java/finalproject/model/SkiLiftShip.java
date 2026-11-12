@@ -37,11 +37,9 @@ public final class SkiLiftShip extends EnemyShip {
             Dimension2D playfield,
             double elapsedSeconds,
             List<Projectile> projectiles,
-            List<Integer> powerUps
+            PowerUps powerUps
     ) {
-        if (powerUps.contains(8)) {
-            elapsedSeconds /= 1.5;
-        }
+        elapsedSeconds = powerUps.enemyElapsed(elapsedSeconds);
         double previousShotElapsed = elapsedSinceLastShot;
         elapsedSinceLastShot += elapsedSeconds;
         moveTowardTarget(playfield, elapsedSeconds);
