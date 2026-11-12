@@ -402,6 +402,49 @@ class GameModelTest {
     }
 
     @Test
+    void loadsFileDefinedEnemiesAtPlayfieldRelativePositionsAndRepeatsTheLastWave() {
+        Dimension2D playfield = new Dimension2D(800, 600);
+        List<Level> levels = LevelLoader.parse(List.of(
+                "WAVE Patrol", "SKILIFT 0.2 0.3 0.8 7 12.5",
+                "WAVE Boss", "SPREADSHOT 0.7 0.1 0.3 0.25 13 40"));
+        GameModel model = new GameModel(playfield, levels);
+        model.update(IDLE, 0, playfield);
+        EnemyShip patrol = model.getEnemies().getFirst();
+        assertTrue(patrol instanceof SkiLiftShip);
+        assertEquals(new Point2D(160, 180), patrol.getPosition());
+        assertEquals(7, patrol.getHealth());
+        model.update(IDLE, 0.4, playfield);
+        assertEquals(new Point2D(165, 180), patrol.getPosition());
+        patrol.collideWithProjectile(new Projectile(model.getPlayer(), Point2D.ZERO, 7));
+
+        Dimension2D resized = new Dimension2D(400, 300);
+        model.update(IDLE, 0, resized);
+        EnemyShip boss = model.getEnemies().getFirst();
+        assertEquals(1, model.getEnemies().size());
+        assertTrue(boss instanceof SpreadshotShip);
+        assertEquals(new Point2D(280, 30), boss.getPosition());
+        assertEquals(13, boss.getHealth());
+        model.update(IDLE, 0.5, resized);
+        Point2D expected = new Point2D(280, 30).add(new Point2D(-160, 45).normalize().multiply(20));
+        assertEquals(expected.getX(), boss.getPosition().getX(), 1e-9);
+        assertEquals(expected.getY(), boss.getPosition().getY(), 1e-9);
+
+        for (int repeat = 0; repeat < 5; repeat++) {
+            List<EnemyShip> previous = List.copyOf(model.getEnemies());
+            previous.getFirst().collideWithProjectile(new Projectile(model.getPlayer(), Point2D.ZERO, 13));
+            model.update(IDLE, 0, resized);
+            assertEquals(1, model.getEnemies().size());
+            assertFalse(previous.contains(model.getEnemies().getFirst()));
+            assertEquals(13, model.getEnemies().getFirst().getHealth());
+            assertEquals(new Point2D(280, 30), model.getEnemies().getFirst().getPosition());
+        }
+        GameModel separateGame = new GameModel(playfield, levels);
+        separateGame.update(IDLE, 0, playfield);
+        assertTrue(separateGame.getEnemies().getFirst() instanceof SkiLiftShip);
+        assertEquals(7, separateGame.getEnemies().getFirst().getHealth());
+    }
+
+    @Test
     void fitsTheVisiblePlayfieldWhenTheWindowManagerChangesItsSize() {
         Dimension2D playfield = new Dimension2D(640, 480);
         GameModel model = new GameModel(playfield);

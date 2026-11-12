@@ -1,0 +1,34 @@
+# WAVE name starts a wave. Blank lines and # comments are ignored.
+# SKILIFT x y targetX health speed
+# SPREADSHOT x y targetX targetY health speed
+# Coordinates are fractions of the playfield width/height (0 to 1).
+# A coordinate may be min..max, sampled independently on every spawn.
+# Equal bounds are fixed; otherwise the minimum is inclusive and maximum exclusive.
+# Speeds are pixels per second. Enemies patrol and attack as usual.
+# Waves play in order; the final wave repeats for endless play.
+
+WAVE First flight
+SKILIFT 0..1 0..0.3333333333333333 0 1 2.5
+
+WAVE Pair patrol
+SKILIFT 0..1 0..0.3333333333333333 0 2 5
+SKILIFT 0..1 0..0.3333333333333333 0 2 5
+
+WAVE Three across
+SKILIFT 0..1 0..0.3333333333333333 0 3 7.5
+SKILIFT 0..1 0..0.3333333333333333 0 3 7.5
+SKILIFT 0..1 0..0.3333333333333333 0 3 7.5
+
+WAVE Full patrol
+SKILIFT 0..1 0..0.3333333333333333 0 4 10
+SKILIFT 0..1 0..0.3333333333333333 0 4 10
+SKILIFT 0..1 0..0.3333333333333333 0 4 10
+SKILIFT 0..1 0..0.3333333333333333 0 4 10
+
+WAVE Fifth wave boss
+SPREADSHOT 0..1 0..0.3333333333333333 0..1 0..0.3333333333333333 5 50
+
+WAVE Mixed patrol
+SPREADSHOT 0..1 0..0.3333333333333333 0..1 0..0.3333333333333333 6 60
+SKILIFT 0..1 0..0.3333333333333333 0 6 15
+SKILIFT 0..1 0..0.3333333333333333 0 6 15
