@@ -1,9 +1,11 @@
 package finalproject.ui;
 
+import finalproject.app.Screen;
 import finalproject.model.GameModel;
 import finalproject.model.HorizontalDirection;
 import finalproject.model.PlayerInput;
 import javafx.animation.AnimationTimer;
+import javafx.beans.value.ChangeListener;
 import javafx.geometry.Dimension2D;
 import javafx.scene.Scene;
 import javafx.scene.input.KeyCode;
@@ -11,12 +13,25 @@ import javafx.scene.input.KeyCode;
 import java.util.HashSet;
 import java.util.Set;
 
-public class Battle {
+public class Battle implements Screen {
     private final GameModel model;
     private final BattleView view;
     private final Set<KeyCode> pressedKeys = new HashSet<>();
     private final Scene scene;
     private final AnimationTimer gameLoop;
+    private long previousFrame;
+    private final ChangeListener<Boolean> focusListener = (observable, wasFocused, isFocused) -> {
+        if (!isFocused) {
+            clearInput();
+        }
+    };
+    private final ChangeListener<Boolean> showingListener = (observable, wasShowing, isShowing) -> {
+        if (isShowing) {
+            start();
+        } else {
+            stop();
+        }
+    };
 
     public Battle(GameModel model) {
         this.model = model;
@@ -24,8 +39,6 @@ public class Battle {
         scene = new Scene(view);
 
         gameLoop = new AnimationTimer() {
-            private long previousFrame;
-
             @Override
             public void handle(long now) {
                 double elapsed = previousFrame == 0
@@ -39,6 +52,20 @@ public class Battle {
 
         scene.setOnKeyPressed(event -> pressedKeys.add(event.getCode()));
         scene.setOnKeyReleased(event -> pressedKeys.remove(event.getCode()));
+        scene.windowProperty().addListener((observable, oldWindow, newWindow) -> {
+            stop();
+            if (oldWindow != null) {
+                oldWindow.focusedProperty().removeListener(focusListener);
+                oldWindow.showingProperty().removeListener(showingListener);
+            }
+            if (newWindow != null) {
+                newWindow.focusedProperty().addListener(focusListener);
+                newWindow.showingProperty().addListener(showingListener);
+                if (newWindow.isShowing()) {
+                    start();
+                }
+            }
+        });
     }
 
     private void update(double elapsed) {
@@ -53,6 +80,7 @@ public class Battle {
     }
 
     public void start() {
+        previousFrame = 0;
         gameLoop.start();
     }
 
@@ -65,6 +93,7 @@ public class Battle {
         clearInput();
     }
 
+    @Override
     public Scene getView() {
         return scene;
     }
