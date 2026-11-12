@@ -96,7 +96,7 @@ class LevelLoaderTest {
             assertTrue(boss.getPosition().getX() >= 480 && boss.getPosition().getX() < 560);
             assertTrue(boss.getPosition().getY() >= 180 && boss.getPosition().getY() < 240);
             bossPositions.add(boss.getPosition());
-            boss.update(Point2D.ZERO, playfield, 15, new java.util.ArrayList<>(), List.of());
+            boss.update(Point2D.ZERO, playfield, 15, new java.util.ArrayList<>(), new PowerUps());
             assertTrue(boss.getPosition().getX() >= 80 && boss.getPosition().getX() < 160);
             assertTrue(boss.getPosition().getY() >= 300 && boss.getPosition().getY() < 360);
             bossDestinations.add(boss.getPosition());

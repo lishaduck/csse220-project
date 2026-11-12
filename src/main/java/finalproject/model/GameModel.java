@@ -1,7 +1,6 @@
 package finalproject.model;
 
 import javafx.geometry.Dimension2D;
-import javafx.geometry.Point2D;
 
 import java.util.ArrayList;
 import java.util.Collections;
@@ -16,7 +15,7 @@ public final class GameModel {
     private final PlayerShip player;
     private final ArrayList<Projectile> projectiles = new ArrayList<>();
     private final ArrayList<EnemyShip> enemies = new ArrayList<>();
-    private final ArrayList<Integer> powerups = new ArrayList<>();
+    private final PowerUps powerups = new PowerUps();
     private final List<Level> levels;
     private final Random random = new Random();
     private int nextWave;
