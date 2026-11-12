@@ -70,18 +70,7 @@ public final class GameModel {
         }
         player.move(input.direction(), elapsed, playfield);
         if (input.firing() && isRefireable()) {
-            int projDamage = 2;
-            if (powerups.contains(3)) {
-                projDamage += 1;
-            }
-            if (powerups.contains(5)) {
-                projDamage += 3;
-            }
-            if (powerups.contains(4)) {
-                projectiles.add(new Projectile(player, new Point2D(PlayerShip.PROJECTILE_VELOCITY.getX(), PlayerShip.PROJECTILE_VELOCITY.getY() * 2), projDamage));
-            } else {
-                projectiles.add(new Projectile(player, PlayerShip.PROJECTILE_VELOCITY, projDamage));
-            }
+            projectiles.add(new Projectile(player, powerups.playerProjectileVelocity(), powerups.projectileDamage()));
         }
         enemies.removeIf(enemy -> {
             enemy.update(player.getPosition(), playfield, elapsed, projectiles, powerups);
@@ -103,14 +92,7 @@ public final class GameModel {
                     boolean wasAlive = enemy.isAlive();
                     if (projectile.collide(enemy)) {
                         if (wasAlive && !enemy.isAlive()) {
-                            int addscore = 10;
-                            if (powerups.contains(0)) {
-                                addscore += 3;
-                            }
-                            if (powerups.contains(3)) {
-                                addscore *= 2;
-                            }
-                            score += addscore;
+                            score += powerups.killScore();
                         }
                         return true;
                     }
@@ -122,13 +104,7 @@ public final class GameModel {
     }
 
     private boolean isRefireable() {
-        int minDis = 200;
-        if (powerups.contains(4)) {
-            minDis *= 2;
-        }
-        if (powerups.contains(6)) {
-            minDis /= 2;
-        }
+        double minDis = powerups.refireDistance();
         for (int i = projectiles.size() - 1; i >= 0; i--) {
             Projectile projectile = projectiles.get(i);
             if (projectile.getSource() == player) {
@@ -138,17 +114,8 @@ public final class GameModel {
         return true;
     }
 
-    public void addPowerup(int type) {
-        powerups.add(type);
-        if (type == 1) {
-            player.heal(2);
-        }
-        if (type == 5) {
-            player.heal(-1);
-        }
-        if (type == 7) {
-            addScore(100);
-        }
+    public void addPowerup(PowerUp powerUp) {
+        powerups.collect(powerUp, this);
     }
 
     public void spawnWave() {
