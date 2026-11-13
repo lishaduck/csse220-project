@@ -7,7 +7,9 @@ import java.util.List;
 import java.util.Locale;
 import java.util.Scanner;
 
-/** Reads classpath wave files and reports invalid data with source line numbers. */
+/**
+ * Reads classpath wave files and reports invalid data with source line numbers.
+ */
 public final class LevelLoader {
     private LevelLoader() {
     }
@@ -68,18 +70,54 @@ public final class LevelLoader {
                 if (name == null) {
                     throw new IllegalArgumentException(keyword + " appears before any WAVE line");
                 }
-                boolean spreadshot = type == Level.EnemyType.SPREADSHOT;
-                if (parts.length != (spreadshot ? 7 : 6)) {
-                    throw new IllegalArgumentException(spreadshot
-                            ? "expected SPREADSHOT x y targetX targetY health speed"
-                            : "expected SKILIFT x y targetX health speed");
+                int expectedParts = switch (type) {
+                    case SPREADSHOT -> 7;
+                    case SKILIFT, BONUS -> 6;
+                    case MINE, BOSSEDGE, BOSSMIDDLE, BOSSLASER -> 5;
+                };
+                if (parts.length != expectedParts) {
+                    throw new IllegalArgumentException("expected " + expectedParts + " fields for " + keyword);
                 }
                 Level.Coordinate x = coordinate(parts[1]);
                 Level.Coordinate y = coordinate(parts[2]);
-                Level.Coordinate targetX = coordinate(parts[3]);
-                Level.Coordinate targetY = spreadshot ? coordinate(parts[4]) : y;
-                int health = Integer.parseInt(parts[spreadshot ? 5 : 4]);
-                double speed = Double.parseDouble(parts[spreadshot ? 6 : 5]);
+                int health = 0;
+                double speed = 0;
+                Level.Coordinate targetX = coordinate("0");
+                Level.Coordinate targetY = coordinate("0");
+                if (type == Level.EnemyType.SKILIFT) {
+                    targetX = coordinate(parts[3]);
+                    targetY = y;
+                    health = Integer.parseInt(parts[4]);
+                    speed = Double.parseDouble(parts[5]);
+                }
+                if (type == Level.EnemyType.SPREADSHOT) {
+                    targetX = coordinate(parts[3]);
+                    targetY = coordinate(parts[4]);
+                    health = Integer.parseInt(parts[5]);
+                    speed = Double.parseDouble(parts[6]);
+                }
+                if (type == Level.EnemyType.MINE) {
+                    health = Integer.parseInt(parts[3]);
+                    speed = Double.parseDouble(parts[4]);
+                }
+                if (type == Level.EnemyType.BONUS) {
+                    targetX = coordinate(parts[3]);
+                    targetY = y;
+                    health = Integer.parseInt(parts[4]);
+                    speed = Double.parseDouble(parts[5]);
+                }
+                if (type == Level.EnemyType.BOSSEDGE) {
+                    health = Integer.parseInt(parts[3]);
+                    speed = Double.parseDouble(parts[4]);
+                }
+                if (type == Level.EnemyType.BOSSMIDDLE) {
+                    health = Integer.parseInt(parts[3]);
+                    speed = Double.parseDouble(parts[4]);
+                }
+                if (type == Level.EnemyType.BOSSLASER) {
+                    health = Integer.parseInt(parts[3]);
+                    speed = Double.parseDouble(parts[4]);
+                }
                 if (health <= 0 || !Double.isFinite(speed) || speed < 0) {
                     throw new IllegalArgumentException("health must be positive and speed finite and nonnegative");
                 }

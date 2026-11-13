@@ -60,8 +60,8 @@ public final class BonusShip extends EnemyShip {
     @Override
     public URL getImage() {
         return Objects.requireNonNull(
-                getClass().getResource("/EnemyShip.gif"),
-                "Missing laser resource: /EnemyShip.gif"
+                getClass().getResource("/BonusShip.gif"),
+                "Missing laser resource: /BonusShip.gif"
         );
     }
 }

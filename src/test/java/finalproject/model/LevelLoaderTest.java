@@ -110,12 +110,20 @@ class LevelLoaderTest {
     @Test
     void loadsPackagedResourceAndReportsMissingResource() {
         List<Level> levels = LevelLoader.load("/levels/levels.txt");
-        assertEquals(6, levels.size());
-        assertEquals(1, levels.get(4).enemies().size());
-        Level.Enemy boss = levels.get(4).enemies().getFirst();
+        assertEquals(20, levels.size());
+        assertEquals(1, levels.get(3).enemies().size());
+        Level.Enemy boss = levels.get(3).enemies().getFirst();
         assertEquals(Level.EnemyType.SPREADSHOT, boss.type());
-        assertEquals(5, boss.health());
-        assertEquals(50, boss.speed());
+        assertEquals(4, boss.health());
+        assertEquals(40, boss.speed());
+        assertEquals(List.of(Level.EnemyType.BOSSEDGE, Level.EnemyType.BOSSEDGE,
+                        Level.EnemyType.BOSSLASER, Level.EnemyType.BOSSLASER, Level.EnemyType.BOSSMIDDLE),
+                levels.getLast().enemies().stream().map(Level.Enemy::type).toList());
+        for (Level level : levels) {
+            for (EnemyShip enemy : level.createEnemies(new Dimension2D(640, 480), new Random(123))) {
+                assertNotNull(enemy.getImage(), "Each packaged enemy must have an available sprite");
+            }
+        }
         assertEquals(new Level.Coordinate(0, 1), boss.x());
         assertEquals(new Level.Coordinate(0, 1.0 / 3), boss.y());
         String error = assertThrows(IllegalArgumentException.class,

@@ -252,7 +252,7 @@ class StageManagerTest {
                         false, false, false, false));
                 assertSame(choices, stage.getScene(), "Held fire must not choose a powerup");
                 var powerup = (finalproject.model.PowerUp) chosen.getUserData();
-                int expectedScore = powerup == finalproject.model.PowerUp.BONUS_POINTS ? 110 : 10;
+                int expectedScore = powerup == finalproject.model.PowerUp.BONUS_POINTS ? 310 : 210;
                 int expectedHealth = switch (powerup) {
                     case HEALTH -> 22;
                     case GLASS_CANNON -> 19;

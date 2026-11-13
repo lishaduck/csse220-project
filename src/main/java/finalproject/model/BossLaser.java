@@ -9,7 +9,7 @@ import java.util.Objects;
 import java.util.Random;
 
 public final class BossLaser extends EnemyShip {
-    private static final Dimension2D SIZE = new Dimension2D(32, 16);
+    private static final Dimension2D SIZE = new Dimension2D(56, 86);
     private static final double PROJECTILE_SPEED = 200;
     private static final double ATTACK_SEQUENCE_SECONDS = 20;
 
@@ -49,8 +49,8 @@ public final class BossLaser extends EnemyShip {
     @Override
     public URL getImage() {
         return Objects.requireNonNull(
-                getClass().getResource("/EnemyShip2.gif"),
-                "Missing laser resource: /EnemyShip.gif"
+                getClass().getResource("/BossCannon.png"),
+                "Missing laser resource: /BossCannon.png"
         );
     }
 }

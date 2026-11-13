@@ -19,11 +19,23 @@ class GameModelTest {
     private static final PlayerInput MOVE_LEFT = new PlayerInput(LEFT, false);
     private static final PlayerInput MOVE_RIGHT = new PlayerInput(RIGHT, false);
     private static final PlayerInput IDLE = new PlayerInput(NONE, false);
+    private static final List<Level> TEST_LEVELS = LevelLoader.parse(List.of(
+            "WAVE First", "SKILIFT 0..1 0..0.3333333333333333 0 1 2.5",
+            "WAVE Second", "SKILIFT 0..1 0..0.3333333333333333 0 2 5",
+            "SKILIFT 0..1 0..0.3333333333333333 0 2 5",
+            "WAVE Third", "SKILIFT 0..1 0..0.3333333333333333 0 3 7.5",
+            "SKILIFT 0..1 0..0.3333333333333333 0 3 7.5",
+            "SKILIFT 0..1 0..0.3333333333333333 0 3 7.5",
+            "WAVE Fourth", "SKILIFT 0..1 0..0.3333333333333333 0 4 10",
+            "SKILIFT 0..1 0..0.3333333333333333 0 4 10",
+            "SKILIFT 0..1 0..0.3333333333333333 0 4 10",
+            "SKILIFT 0..1 0..0.3333333333333333 0 4 10",
+            "WAVE Fifth", "SPREADSHOT 0..1 0..0.3333333333333333 0..1 0..0.3333333333333333 5 50"));
 
     @Test
     void startsPlayersWithTwentyHealthAndKeepsDamageSeparateFromScore() {
         Dimension2D playfield = new Dimension2D(640, 480);
-        GameModel model = new GameModel(playfield);
+        GameModel model = new GameModel(playfield, TEST_LEVELS);
         model.update(IDLE, 0, playfield);
         PlayerShip player = model.getPlayer();
         assertEquals(20, player.getHealth());
@@ -32,37 +44,37 @@ class GameModelTest {
         player.collideWithProjectile(new Projectile(model.getEnemies().getFirst(), Point2D.ZERO, 2));
         assertEquals(18, player.getHealth());
         assertTrue(player.isAlive());
-        assertEquals(0, model.getScore());
+        assertEquals(100, model.getScore());
         assertEquals(20, new GameModel(playfield).getPlayer().getHealth());
     }
 
     @Test
     void scoresKillsRatherThanDamageAndKeepsScoreReadableAfterRemoval() {
         Dimension2D playfield = new Dimension2D(640, 480);
-        GameModel model = new GameModel(playfield);
+        GameModel model = new GameModel(playfield, TEST_LEVELS);
         model.update(IDLE, 0, playfield);
         EnemyShip enemy = model.getEnemies().getFirst();
         enemy.health = 3;
         enemy.setPosition(model.getPlayer().getPosition(), playfield);
         enemy.target = enemy.getPosition();
-        assertEquals(0, model.getScore());
+        assertEquals(100, model.getScore());
 
         model.update(new PlayerInput(NONE, true), 0, playfield);
         assertEquals(1, enemy.getHealth());
-        assertEquals(0, model.getScore());
+        assertEquals(100, model.getScore());
 
         model.update(new PlayerInput(NONE, true), 0, playfield);
         assertEquals(-1, enemy.getHealth());
         assertFalse(enemy.isAlive());
-        assertEquals(10, model.getScore());
-        assertEquals(10, model.getScore());
+        assertEquals(100 + 10, model.getScore());
+        assertEquals(100 + 10, model.getScore());
         assertEquals(1, model.getEnemies().size());
 
         assertTrue(model.isWaveCleared());
         model.spawnWave();
         for (int i = 0; i < 3; i++) {
             model.update(IDLE, 0, playfield);
-            assertEquals(10, model.getScore());
+            assertEquals(210, model.getScore());
             assertEquals(2, model.getEnemies().size());
         }
         assertEquals(0, new GameModel(playfield).getScore());
@@ -71,14 +83,14 @@ class GameModelTest {
     @Test
     void powerupDamageAndScoreBonusesStayWithTheirGame() {
         Dimension2D playfield = new Dimension2D(640, 480);
-        GameModel model = new GameModel(playfield);
+        GameModel model = new GameModel(playfield, TEST_LEVELS);
         model.update(IDLE, 0, playfield);
         model.addPowerup(BONUS_POINTS);
-        assertEquals(100, model.getScore());
+        assertEquals(200, model.getScore());
 
-        GameModel otherGame = new GameModel(playfield);
+        GameModel otherGame = new GameModel(playfield, TEST_LEVELS);
         assertEquals(0, otherGame.getScore());
-        assertEquals(100, model.getScore());
+        assertEquals(200, model.getScore());
 
         model.addPowerup(KILL_SCORE);
         model.addPowerup(DAMAGE_AND_SCORE);
@@ -90,12 +102,12 @@ class GameModelTest {
 
         model.update(new PlayerInput(NONE, true), 0, playfield);
         assertEquals(1, enemy.getHealth());
-        assertEquals(100, model.getScore());
+        assertEquals(200, model.getScore());
         model.update(new PlayerInput(NONE, true), 0, playfield);
         assertEquals(-5, enemy.getHealth());
-        assertEquals(126, model.getScore());
+        assertEquals(100 + 126, model.getScore());
         model.update(IDLE, 0, playfield);
-        assertEquals(126, model.getScore());
+        assertEquals(100 + 126, model.getScore());
         assertEquals(0, otherGame.getScore());
 
         otherGame.update(IDLE, 0, playfield);
@@ -105,19 +117,19 @@ class GameModelTest {
         otherEnemy.target = otherEnemy.getPosition();
         otherGame.update(new PlayerInput(NONE, true), 0, playfield);
         assertEquals(2, otherEnemy.getHealth());
-        assertEquals(0, otherGame.getScore());
+        assertEquals(100, otherGame.getScore());
         otherGame.addPowerup(DAMAGE_AND_SCORE);
         otherGame.update(new PlayerInput(NONE, true), 0, playfield);
         assertEquals(-1, otherEnemy.getHealth());
-        assertEquals(20, otherGame.getScore());
-        assertEquals(126, model.getScore());
+        assertEquals(120, otherGame.getScore());
+        assertEquals(100 + 126, model.getScore());
     }
 
     @ParameterizedTest
     @CsvSource({"KILL_SCORE, 2, 13", "DAMAGE_AND_SCORE, 3, 20", "GLASS_CANNON, 5, 10"})
     void damageAndScorePickupsKeepTheirIndividualEffects(PowerUp kind, int damage, int killScore) {
         Dimension2D playfield = new Dimension2D(640, 480);
-        GameModel model = new GameModel(playfield);
+        GameModel model = new GameModel(playfield, TEST_LEVELS);
         model.update(IDLE, 0, playfield);
         model.addPowerup(kind);
         EnemyShip enemy = model.getEnemies().getFirst();
@@ -127,14 +139,14 @@ class GameModelTest {
 
         model.update(new PlayerInput(NONE, true), 0, playfield);
         assertEquals(1 - damage, enemy.getHealth());
-        assertEquals(killScore, model.getScore());
+        assertEquals(100 + killScore, model.getScore());
     }
 
     @ParameterizedTest
     @ValueSource(booleans = {false, true})
     void repeatedPickupsRepeatInstantEffectsButNotPersistentBonuses(boolean reverseOrder) {
         Dimension2D playfield = new Dimension2D(640, 480);
-        GameModel model = new GameModel(playfield);
+        GameModel model = new GameModel(playfield, TEST_LEVELS);
         model.update(IDLE, 0, playfield);
         List<PowerUp> pickups = List.of(KILL_SCORE, DAMAGE_AND_SCORE, GLASS_CANNON);
         if (reverseOrder) {
@@ -148,7 +160,7 @@ class GameModelTest {
             }
         }
         assertEquals(22, model.getPlayer().getHealth());
-        assertEquals(200, model.getScore());
+        assertEquals(100 + 200, model.getScore());
 
         EnemyShip enemy = model.getEnemies().getFirst();
         enemy.health = 7;
@@ -156,10 +168,10 @@ class GameModelTest {
         enemy.target = enemy.getPosition();
         model.update(new PlayerInput(NONE, true), 0, playfield);
         assertEquals(1, enemy.getHealth());
-        assertEquals(200, model.getScore());
+        assertEquals(100 + 200, model.getScore());
         model.update(new PlayerInput(NONE, true), 0, playfield);
         assertEquals(-5, enemy.getHealth());
-        assertEquals(226, model.getScore());
+        assertEquals(100 + 226, model.getScore());
     }
 
     @ParameterizedTest
@@ -169,7 +181,7 @@ class GameModelTest {
             boolean fastProjectiles, boolean rapidFire, double speed, double distance
     ) {
         Dimension2D playfield = new Dimension2D(640, 480);
-        GameModel model = new GameModel(playfield);
+        GameModel model = new GameModel(playfield, TEST_LEVELS);
         model.update(IDLE, 0, playfield);
         EnemyShip enemy = model.getEnemies().getFirst();
         enemy.setPosition(new Point2D(10, 10), playfield);
@@ -199,8 +211,8 @@ class GameModelTest {
     @Test
     void slowEnemiesAffectsMovementFiringAndNewShotsWithoutStackingOrLeaking() {
         Dimension2D playfield = new Dimension2D(640, 480);
-        GameModel model = new GameModel(playfield);
-        GameModel otherGame = new GameModel(playfield);
+        GameModel model = new GameModel(playfield, TEST_LEVELS);
+        GameModel otherGame = new GameModel(playfield, TEST_LEVELS);
         model.addPowerup(SLOW_ENEMIES);
         model.addPowerup(SLOW_ENEMIES);
         for (GameModel game : List.of(model, otherGame)) {
@@ -229,7 +241,7 @@ class GameModelTest {
     @Test
     void multipleProjectilesHittingTheSameDeadEnemyAwardOnlyOneKill() {
         Dimension2D playfield = new Dimension2D(640, 480);
-        GameModel model = new GameModel(playfield);
+        GameModel model = new GameModel(playfield, TEST_LEVELS);
         model.update(IDLE, 0, playfield);
         model.getEnemies().getFirst().collideWithProjectile(new Projectile(model.getPlayer(), Point2D.ZERO, 2));
         assertTrue(model.isWaveCleared());
@@ -253,15 +265,15 @@ class GameModelTest {
         assertTrue(model.getProjectiles().isEmpty());
         assertEquals(-3, first.getHealth());
         assertEquals(2, second.getHealth());
-        assertEquals(10, model.getScore());
+        assertEquals(210, model.getScore());
         model.update(IDLE, 0, playfield);
-        assertEquals(10, model.getScore());
+        assertEquals(210, model.getScore());
     }
 
     @Test
     void preservesProjectileSpawningCooldownAndRemovalAlongsidePlayerMovement() {
         Dimension2D playfield = new Dimension2D(640, 480);
-        GameModel model = new GameModel(playfield);
+        GameModel model = new GameModel(playfield, TEST_LEVELS);
         model.update(IDLE, 0, playfield);
         EnemyShip enemy = model.getEnemies().getFirst();
         enemy.setPosition(new Point2D(100, 100), playfield);
@@ -305,7 +317,7 @@ class GameModelTest {
     @Test
     void removesConsecutiveCollidingProjectilesAndDeadEnemies() {
         Dimension2D playfield = new Dimension2D(640, 480);
-        GameModel model = new GameModel(playfield);
+        GameModel model = new GameModel(playfield, TEST_LEVELS);
         model.update(IDLE, 0, playfield);
         model.getEnemies().getFirst().collideWithProjectile(new Projectile(model.getPlayer(), Point2D.ZERO, 2));
         assertTrue(model.isWaveCleared());
@@ -333,7 +345,7 @@ class GameModelTest {
         model.update(IDLE, 0, playfield);
         assertTrue(model.getProjectiles().isEmpty());
         assertTrue(model.getEnemies().stream().noneMatch(Ship::isAlive));
-        assertEquals(20, model.getScore());
+        assertEquals(220, model.getScore());
 
         assertTrue(model.isWaveCleared());
         model.spawnWave();
@@ -342,13 +354,13 @@ class GameModelTest {
         assertFalse(model.getEnemies().contains(second));
         assertFalse(model.getEnemies().isEmpty());
         assertTrue(model.getEnemies().stream().allMatch(Ship::isAlive));
-        assertEquals(20, model.getScore());
+        assertEquals(320, model.getScore());
     }
 
     @Test
     void enemyProjectilesIgnoreAlliesAndDamageThePlayer() {
         Dimension2D playfield = new Dimension2D(640, 480);
-        GameModel model = new GameModel(playfield);
+        GameModel model = new GameModel(playfield, TEST_LEVELS);
         model.update(IDLE, 0, playfield);
         model.getEnemies().getFirst().collideWithProjectile(new Projectile(model.getPlayer(), Point2D.ZERO, 2));
         assertTrue(model.isWaveCleared());
@@ -374,7 +386,7 @@ class GameModelTest {
         model.update(IDLE, 0, playfield);
         assertFalse(model.getPlayer().isAlive());
         assertEquals(0, model.getPlayer().getHealth());
-        assertEquals(0, model.getScore());
+        assertEquals(200, model.getScore());
         assertFalse(model.getProjectiles().contains(skiLiftShot));
         assertTrue(model.getEnemies().stream().allMatch(Ship::isAlive));
     }
@@ -382,7 +394,7 @@ class GameModelTest {
     @Test
     void advancesClearedWavesThroughTheFifthWaveBoss() {
         Dimension2D playfield = new Dimension2D(640, 480);
-        GameModel model = new GameModel(playfield);
+        GameModel model = new GameModel(playfield, TEST_LEVELS);
         Projectile shot = new Projectile(model.getPlayer(), Point2D.ZERO, 2);
         model.update(IDLE, 0, playfield);
 
@@ -468,7 +480,7 @@ class GameModelTest {
     @Test
     void fitsTheVisiblePlayfieldWhenTheWindowManagerChangesItsSize() {
         Dimension2D playfield = new Dimension2D(640, 480);
-        GameModel model = new GameModel(playfield);
+        GameModel model = new GameModel(playfield, TEST_LEVELS);
         Ship player = model.getPlayer();
         model.getPlayer().heal(1000);
         model.update(MOVE_RIGHT, 10, playfield);
@@ -497,7 +509,7 @@ class GameModelTest {
     @Test
     void movesHorizontallyAndCanLeaveBothBoundariesAfterRepeatedInput() {
         Dimension2D playfield = new Dimension2D(640, 480);
-        GameModel model = new GameModel(playfield);
+        GameModel model = new GameModel(playfield, TEST_LEVELS);
         PlayerShip player = model.getPlayer();
         player.heal(1000);
         double initialX = player.getPosition().getX();

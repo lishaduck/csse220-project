@@ -7,7 +7,9 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.random.RandomGenerator;
 
-/** A named wave that creates fresh enemies from immutable starting data. */
+/**
+ * A named wave that creates fresh enemies from immutable starting data.
+ */
 public record Level(String name, List<Enemy> enemies) {
     public Level {
         enemies = List.copyOf(enemies);
@@ -24,13 +26,18 @@ public record Level(String name, List<Enemy> enemies) {
                 case SPREADSHOT -> new SpreadshotShip(playfield, position,
                         new Point2D(targetX, enemy.targetY().sample(random) * playfield.getHeight()),
                         enemy.health(), enemy.speed());
+                case MINE -> new MineShip(playfield, position, enemy.health(), enemy.speed());
+                case BONUS -> new BonusShip(playfield, position, targetX, enemy.health(), enemy.speed());
+                case BOSSEDGE -> new BossEdge(playfield, position, enemy.health());
+                case BOSSMIDDLE -> new BossMiddle(playfield, position, enemy.health());
+                case BOSSLASER -> new BossLaser(playfield, position, enemy.health());
             });
         }
         return ships;
     }
 
     public enum EnemyType {
-        SKILIFT, SPREADSHOT
+        SKILIFT, SPREADSHOT, MINE, BONUS, BOSSEDGE, BOSSMIDDLE, BOSSLASER
     }
 
     public record Enemy(EnemyType type, Coordinate x, Coordinate y, Coordinate targetX,

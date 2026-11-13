@@ -52,8 +52,8 @@ public final class MineShip extends EnemyShip {
     @Override
     public URL getImage() {
         return Objects.requireNonNull(
-                getClass().getResource("/EnemyShip.gif"),
-                "Missing laser resource: /EnemyShip.gif"
+                getClass().getResource("/Mine.gif"),
+                "Missing laser resource: /Mine.gif"
         );
     }
 }
