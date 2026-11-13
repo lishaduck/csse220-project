@@ -91,6 +91,9 @@ public final class GameModel {
                     boolean wasAlive = enemy.isAlive();
                     if (projectile.collide(enemy)) {
                         if (wasAlive && !enemy.isAlive()) {
+                            if (enemy instanceof BonusShip) {
+                                score += powerups.killScore() * 9;
+                            }
                             score += powerups.killScore();
                         }
                         return true;
@@ -120,5 +123,6 @@ public final class GameModel {
     public void spawnWave() {
         enemies.addAll(levels.get(nextWave).createEnemies(playfield, random));
         nextWave = Math.min(nextWave + 1, levels.size() - 1);
+        score += 100;
     }
 }
