@@ -1,12 +1,15 @@
 package finalproject.app;
 
 import finalproject.model.GameModel;
+import finalproject.model.LevelLoader;
 import finalproject.ui.Battle;
+import javafx.animation.AnimationTimer;
 import javafx.application.Platform;
 import javafx.geometry.Dimension2D;
 import javafx.geometry.Point2D;
 import javafx.scene.Scene;
 import javafx.scene.control.Button;
+import javafx.scene.image.PixelFormat;
 import javafx.scene.input.KeyCode;
 import javafx.scene.input.KeyEvent;
 import javafx.scene.layout.StackPane;
@@ -14,6 +17,11 @@ import javafx.stage.Stage;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.condition.EnabledIfEnvironmentVariable;
 
+import java.util.Arrays;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Set;
+import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.FutureTask;
 import java.util.concurrent.TimeUnit;
 
@@ -28,6 +36,7 @@ class StageManagerTest {
     void switchesScreensStopsTheBattleAndStartsAnotherGame() throws Exception {
         Platform.startup(() -> Platform.setImplicitExit(false));
         try {
+            assertEnemyGifAnimates();
             GameModel model = new GameModel(new Dimension2D(640, 480));
             double initialX = model.getPlayer().getPosition().getX();
             Battle battle = onFxThread(() -> new Battle(model));
@@ -119,6 +128,45 @@ class StageManagerTest {
         } finally {
             Platform.exit();
         }
+    }
+
+    private static void assertEnemyGifAnimates() throws Exception {
+        CompletableFuture<Set<Integer>> result = new CompletableFuture<>();
+        onFxThread(() -> {
+            GameModel model = new GameModel(new Dimension2D(640, 480), LevelLoader.parse(List.of(
+                    "WAVE Animation", "SKILIFT 0.25 0.25 0.25 2 0")));
+            Battle battle = new Battle(model);
+            Stage stage = new Stage();
+            new StageManager(stage).show(battle);
+            new AnimationTimer() {
+                private long start;
+                private final Set<Integer> frames = new HashSet<>();
+
+                @Override
+                public void handle(long now) {
+                    try {
+                        if (start == 0) start = now;
+                        if (now - start < 200_000_000L) return;
+                        int[] pixels = new int[48 * 36];
+                        battle.getView().getRoot().snapshot(null, null).getPixelReader().getPixels(
+                                160, 120, 48, 36, PixelFormat.getIntArgbInstance(), pixels, 0, 48);
+                        frames.add(Arrays.hashCode(pixels));
+                        if (now - start >= 1_200_000_000L) {
+                            stop();
+                            stage.close();
+                            result.complete(frames);
+                        }
+                    } catch (Throwable error) {
+                        stop();
+                        stage.close();
+                        result.completeExceptionally(error);
+                    }
+                }
+            }.start();
+            return null;
+        });
+        assertTrue(result.get(15, TimeUnit.SECONDS).size() > 1,
+                "The stationary enemy must display more than its GIF's initial frame during battle");
     }
 
     private static <T> T onFxThread(java.util.concurrent.Callable<T> action) throws Exception {

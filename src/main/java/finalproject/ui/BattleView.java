@@ -9,6 +9,9 @@ import javafx.scene.layout.Pane;
 import javafx.scene.paint.Color;
 import javafx.scene.text.Font;
 
+import java.util.IdentityHashMap;
+import java.util.Map;
+
 /**
  * Owns the playfield's canvas and layout, and composes the game scene.
  */
@@ -16,6 +19,7 @@ class BattleView extends Pane {
     private final Canvas canvas = new Canvas();
     private final PlayerView playerView = new PlayerView();
     private final LaserView laserView = new LaserView();
+    private final Map<EnemyShip, EnemyView> enemyViews = new IdentityHashMap<>();
 
     BattleView(Dimension2D playfield) {
         setPrefSize(playfield.getWidth(), playfield.getHeight());
@@ -36,9 +40,9 @@ class BattleView extends Pane {
         for (Projectile projectile : model.getProjectiles()) {
             laserView.render(gc, projectile);
         }
+        enemyViews.keySet().retainAll(model.getEnemies());
         for (EnemyShip enemy : model.getEnemies()) {
-            EnemyView enemyView = new EnemyView(enemy);
-            enemyView.render(gc);
+            enemyViews.computeIfAbsent(enemy, EnemyView::new).render(gc);
         }
         playerView.render(gc, model.getPlayer());
     }
