@@ -37,7 +37,8 @@ public final class SkiLiftShip extends EnemyShip {
             Dimension2D playfield,
             double elapsedSeconds,
             List<Projectile> projectiles,
-            PowerUps powerUps
+            PowerUps powerUps,
+            List<EnemyShip> enemies
     ) {
         elapsedSeconds = powerUps.enemyElapsed(elapsedSeconds);
         double previousShotElapsed = elapsedSinceLastShot;
@@ -45,7 +46,7 @@ public final class SkiLiftShip extends EnemyShip {
         moveTowardTarget(playfield, elapsedSeconds);
 
         if (crossedThreshold(previousShotElapsed, elapsedSeconds, SHOT_INTERVAL_SECONDS)) {
-            fireProjectile(projectiles, new Point2D(0, PROJECTILE_SPEED), powerUps);
+            fireProjectile(projectiles, new Point2D(0, PROJECTILE_SPEED), powerUps, 2);
             elapsedSinceLastShot = 0;
         }
 

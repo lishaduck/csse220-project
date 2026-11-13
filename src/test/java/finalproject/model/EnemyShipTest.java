@@ -41,11 +41,11 @@ class EnemyShipTest {
         PowerUps powerUps = new PowerUps();
 
         for (int i = 0; i < 3; i++) {
-            enemy.update(PLAYER_POSITION, PLAYFIELD, 0.5, projectiles, powerUps);
+            enemy.update(PLAYER_POSITION, PLAYFIELD, 0.5, projectiles, powerUps, List.of());
         }
         assertTrue(projectiles.isEmpty());
 
-        enemy.update(PLAYER_POSITION, PLAYFIELD, 0.5, projectiles, powerUps);
+        enemy.update(PLAYER_POSITION, PLAYFIELD, 0.5, projectiles, powerUps, List.of());
         assertEquals(1, projectiles.size());
         assertSame(enemy, projectiles.getFirst().getSource());
         assertEquals(new Point2D(0, 400), projectiles.getFirst().velocity);
@@ -62,7 +62,7 @@ class EnemyShipTest {
                 50
         );
         PowerUps powerUps = new PowerUps();
-        enemy.update(PLAYER_POSITION, PLAYFIELD, 1, new ArrayList<>(), powerUps);
+        enemy.update(PLAYER_POSITION, PLAYFIELD, 1, new ArrayList<>(), powerUps, List.of());
 
         assertEquals(new Point2D(250, expectedY), enemy.getPosition());
     }
@@ -77,10 +77,10 @@ class EnemyShipTest {
         );
         List<Projectile> projectiles = new ArrayList<>();
 
-        lower.update(PLAYER_POSITION, PLAYFIELD, 0, projectiles, new PowerUps());
-        upper.update(PLAYER_POSITION, PLAYFIELD, 0, projectiles, new PowerUps());
-        lower.update(PLAYER_POSITION, PLAYFIELD, 1, projectiles, new PowerUps());
-        upper.update(PLAYER_POSITION, PLAYFIELD, 1, projectiles, new PowerUps());
+        lower.update(PLAYER_POSITION, PLAYFIELD, 0, projectiles, new PowerUps(), List.of());
+        upper.update(PLAYER_POSITION, PLAYFIELD, 0, projectiles, new PowerUps(), List.of());
+        lower.update(PLAYER_POSITION, PLAYFIELD, 1, projectiles, new PowerUps(), List.of());
+        upper.update(PLAYER_POSITION, PLAYFIELD, 1, projectiles, new PowerUps(), List.of());
 
         assertEquals(new Point2D(542, 70), lower.getPosition());
         assertEquals(new Point2D(50, 130), upper.getPosition());
@@ -98,15 +98,15 @@ class EnemyShipTest {
         List<Projectile> projectiles = new ArrayList<>();
         PowerUps powerUps = new PowerUps();
 
-        enemy.update(PLAYER_POSITION, PLAYFIELD, 0.5, projectiles, powerUps);
+        enemy.update(PLAYER_POSITION, PLAYFIELD, 0.5, projectiles, powerUps, List.of());
         assertEquals(3, projectiles.size());
         assertSame(enemy, projectiles.getFirst().getSource());
         assertEquals(new Point2D(0, 200), projectiles.getFirst().velocity);
 
-        enemy.update(PLAYER_POSITION, PLAYFIELD, 0.5, projectiles, powerUps);
+        enemy.update(PLAYER_POSITION, PLAYFIELD, 0.5, projectiles, powerUps, List.of());
         assertEquals(5, projectiles.size());
 
-        enemy.update(PLAYER_POSITION, PLAYFIELD, 0.5, projectiles, powerUps);
+        enemy.update(PLAYER_POSITION, PLAYFIELD, 0.5, projectiles, powerUps, List.of());
         assertEquals(8, projectiles.size());
     }
 
@@ -119,17 +119,17 @@ class EnemyShipTest {
         powerUps.collect(PowerUp.SLOW_ENEMIES, new GameModel(PLAYFIELD));
         List<Projectile> projectiles = new ArrayList<>();
 
-        enemy.update(PLAYER_POSITION, PLAYFIELD, 0.75, projectiles, powerUps);
+        enemy.update(PLAYER_POSITION, PLAYFIELD, 0.75, projectiles, powerUps, List.of());
         assertEquals(new Point2D(150, 100), enemy.getPosition());
         assertTrue(projectiles.isEmpty());
-        enemy.update(PLAYER_POSITION, PLAYFIELD, 0.75, projectiles, powerUps);
+        enemy.update(PLAYER_POSITION, PLAYFIELD, 0.75, projectiles, powerUps, List.of());
         assertEquals(new Point2D(200, 100), enemy.getPosition());
         assertEquals(3, projectiles.size());
-        enemy.update(PLAYER_POSITION, PLAYFIELD, 0.375, projectiles, powerUps);
+        enemy.update(PLAYER_POSITION, PLAYFIELD, 0.375, projectiles, powerUps, List.of());
         assertEquals(3, projectiles.size());
-        enemy.update(PLAYER_POSITION, PLAYFIELD, 0.375, projectiles, powerUps);
+        enemy.update(PLAYER_POSITION, PLAYFIELD, 0.375, projectiles, powerUps, List.of());
         assertEquals(5, projectiles.size());
-        enemy.update(PLAYER_POSITION, PLAYFIELD, 0.75, projectiles, powerUps);
+        enemy.update(PLAYER_POSITION, PLAYFIELD, 0.75, projectiles, powerUps, List.of());
         assertEquals(8, projectiles.size());
         for (Projectile projectile : projectiles) {
             assertEquals(200 / 1.5, projectile.velocity.magnitude(), 1e-9);
