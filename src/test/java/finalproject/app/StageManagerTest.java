@@ -37,6 +37,7 @@ class StageManagerTest {
         Platform.startup(() -> Platform.setImplicitExit(false));
         try {
             assertEnemyGifAnimates();
+            assertShipsFlashOnHits();
             assertGameScreens();
             GameModel model = new GameModel(new Dimension2D(640, 480));
             double initialX = model.getPlayer().getPosition().getX();
@@ -129,6 +130,63 @@ class StageManagerTest {
         } finally {
             Platform.exit();
         }
+    }
+
+    private static void assertShipsFlashOnHits() throws Exception {
+        GameModel model = new GameModel(new Dimension2D(640, 480), LevelLoader.parse(List.of(
+                "WAVE Flash", "SKILIFT 0.25 0.25 0.25 7 0")));
+        model.update(new finalproject.model.PlayerInput(finalproject.model.HorizontalDirection.NONE, true),
+                0, model.getPlayfield());
+        var enemy = model.getEnemies().getFirst();
+        var player = model.getPlayer();
+        var shot = model.getProjectiles().getFirst();
+        var canvas = onFxThread(() -> new javafx.scene.canvas.Canvas(640, 480));
+        var playerView = onFxThread(() -> new finalproject.ui.PlayerView(player));
+        var enemyView = onFxThread(() -> new finalproject.ui.EnemyView(enemy));
+        java.util.concurrent.Callable<double[]> render = () -> {
+            var gc = canvas.getGraphicsContext2D();
+            gc.clearRect(0, 0, 640, 480);
+            enemyView.render(gc);
+            playerView.render(gc, player);
+            var params = new javafx.scene.SnapshotParameters();
+            params.setFill(javafx.scene.paint.Color.TRANSPARENT);
+            var pixels = canvas.snapshot(params, null).getPixelReader();
+            return new double[] {spriteAlpha(pixels, player), spriteAlpha(pixels, enemy)};
+        };
+        double[] opaque = onFxThread(render);
+        assertTrue(opaque[0] > 0 && opaque[1] > 0, "Both sprites must render");
+        onFxThread(() -> {
+            player.heal(-1);
+            return null;
+        });
+        double[] healthCost = onFxThread(render);
+        assertEquals(opaque[0], healthCost[0], "Health costs are not projectile hits");
+        double[] enemyHit = onFxThread(() -> {
+            enemy.collideWithProjectile(shot);
+            return render.call();
+        });
+        assertTrue(enemyHit[1] < opaque[1] * 0.4, "An enemy hit must reduce its rendered opacity");
+        assertEquals(opaque[0], enemyHit[0], "An enemy flash must not fade the player");
+        double[] playerHit = onFxThread(() -> {
+            player.collideWithProjectile(shot);
+            return render.call();
+        });
+        assertTrue(playerHit[0] < opaque[0] * 0.4, "A player hit must reduce its rendered opacity");
+        Thread.sleep(350);
+        double[] restored = onFxThread(render);
+        assertTrue(restored[0] > opaque[0] * 0.8, "The player must return to full opacity");
+        assertTrue(restored[1] > opaque[1] * 0.8, "The enemy must return to full opacity");
+    }
+
+    private static double spriteAlpha(javafx.scene.image.PixelReader pixels, finalproject.model.Ship ship) {
+        double sum = 0;
+        for (int y = 0; y < ship.getHeight(); y++) {
+            for (int x = 0; x < ship.getWidth(); x++) {
+                sum += pixels.getArgb((int) ship.getPosition().getX() + x,
+                        (int) ship.getPosition().getY() + y) >>> 24;
+            }
+        }
+        return sum;
     }
 
     private static void assertGameScreens() throws Exception {

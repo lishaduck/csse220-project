@@ -36,7 +36,7 @@ public class Battle implements Screen {
 
     public Battle(GameModel model) {
         this.model = model;
-        view = new BattleView(model.getPlayfield());
+        view = new BattleView(model);
         scene = new Scene(view);
 
         gameLoop = new AnimationTimer() {
@@ -98,6 +98,7 @@ public class Battle implements Screen {
 
     public void stop() {
         gameLoop.stop();
+        view.stopAnimations();
         clearInput();
     }
 

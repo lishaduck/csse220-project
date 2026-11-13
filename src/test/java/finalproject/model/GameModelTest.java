@@ -184,7 +184,7 @@ class GameModelTest {
         }
 
         model.update(new PlayerInput(NONE, true), 0, playfield);
-        Point2D origin = model.getPlayer().getPosition();
+        Point2D origin = model.getPlayer().getPosition().add(22, 0);
         model.update(IDLE, distance / speed, playfield);
         assertEquals(origin.add(0, -distance), model.getProjectiles().getFirst().getPosition());
         model.update(new PlayerInput(NONE, true), 0, playfield);
@@ -222,7 +222,7 @@ class GameModelTest {
         model.update(IDLE, 0.75, playfield);
         assertEquals(1, model.getProjectiles().size());
         Projectile shot = model.getProjectiles().getFirst();
-        assertEquals(new Point2D(105, 300), shot.getPosition());
+        assertEquals(new Point2D(127, 300), shot.getPosition());
         assertEquals(20, model.getPlayer().getHealth());
     }
 
@@ -268,27 +268,27 @@ class GameModelTest {
         enemy.target = enemy.getPosition();
         model.update(new PlayerInput(RIGHT, true), 0.125, playfield);
         assertEquals(1, model.getProjectiles().size());
-        assertEquals(new Point2D(333.5, 337), model.getProjectiles().getFirst().getPosition());
+        assertEquals(new Point2D(355.5, 337), model.getProjectiles().getFirst().getPosition());
 
         model.update(new PlayerInput(LEFT, true), 0.2, playfield);
         assertEquals(1, model.getProjectiles().size());
-        assertEquals(new Point2D(333.5, 217), model.getProjectiles().getFirst().getPosition());
+        assertEquals(new Point2D(355.5, 217), model.getProjectiles().getFirst().getPosition());
         model.update(new PlayerInput(LEFT, true), 1.0 / 120, playfield);
         assertEquals(1, model.getProjectiles().size());
-        assertEquals(new Point2D(333.5, 212), model.getProjectiles().getFirst().getPosition());
+        assertEquals(new Point2D(355.5, 212), model.getProjectiles().getFirst().getPosition());
         model.update(new PlayerInput(LEFT, true), 1.0 / 600, playfield);
         assertEquals(1, model.getProjectiles().size());
-        assertEquals(new Point2D(333.5, 211), model.getProjectiles().getFirst().getPosition());
+        assertEquals(new Point2D(355.5, 211), model.getProjectiles().getFirst().getPosition());
 
         model.update(new PlayerInput(RIGHT, true), 0.05, playfield);
         assertEquals(2, model.getProjectiles().size());
-        assertEquals(new Point2D(333.5, 181), model.getProjectiles().getFirst().getPosition());
-        assertEquals(new Point2D(285.5, 382), model.getProjectiles().getLast().getPosition());
+        assertEquals(new Point2D(355.5, 181), model.getProjectiles().getFirst().getPosition());
+        assertEquals(new Point2D(307.5, 382), model.getProjectiles().getLast().getPosition());
 
         model.update(IDLE, 0.05, playfield);
         assertEquals(2, model.getProjectiles().size());
-        assertEquals(new Point2D(333.5, 151), model.getProjectiles().getFirst().getPosition());
-        assertEquals(new Point2D(285.5, 352), model.getProjectiles().getLast().getPosition());
+        assertEquals(new Point2D(355.5, 151), model.getProjectiles().getFirst().getPosition());
+        assertEquals(new Point2D(307.5, 352), model.getProjectiles().getLast().getPosition());
         model.update(IDLE, 1, playfield);
         assertTrue(model.getProjectiles().stream().noneMatch(projectile -> projectile.getSource() == model.getPlayer()));
         assertTrue(model.getProjectiles().isEmpty());
@@ -299,7 +299,7 @@ class GameModelTest {
                 .filter(projectile -> projectile.getSource() == model.getPlayer())
                 .findFirst()
                 .orElseThrow();
-        assertEquals(new Point2D(323, 177), playerProjectile.getPosition());
+        assertEquals(new Point2D(345, 177), playerProjectile.getPosition());
     }
 
     @Test
@@ -368,7 +368,7 @@ class GameModelTest {
         assertTrue(model.getEnemies().stream().allMatch(Ship::isAlive));
         assertTrue(model.getPlayer().isAlive());
         Projectile skiLiftShot = model.getProjectiles().getLast();
-        assertEquals(new Point2D(200, 104), skiLiftShot.getPosition());
+        assertEquals(new Point2D(222, 104), skiLiftShot.getPosition());
 
         model.getPlayer().setPosition(skiLiftShot.getPosition(), playfield);
         model.update(IDLE, 0, playfield);

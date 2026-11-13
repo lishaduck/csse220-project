@@ -11,14 +11,18 @@ import javafx.scene.image.Image;
 public class EnemyView {
     private final Image enemyImage;
     private final EnemyShip enemy;
+    private final HitFlash hitFlash;
 
     public EnemyView(EnemyShip enemy) {
+        hitFlash = new HitFlash(enemy);
         enemyImage = new Image(enemy.getImage().toExternalForm());
         this.enemy = enemy;
     }
 
     public void render(GraphicsContext gc) {
         Point2D position = enemy.getPosition();
+        gc.save();
+        gc.setGlobalAlpha(hitFlash.opacity());
         gc.drawImage(
                 enemyImage,
                 position.getX(),
@@ -26,5 +30,10 @@ public class EnemyView {
                 enemy.getWidth(),
                 enemy.getHeight()
         );
+        gc.restore();
+    }
+
+    void stopAnimations() {
+        hitFlash.stop();
     }
 }

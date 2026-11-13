@@ -14,7 +14,7 @@ public class Projectile {
 
     Projectile(Ship source, Point2D velocity, int damage) {
         this.source = source;
-        this.position = source.getPosition();
+        this.position = source.getPosition().add((source.getWidth() - SIZE.getWidth()) / 2, 0);
         this.velocity = velocity;
         this.damage = damage;
     }
