@@ -44,6 +44,47 @@ Follow the [full GitHub Desktop guide](https://obscrivn.github.io/csse220web/git
 
 Terminal alternative, only with Maven already installed: `mvn clean javafx:run` from the folder containing `pom.xml`.
 
+## Screen navigation
+
+`GameApp.start` creates a `StageManager` for its JavaFX window and opens a battle.
+Each manager belongs to its own window; there is no global manager. Call
+`StageManager.from(control)` in JavaFX event handlers to find that control's
+window manager without passing a `Stage` or `GameApp` through constructors:
+
+```java
+startButton.setOnAction(event -> StageManager.from(startButton).startNewGame());
+```
+
+Import `finalproject.app.StageManager`. `startNewGame()` creates a fresh
+`GameModel` and `Battle`, resetting the score, player, powerups, and waves.
+Use the same call for a restart button.
+The control must be attached to a managed window when `from(control)` is called;
+put the lookup inside the handler, not in the screen's constructor.
+
+For your own screen, implement `finalproject.app.Screen` and return its `Scene`
+from `getView()`. Navigate with
+`StageManager.from(yourButton).show(new YourScreen())`. The interface only
+supplies the scene; it has no lifecycle hooks. `Battle` observes its scene's
+window attachment and visibility to run its loop only while displayed, removes
+its window listeners when detached, and clears held keys when hidden or when
+the window loses focus. Keep navigation calls on the JavaFX thread.
+
+For a simple scene, a lambda also works. This is a wiring
+example to replace with your own UI, not a bundled start screen:
+
+```java
+Button startButton = new Button("Start");
+startButton.setOnAction(event -> StageManager.from(startButton).startNewGame());
+Scene menuScene = new Scene(new StackPane(startButton), 640, 480);
+StageManager.from(aControlInTheCurrentScreen).show(() -> menuScene);
+```
+
+Use `show(yourExistingBattle)` to resume an existing battle/model after a
+selection screen; use `startNewGame()` only when the run should reset.
+
+`mvn verify` runs the model tests. The navigation integration test also runs when
+`DISPLAY` is set; on headless Linux, use `xvfb-run -a mvn verify` to include it.
+
 ## Wave files
 
 Edit `src/main/resources/levels/levels.txt` and rerun to design waves without
