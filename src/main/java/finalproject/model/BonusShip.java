@@ -58,6 +58,11 @@ public final class BonusShip extends EnemyShip {
     }
 
     @Override
+    public int points() {
+        return 10;
+    }
+
+    @Override
     public URL getImage() {
         return Objects.requireNonNull(
                 getClass().getResource("/BonusShip.gif"),

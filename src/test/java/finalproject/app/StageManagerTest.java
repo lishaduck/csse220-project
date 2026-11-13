@@ -38,6 +38,7 @@ class StageManagerTest {
         try {
             assertEnemyGifAnimates();
             assertShipsFlashOnHits();
+            assertBossBackground();
             assertGameScreens();
             GameModel model = new GameModel(new Dimension2D(640, 480));
             double initialX = model.getPlayer().getPosition().getX();
@@ -187,6 +188,31 @@ class StageManagerTest {
             }
         }
         return sum;
+    }
+
+    private static void assertBossBackground() throws Exception {
+        GameModel model = new GameModel(new Dimension2D(640, 480));
+        for (int wave = 1; wave <= 19; wave++) model.spawnWave();
+        Stage stage = onFxThread(Stage::new);
+        try {
+            onFxThread(() -> {
+                new StageManager(stage).show(new Battle(model));
+                return null;
+            });
+            Thread.sleep(100);
+            int bodyPixel = 0xff715f5f;
+            assertEquals(19, model.getWaveNumber());
+            assertNotEquals(bodyPixel, onFxThread(() -> stage.getScene().getRoot()
+                    .snapshot(null, null).getPixelReader().getArgb(8, 8)));
+            onFxThread(() -> { model.spawnWave(); return null; });
+            assertEquals(20, model.getWaveNumber());
+            await(() -> stage.getScene().getRoot().snapshot(null, null)
+                    .getPixelReader().getArgb(8, 8) == bodyPixel);
+            onFxThread(() -> { model.spawnWave(); return null; });
+            assertEquals(20, model.getWaveNumber(), "The final boss wave repeats without advancing its number");
+        } finally {
+            onFxThread(() -> { stage.close(); return null; });
+        }
     }
 
     private static void assertGameScreens() throws Exception {

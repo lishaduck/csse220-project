@@ -80,43 +80,23 @@ public final class LevelLoader {
                 }
                 Level.Coordinate x = coordinate(parts[1]);
                 Level.Coordinate y = coordinate(parts[2]);
-                int health = 0;
-                double speed = 0;
-                Level.Coordinate targetX = coordinate("0");
-                Level.Coordinate targetY = coordinate("0");
-                if (type == Level.EnemyType.SKILIFT) {
-                    targetX = coordinate(parts[3]);
-                    targetY = y;
-                    health = Integer.parseInt(parts[4]);
-                    speed = Double.parseDouble(parts[5]);
-                }
-                if (type == Level.EnemyType.SPREADSHOT) {
-                    targetX = coordinate(parts[3]);
-                    targetY = coordinate(parts[4]);
-                    health = Integer.parseInt(parts[5]);
-                    speed = Double.parseDouble(parts[6]);
-                }
-                if (type == Level.EnemyType.MINE) {
-                    health = Integer.parseInt(parts[3]);
-                    speed = Double.parseDouble(parts[4]);
-                }
-                if (type == Level.EnemyType.BONUS) {
-                    targetX = coordinate(parts[3]);
-                    targetY = y;
-                    health = Integer.parseInt(parts[4]);
-                    speed = Double.parseDouble(parts[5]);
-                }
-                if (type == Level.EnemyType.BOSSEDGE) {
-                    health = Integer.parseInt(parts[3]);
-                    speed = Double.parseDouble(parts[4]);
-                }
-                if (type == Level.EnemyType.BOSSMIDDLE) {
-                    health = Integer.parseInt(parts[3]);
-                    speed = Double.parseDouble(parts[4]);
-                }
-                if (type == Level.EnemyType.BOSSLASER) {
-                    health = Integer.parseInt(parts[3]);
-                    speed = Double.parseDouble(parts[4]);
+                int health = Integer.parseInt(parts[expectedParts - 2]);
+                double speed = Double.parseDouble(parts[expectedParts - 1]);
+                Level.Coordinate targetX;
+                Level.Coordinate targetY;
+                switch (type) {
+                    case SKILIFT, BONUS -> {
+                        targetX = coordinate(parts[3]);
+                        targetY = y;
+                    }
+                    case SPREADSHOT -> {
+                        targetX = coordinate(parts[3]);
+                        targetY = coordinate(parts[4]);
+                    }
+                    default -> {
+                        targetX = coordinate("0");
+                        targetY = coordinate("0");
+                    }
                 }
                 if (health <= 0 || !Double.isFinite(speed) || speed < 0) {
                     throw new IllegalArgumentException("health must be positive and speed finite and nonnegative");

@@ -57,6 +57,10 @@ public abstract class Ship {
         return hitCount;
     }
 
+    public int points() {
+        return 1;
+    }
+
     public boolean isAlive() {
         return health > 0;
     }

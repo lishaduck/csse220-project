@@ -19,6 +19,7 @@ public final class GameModel {
     private final List<Level> levels;
     private final Random random = new Random();
     private int nextWave;
+    private int waveNumber;
     private boolean waveStarted;
     private Dimension2D playfield;
     private int score;
@@ -46,6 +47,10 @@ public final class GameModel {
      */
     public int getScore() {
         return score;
+    }
+
+    public int getWaveNumber() {
+        return waveNumber;
     }
 
     public Dimension2D getPlayfield() {
@@ -99,10 +104,7 @@ public final class GameModel {
                     boolean wasAlive = enemy.isAlive();
                     if (projectile.collide(enemy)) {
                         if (wasAlive && !enemy.isAlive()) {
-                            if (enemy instanceof BonusShip) {
-                                score += powerups.killScore() * 9;
-                            }
-                            score += powerups.killScore();
+                            score += powerups.killScore() * enemy.points();
                         }
                         return true;
                     }
@@ -136,6 +138,7 @@ public final class GameModel {
         waveStarted = true;
         enemies.clear();
         projectiles.clear();
+        waveNumber = nextWave + 1;
         enemies.addAll(levels.get(nextWave).createEnemies(playfield, random));
         nextWave = Math.min(nextWave + 1, levels.size() - 1);
         score += 100;

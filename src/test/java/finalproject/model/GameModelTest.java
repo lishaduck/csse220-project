@@ -126,6 +126,22 @@ class GameModelTest {
     }
 
     @ParameterizedTest
+    @CsvSource({"SKILIFT, 113", "BONUS, 230"})
+    void scoresKillsUsingTheShipsPointMultiplier(String type, int expectedScore) {
+        Dimension2D playfield = new Dimension2D(640, 480);
+        GameModel model = new GameModel(playfield, LevelLoader.parse(List.of(
+                "WAVE Score", type + " 0.5 0.5 0.5 2 0")));
+        model.update(IDLE, 0, playfield);
+        model.addPowerup(KILL_SCORE);
+        EnemyShip enemy = model.getEnemies().getFirst();
+        enemy.setPosition(model.getPlayer().getPosition(), playfield);
+        enemy.target = enemy.getPosition();
+        model.update(new PlayerInput(NONE, true), 0, playfield);
+        assertFalse(enemy.isAlive());
+        assertEquals(expectedScore, model.getScore());
+    }
+
+    @ParameterizedTest
     @CsvSource({"KILL_SCORE, 2, 13", "DAMAGE_AND_SCORE, 3, 20", "GLASS_CANNON, 5, 10"})
     void damageAndScorePickupsKeepTheirIndividualEffects(PowerUp kind, int damage, int killScore) {
         Dimension2D playfield = new Dimension2D(640, 480);

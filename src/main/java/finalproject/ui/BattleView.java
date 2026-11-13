@@ -5,18 +5,22 @@ import finalproject.model.GameModel;
 import finalproject.model.Projectile;
 import javafx.geometry.Dimension2D;
 import javafx.scene.canvas.Canvas;
+import javafx.scene.image.Image;
 import javafx.scene.layout.Pane;
 import javafx.scene.paint.Color;
 import javafx.scene.text.Font;
 
 import java.util.IdentityHashMap;
 import java.util.Map;
+import java.util.Objects;
 
 /**
  * Owns the playfield's canvas and layout, and composes the game scene.
  */
 class BattleView extends Pane {
     private final javafx.scene.image.Image background = GameBackground.IMAGE;
+    private final Image bossBody = new Image(Objects.requireNonNull(getClass().getResource("/BossBody.gif"))
+            .toExternalForm(), 640, 68, false, false);
     private final Canvas canvas = new Canvas();
     private final PlayerView playerView;
     private final LaserView laserView = new LaserView();
@@ -34,6 +38,10 @@ class BattleView extends Pane {
     void render(GameModel model) {
         var gc = canvas.getGraphicsContext2D();
         gc.drawImage(background, 0, 0, canvas.getWidth(), canvas.getHeight());
+        if (model.getWaveNumber() == 20) {
+            gc.drawImage(bossBody, 0, 0, canvas.getWidth(),
+                    canvas.getWidth() * bossBody.getHeight() / bossBody.getWidth());
+        }
         gc.setFill(Color.WHITE);
         gc.setFont(Font.font(16));
         gc.fillText("Hold A / D to move", 24, 32);

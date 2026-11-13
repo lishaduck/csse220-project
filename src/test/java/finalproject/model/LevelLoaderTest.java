@@ -35,6 +35,7 @@ class LevelLoaderTest {
     @ParameterizedTest
     @ValueSource(strings = {
             "TREE 1 2", "SKILIFT 0 0", "SPREADSHOT 0 0 0 0 1 2 extra",
+            "MINE 0 0", "BONUS 0 0 0 1 2 extra", "BOSSLASER 0 0 1 NaN",
             "SKILIFT 0 two 0 1 2", "SKILIFT 0 0 0 1.5 2",
             "SKILIFT -0.1 0 0 1 2", "SKILIFT 0 1.1 0 1 2",
             "SPREADSHOT 0 0 NaN 0 1 2", "SPREADSHOT 0 0 0 Infinity 1 2",
