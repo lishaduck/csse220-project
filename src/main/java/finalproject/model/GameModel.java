@@ -71,10 +71,12 @@ public final class GameModel {
         if (input.firing() && isRefireable()) {
             projectiles.add(new Projectile(player, powerups.playerProjectileVelocity(), powerups.projectileDamage()));
         }
-        for (int i = 0; i < enemies.size(); i++) {
+        for (int i = 0; i < enemies.size();) {
             enemies.get(i).update(player.getPosition(), playfield, elapsed, projectiles, powerups, enemies);
             if (!enemies.get(i).isAlive()) {
                 enemies.remove(i);
+            } else {
+                i++;
             }
         }
         if (enemies.isEmpty()) {
@@ -121,13 +123,6 @@ public final class GameModel {
 
     public void spawnWave() {
         enemies.addAll(levels.get(nextWave).createEnemies(playfield, random));
-        /*enemies.add(new MineShip(playfield, new Point2D(100, 100), 10, 10));
-        enemies.add(new BonusShip(playfield, new Point2D(playfield.getWidth(), 0), 0, 10, 50));
-        enemies.add(new BossEdge(playfield, new Point2D(playfield.getWidth() / 6, 50), 50));
-        enemies.add(new BossEdge(playfield, new Point2D((playfield.getWidth() / 6) * 5, 50), 50));
-        enemies.add(new BossMiddle(playfield, new Point2D((playfield.getWidth() / 2), 50), 50));
-        enemies.add(new BossLaser(playfield, new Point2D((playfield.getWidth() / 6) * 2, 50), 50));
-        enemies.add(new BossLaser(playfield, new Point2D((playfield.getWidth() / 6) * 4, 50), 50));*/
         nextWave = Math.min(nextWave + 1, levels.size() - 1);
     }
 }
