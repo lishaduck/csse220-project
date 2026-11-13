@@ -38,7 +38,8 @@ public final class SpreadshotShip extends EnemyShip {
             Dimension2D playfield,
             double elapsedSeconds,
             List<Projectile> projectiles,
-            PowerUps powerUps
+            PowerUps powerUps,
+            List<EnemyShip> enemies
     ) {
         elapsedSeconds = powerUps.enemyElapsed(elapsedSeconds);
         boolean reachedTarget = moveTowardTarget(playfield, elapsedSeconds);
@@ -64,14 +65,14 @@ public final class SpreadshotShip extends EnemyShip {
     }
 
     private void fireWideVolley(Point2D playerPosition, List<Projectile> projectiles, PowerUps powerUps) {
-        fireProjectile(projectiles, velocityToward(playerPosition, PROJECTILE_SPEED), powerUps);
-        fireProjectile(projectiles, velocityAtOffset(playerPosition, WIDE_SPREAD_ANGLE), powerUps);
-        fireProjectile(projectiles, velocityAtOffset(playerPosition, -WIDE_SPREAD_ANGLE), powerUps);
+        fireProjectile(projectiles, velocityToward(playerPosition, PROJECTILE_SPEED), powerUps, 1);
+        fireProjectile(projectiles, velocityAtOffset(playerPosition, WIDE_SPREAD_ANGLE), powerUps, 1);
+        fireProjectile(projectiles, velocityAtOffset(playerPosition, -WIDE_SPREAD_ANGLE), powerUps, 1);
     }
 
     private void fireNarrowVolley(Point2D playerPosition, List<Projectile> projectiles, PowerUps powerUps) {
-        fireProjectile(projectiles, velocityAtOffset(playerPosition, NARROW_SPREAD_ANGLE), powerUps);
-        fireProjectile(projectiles, velocityAtOffset(playerPosition, -NARROW_SPREAD_ANGLE), powerUps);
+        fireProjectile(projectiles, velocityAtOffset(playerPosition, NARROW_SPREAD_ANGLE), powerUps, 1);
+        fireProjectile(projectiles, velocityAtOffset(playerPosition, -NARROW_SPREAD_ANGLE), powerUps, 1);
     }
 
     private Point2D velocityAtOffset(Point2D playerPosition, double angleOffset) {
