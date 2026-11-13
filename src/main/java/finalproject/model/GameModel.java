@@ -19,6 +19,7 @@ public final class GameModel {
     private final List<Level> levels;
     private final Random random = new Random();
     private int nextWave;
+    private boolean waveStarted;
     private Dimension2D playfield;
     private int score;
 
@@ -67,6 +68,12 @@ public final class GameModel {
             playfield = visiblePlayfield;
             player.fitToPlayfield(playfield);
         }
+        if (!player.isAlive() || isWaveCleared()) {
+            return;
+        }
+        if (!waveStarted) {
+            spawnWave();
+        }
         player.move(input.direction(), elapsed, playfield);
         if (input.firing() && isRefireable()) {
             projectiles.add(new Projectile(player, powerups.playerProjectileVelocity(), powerups.projectileDamage()));
@@ -78,9 +85,6 @@ public final class GameModel {
             } else {
                 i++;
             }
-        }
-        if (enemies.isEmpty()) {
-            spawnWave();
         }
         updateProjectiles(elapsed);
     }
@@ -121,7 +125,14 @@ public final class GameModel {
         powerups.collect(powerUp, this);
     }
 
+    public boolean isWaveCleared() {
+        return waveStarted && enemies.stream().noneMatch(Ship::isAlive);
+    }
+
     public void spawnWave() {
+        waveStarted = true;
+        enemies.clear();
+        projectiles.clear();
         enemies.addAll(levels.get(nextWave).createEnemies(playfield, random));
         nextWave = Math.min(nextWave + 1, levels.size() - 1);
     }

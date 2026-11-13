@@ -37,6 +37,7 @@ class StageManagerTest {
         Platform.startup(() -> Platform.setImplicitExit(false));
         try {
             assertEnemyGifAnimates();
+            assertGameScreens();
             GameModel model = new GameModel(new Dimension2D(640, 480));
             double initialX = model.getPlayer().getPosition().getX();
             Battle battle = onFxThread(() -> new Battle(model));
@@ -128,6 +129,111 @@ class StageManagerTest {
         } finally {
             Platform.exit();
         }
+    }
+
+    private static void assertGameScreens() throws Exception {
+        Stage stage = onFxThread(Stage::new);
+        GameModel model = new GameModel(new Dimension2D(640, 480), LevelLoader.parse(List.of(
+                "WAVE First", "SKILIFT 0.4625 0.85 0.4625 2 0",
+                "WAVE Second", "SKILIFT 0.75 0.25 0.75 7 0")));
+        Battle battle = onFxThread(() -> new Battle(model));
+        StageManager screens = onFxThread(() -> new StageManager(stage));
+        try {
+            onFxThread(() -> {
+                new GameApp().start(stage);
+                assertEquals("Start game", ((Button) stage.getScene().lookup("#start-game")).getText());
+                ((Button) stage.getScene().lookup("#start-game")).fire();
+                assertNull(stage.getScene().lookup("#start-game"));
+                screens.show(battle);
+                return null;
+            });
+            await(() -> !model.getEnemies().isEmpty());
+            onFxThread(() -> {
+                battle.getView().getOnKeyPressed().handle(new KeyEvent(
+                        KeyEvent.KEY_PRESSED, "", "", KeyCode.D, false, false, false, false));
+                battle.getView().getOnKeyPressed().handle(new KeyEvent(
+                        KeyEvent.KEY_PRESSED, "", "", KeyCode.SPACE, false, false, false, false));
+                model.update(new finalproject.model.PlayerInput(
+                        finalproject.model.HorizontalDirection.NONE, true), 0, model.getPlayfield());
+                assertTrue(model.isWaveCleared(), "Shot must clear fixture wave: player "
+                        + model.getPlayer().getPosition() + " enemy " + model.getEnemies().getFirst().getPosition()
+                        + " health " + model.getEnemies().getFirst().getHealth());
+                return null;
+            });
+            await(() -> stage.getScene() != battle.getView());
+            Scene choices = onFxThread(stage::getScene);
+            onFxThread(() -> {
+                Button earlyChoice = (Button) choices.lookup(".powerup");
+                assertTrue(earlyChoice.isDisabled(), "Choices must ignore input during the opening delay");
+                earlyChoice.fire();
+                assertSame(choices, stage.getScene());
+                return null;
+            });
+            await(() -> !choices.lookup(".powerup").isDisabled());
+            Point2D paused = onFxThread(() -> model.getPlayer().getPosition());
+            Thread.sleep(150);
+            onFxThread(() -> {
+                assertEquals(paused, model.getPlayer().getPosition());
+                var buttons = choices.getRoot().lookupAll(".powerup").stream()
+                        .map(node -> (Button) node).toList();
+                assertEquals(3, buttons.size());
+                assertEquals(3, buttons.stream().map(Button::getUserData).distinct().count());
+                for (Button button : buttons) {
+                    assertFalse(button.getText().isBlank());
+                    var image = ((javafx.scene.image.ImageView) button.getGraphic()).getImage();
+                    assertFalse(image.isError());
+                    assertTrue(image.getWidth() > 0);
+                }
+                Button chosen = buttons.getFirst();
+                chosen.requestFocus();
+                for (int repeat = 0; repeat < 3; repeat++) {
+                    chosen.fireEvent(new KeyEvent(KeyEvent.KEY_PRESSED, " ", " ", KeyCode.SPACE,
+                            false, false, false, false));
+                }
+                chosen.fireEvent(new KeyEvent(KeyEvent.KEY_RELEASED, " ", " ", KeyCode.SPACE,
+                        false, false, false, false));
+                assertSame(choices, stage.getScene(), "Held fire must not choose a powerup");
+                var powerup = (finalproject.model.PowerUp) chosen.getUserData();
+                int expectedScore = powerup == finalproject.model.PowerUp.BONUS_POINTS ? 110 : 10;
+                int expectedHealth = switch (powerup) {
+                    case HEALTH -> 22;
+                    case GLASS_CANNON -> 19;
+                    default -> 20;
+                };
+                chosen.fire();
+                assertSame(battle.getView(), stage.getScene());
+                assertEquals(expectedScore, model.getScore());
+                assertEquals(expectedHealth, model.getPlayer().getHealth());
+                assertEquals(7, model.getEnemies().getFirst().getHealth());
+                assertTrue(model.getProjectiles().isEmpty());
+                return null;
+            });
+            Thread.sleep(150);
+            onFxThread(() -> {
+                assertEquals(paused, model.getPlayer().getPosition(), "Held movement must clear on resume");
+                model.addScore(137);
+                model.getPlayer().heal(-model.getPlayer().getHealth());
+                return null;
+            });
+            await(() -> stage.getScene() != battle.getView());
+            onFxThread(() -> {
+                assertTrue(stage.getScene().getRoot().lookupAll(".label").stream()
+                        .map(node -> ((javafx.scene.control.Label) node).getText())
+                        .anyMatch(text -> text.equals("Final score: " + model.getScore())));
+                ((Button) stage.getScene().lookup("#try-again")).fire();
+                assertNotSame(battle.getView(), stage.getScene());
+                assertNull(stage.getScene().lookup("#try-again"));
+                return null;
+            });
+        } finally {
+            onFxThread(() -> { stage.close(); return null; });
+        }
+    }
+
+    private static void await(java.util.concurrent.Callable<Boolean> condition) throws Exception {
+        long deadline = System.nanoTime() + TimeUnit.SECONDS.toNanos(5);
+        while (!onFxThread(condition) && System.nanoTime() < deadline) Thread.sleep(20);
+        assertTrue(onFxThread(condition), "The screen transition must complete");
     }
 
     private static void assertEnemyGifAnimates() throws Exception {

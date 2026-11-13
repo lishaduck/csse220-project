@@ -1,10 +1,11 @@
 package finalproject.app;
 
+import finalproject.ui.StartScreen;
 import javafx.application.Application;
 import javafx.stage.Stage;
 
 /**
- * Starts the JavaFX application and its initial battle screen.
+ * Starts the JavaFX application and its welcome screen.
  */
 public class GameApp extends Application {
     public static void main(String[] args) {
@@ -15,6 +16,6 @@ public class GameApp extends Application {
         stage.setTitle("Flapping finches");
         stage.setResizable(false);
         StageManager screens = new StageManager(stage);
-        screens.startNewGame();
+        screens.show(new StartScreen());
     }
 }

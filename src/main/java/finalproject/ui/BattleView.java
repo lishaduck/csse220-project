@@ -16,6 +16,7 @@ import java.util.Map;
  * Owns the playfield's canvas and layout, and composes the game scene.
  */
 class BattleView extends Pane {
+    private final javafx.scene.image.Image background = GameBackground.IMAGE;
     private final Canvas canvas = new Canvas();
     private final PlayerView playerView = new PlayerView();
     private final LaserView laserView = new LaserView();
@@ -30,9 +31,8 @@ class BattleView extends Pane {
 
     void render(GameModel model) {
         var gc = canvas.getGraphicsContext2D();
-        gc.setFill(Color.web("#dce8ef"));
-        gc.fillRect(0, 0, canvas.getWidth(), canvas.getHeight());
-        gc.setFill(Color.web("#152536"));
+        gc.drawImage(background, 0, 0, canvas.getWidth(), canvas.getHeight());
+        gc.setFill(Color.WHITE);
         gc.setFont(Font.font(16));
         gc.fillText("Hold A / D to move", 24, 32);
         gc.fillText("Score: " + model.getScore(), 24, 100);

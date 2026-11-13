@@ -58,6 +58,8 @@ class GameModelTest {
         assertEquals(10, model.getScore());
         assertEquals(1, model.getEnemies().size());
 
+        assertTrue(model.isWaveCleared());
+        model.spawnWave();
         for (int i = 0; i < 3; i++) {
             model.update(IDLE, 0, playfield);
             assertEquals(10, model.getScore());
@@ -230,6 +232,8 @@ class GameModelTest {
         GameModel model = new GameModel(playfield);
         model.update(IDLE, 0, playfield);
         model.getEnemies().getFirst().collideWithProjectile(new Projectile(model.getPlayer(), Point2D.ZERO, 2));
+        assertTrue(model.isWaveCleared());
+        model.spawnWave();
         model.update(IDLE, 0, playfield);
         assertEquals(2, model.getEnemies().size());
         model.update(new PlayerInput(NONE, true), 0, playfield);
@@ -304,6 +308,8 @@ class GameModelTest {
         GameModel model = new GameModel(playfield);
         model.update(IDLE, 0, playfield);
         model.getEnemies().getFirst().collideWithProjectile(new Projectile(model.getPlayer(), Point2D.ZERO, 2));
+        assertTrue(model.isWaveCleared());
+        model.spawnWave();
         model.update(IDLE, 0, playfield);
         assertEquals(2, model.getEnemies().size());
         for (EnemyShip enemy : model.getEnemies()) {
@@ -329,6 +335,8 @@ class GameModelTest {
         assertTrue(model.getEnemies().stream().noneMatch(Ship::isAlive));
         assertEquals(20, model.getScore());
 
+        assertTrue(model.isWaveCleared());
+        model.spawnWave();
         model.update(IDLE, 0, playfield);
         assertFalse(model.getEnemies().contains(first));
         assertFalse(model.getEnemies().contains(second));
@@ -343,6 +351,8 @@ class GameModelTest {
         GameModel model = new GameModel(playfield);
         model.update(IDLE, 0, playfield);
         model.getEnemies().getFirst().collideWithProjectile(new Projectile(model.getPlayer(), Point2D.ZERO, 2));
+        assertTrue(model.isWaveCleared());
+        model.spawnWave();
         model.update(IDLE, 0, playfield);
         assertEquals(2, model.getEnemies().size());
         Point2D origin = new Point2D(200, 100);
@@ -394,7 +404,15 @@ class GameModelTest {
                 }
                 assertFalse(enemy.isAlive());
             }
-            model.update(IDLE, 0, playfield);
+            assertTrue(model.isWaveCleared());
+            Point2D pausedPosition = model.getPlayer().getPosition();
+            model.update(MOVE_RIGHT, 1, playfield);
+            assertEquals(pausedPosition, model.getPlayer().getPosition());
+            assertEquals(currentWave, model.getEnemies());
+            model.addPowerup(BONUS_POINTS);
+            model.spawnWave();
+            assertFalse(model.isWaveCleared());
+            assertTrue(model.getProjectiles().isEmpty());
             assertTrue(model.getEnemies().stream().noneMatch(currentWave::contains));
             assertTrue(model.getEnemies().stream().allMatch(Ship::isAlive));
         }
@@ -419,6 +437,7 @@ class GameModelTest {
 
         Dimension2D resized = new Dimension2D(400, 300);
         model.update(IDLE, 0, resized);
+        model.spawnWave();
         EnemyShip boss = model.getEnemies().getFirst();
         assertEquals(1, model.getEnemies().size());
         assertTrue(boss instanceof SpreadshotShip);
@@ -433,6 +452,8 @@ class GameModelTest {
             List<EnemyShip> previous = List.copyOf(model.getEnemies());
             previous.getFirst().collideWithProjectile(new Projectile(model.getPlayer(), Point2D.ZERO, 13));
             model.update(IDLE, 0, resized);
+            assertTrue(model.isWaveCleared());
+            model.spawnWave();
             assertEquals(1, model.getEnemies().size());
             assertFalse(previous.contains(model.getEnemies().getFirst()));
             assertEquals(13, model.getEnemies().getFirst().getHealth());
@@ -449,6 +470,7 @@ class GameModelTest {
         Dimension2D playfield = new Dimension2D(640, 480);
         GameModel model = new GameModel(playfield);
         Ship player = model.getPlayer();
+        model.getPlayer().heal(1000);
         model.update(MOVE_RIGHT, 10, playfield);
 
         Dimension2D resized = new Dimension2D(499, 320);
@@ -477,6 +499,7 @@ class GameModelTest {
         Dimension2D playfield = new Dimension2D(640, 480);
         GameModel model = new GameModel(playfield);
         PlayerShip player = model.getPlayer();
+        player.heal(1000);
         double initialX = player.getPosition().getX();
         double initialY = player.getPosition().getY();
         assertTrue(initialX > 0);

@@ -1,6 +1,7 @@
 package finalproject.ui;
 
 import finalproject.app.Screen;
+import finalproject.app.StageManager;
 import finalproject.model.GameModel;
 import finalproject.model.HorizontalDirection;
 import finalproject.model.PlayerInput;
@@ -47,6 +48,13 @@ public class Battle implements Screen {
                 previousFrame = now;
                 update(elapsed);
                 view.render(model);
+                if (!model.getPlayer().isAlive() || model.isWaveCleared()) {
+                    MenuScreen next = !model.getPlayer().isAlive()
+                            ? new GameOverScreen(model.getScore())
+                            : new PowerupScreen(model, Battle.this);
+                    next.releaseFireBeforeChoosing(pressedKeys.contains(KeyCode.SPACE));
+                    StageManager.from(view).show(next);
+                }
             }
         };
 
