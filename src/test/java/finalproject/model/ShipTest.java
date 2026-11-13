@@ -13,7 +13,7 @@ import static org.junit.jupiter.api.Assertions.assertSame;
 
 class ShipTest {
     @Test
-    void projectilesSnapshotTheirShipsPositionAndUseTheirFiringVelocity() {
+    void projectilesSnapshotTheHorizontalCenterOfDifferentSizedShipsAndUseTheirFiringVelocity() {
         Dimension2D playfield = new Dimension2D(640, 480);
         PlayerShip player = new PlayerShip(playfield);
         Point2D origin = player.getPosition();
@@ -22,21 +22,22 @@ class ShipTest {
 
         for (EnemyShip enemy : List.of(skiLift, spreadshot)) {
             Projectile enemyShot = new Projectile(enemy, new Point2D(17, 43), 2);
+            Point2D firingOrigin = origin.add(enemy == skiLift ? 22 : 14, 0);
             assertSame(enemy, enemyShot.getSource());
-            assertEquals(origin, enemyShot.getPosition());
+            assertEquals(firingOrigin, enemyShot.getPosition());
             enemy.translateX(100, playfield);
-            assertEquals(origin, enemyShot.getPosition());
+            assertEquals(firingOrigin, enemyShot.getPosition());
             enemyShot.updatePosition(0.5);
-            assertEquals(origin.add(8.5, 21.5), enemyShot.getPosition());
+            assertEquals(firingOrigin.add(8.5, 21.5), enemyShot.getPosition());
         }
 
         Projectile playerShot = new Projectile(player, PlayerShip.PROJECTILE_VELOCITY, 2);
         assertSame(player, playerShot.getSource());
-        assertEquals(origin, playerShot.getPosition());
+        assertEquals(origin.add(22, 0), playerShot.getPosition());
         player.translateX(30, playfield);
-        assertEquals(origin, playerShot.getPosition());
+        assertEquals(origin.add(22, 0), playerShot.getPosition());
         playerShot.updatePosition(0.25);
-        assertEquals(origin.add(0, -150), playerShot.getPosition());
+        assertEquals(origin.add(22, -150), playerShot.getPosition());
     }
 
     @ParameterizedTest
@@ -60,11 +61,28 @@ class ShipTest {
         Dimension2D playfield = new Dimension2D(640, 480);
         PlayerShip player = new PlayerShip(playfield);
         player.setPosition(new Point2D(100, 100), playfield);
-        Ship target = new Ship(playfield, new Dimension2D(width, height), new Point2D(100 + dx, 100 + dy)) {};
+        Ship target = new Ship(playfield, new Dimension2D(width, height), new Point2D(122 + dx, 100 + dy)) {};
         target.health = 2;
 
         assertEquals(hit, new Projectile(player, PlayerShip.PROJECTILE_VELOCITY, 2).collide(target));
         assertEquals(!hit, target.isAlive());
+        assertEquals(hit ? 1 : 0, target.getHitCount());
+    }
+
+    @Test
+    void countsEveryProjectileHitWithoutCountingPowerupHealthChanges() {
+        PlayerShip player = new PlayerShip(new Dimension2D(640, 480));
+        Projectile shot = new Projectile(player, Point2D.ZERO, 2);
+        assertEquals(0, player.getHitCount());
+        player.collideWithProjectile(shot);
+        player.heal(2);
+        assertEquals(20, player.getHealth());
+        assertEquals(1, player.getHitCount());
+        player.heal(-1);
+        assertEquals(1, player.getHitCount());
+        player.collideWithProjectile(shot);
+        assertEquals(2, player.getHitCount());
+        assertEquals(17, player.getHealth());
     }
 
     @ParameterizedTest

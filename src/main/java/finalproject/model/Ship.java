@@ -9,6 +9,7 @@ import javafx.geometry.Point2D;
 public abstract class Ship {
     private final Dimension2D size;
     int health;
+    private int hitCount;
     private Point2D position;
 
     protected Ship(Dimension2D playfield, Dimension2D size, Point2D position) {
@@ -48,6 +49,12 @@ public abstract class Ship {
 
     public void collideWithProjectile(Projectile projectile) {
         health -= projectile.damage;
+        hitCount++;
+    }
+
+    /** Counts projectile hits independently of healing and powerup health costs. */
+    public final int getHitCount() {
+        return hitCount;
     }
 
     public boolean isAlive() {

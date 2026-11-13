@@ -11,8 +11,10 @@ import java.util.Objects;
 /** Loads player artwork and draws the player at its model position and size. */
 public class PlayerView {
     private final Image playerImage;
+    private final HitFlash hitFlash;
 
-    public PlayerView() {
+    public PlayerView(PlayerShip player) {
+        hitFlash = new HitFlash(player);
         URL playerResource = Objects.requireNonNull(
                 PlayerView.class.getResource("/PlayerShip.gif"),
                 "Missing player ship resource: /PlayerShip.gif"
@@ -22,6 +24,8 @@ public class PlayerView {
 
     public void render(GraphicsContext gc, PlayerShip player) {
         Point2D position = player.getPosition();
+        gc.save();
+        gc.setGlobalAlpha(hitFlash.opacity());
         gc.drawImage(
                 playerImage,
                 position.getX(),
@@ -29,5 +33,10 @@ public class PlayerView {
                 player.getWidth(),
                 player.getHeight()
         );
+        gc.restore();
+    }
+
+    void stopAnimations() {
+        hitFlash.stop();
     }
 }
