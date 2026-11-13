@@ -13,20 +13,15 @@ import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
 import javafx.scene.layout.HBox;
 
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.List;
 import java.util.Objects;
 
-/** Offers three distinct powerups between waves. */
+/** Offers up to three distinct eligible powerups between waves. */
 public final class PowerupScreen extends MenuScreen {
     public PowerupScreen(GameModel model, Battle battle) {
         super("Wave cleared", "Choose one powerup to continue");
-        List<PowerUp> choices = new ArrayList<>(List.of(PowerUp.values()));
-        Collections.shuffle(choices);
         HBox buttons = new HBox(16);
         buttons.setAlignment(Pos.CENTER);
-        for (PowerUp powerup : choices.subList(0, 3)) {
+        for (PowerUp powerup : model.getPowerupChoices()) {
             ImageView icon = new ImageView(new Image(Objects.requireNonNull(
                     PowerupScreen.class.getResource(iconPath(powerup)), "Missing powerup resource").toExternalForm()));
             icon.setFitWidth(48);

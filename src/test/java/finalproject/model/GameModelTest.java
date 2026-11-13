@@ -5,8 +5,10 @@ import javafx.geometry.Point2D;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.CsvSource;
+import org.junit.jupiter.params.provider.EnumSource;
 import org.junit.jupiter.params.provider.ValueSource;
 
+import java.util.EnumSet;
 import java.util.List;
 
 import static finalproject.model.HorizontalDirection.*;
@@ -31,6 +33,44 @@ class GameModelTest {
             "SKILIFT 0..1 0..0.3333333333333333 0 4 10",
             "SKILIFT 0..1 0..0.3333333333333333 0 4 10",
             "WAVE Fifth", "SPREADSHOT 0..1 0..0.3333333333333333 0..1 0..0.3333333333333333 5 50"));
+
+    @ParameterizedTest
+    @EnumSource(PowerUp.class)
+    void offersOnlyUnownedUpgradesAndRepeatableBenefits(PowerUp remaining) {
+        GameModel model = new GameModel(new Dimension2D(640, 480));
+        assertEquals(3, model.getPowerupChoices().size());
+        assertEquals(3, model.getPowerupChoices().stream().distinct().count());
+        for (PowerUp powerUp : PowerUp.values()) {
+            if (powerUp != remaining) model.addPowerup(powerUp);
+        }
+        EnumSet<PowerUp> expected = EnumSet.of(HEALTH, BONUS_POINTS, remaining);
+        List<PowerUp> choices = model.getPowerupChoices();
+        assertEquals(expected.size(), choices.size());
+        assertEquals(expected, EnumSet.copyOf(choices));
+
+        model.addPowerup(remaining);
+        choices = model.getPowerupChoices();
+        assertEquals(2, choices.size());
+        assertEquals(EnumSet.of(HEALTH, BONUS_POINTS), EnumSet.copyOf(choices));
+        assertEquals(3, new GameModel(new Dimension2D(640, 480)).getPowerupChoices().size());
+    }
+
+    @Test
+    void offersPowerupsAfterWavesOneFourSevenAndTenIncludingRepeatedFinalWaves() {
+        Dimension2D playfield = new Dimension2D(640, 480);
+        GameModel model = new GameModel(playfield, TEST_LEVELS);
+        assertFalse(model.isPowerupDue());
+        model.spawnWave();
+        for (int wave = 1; wave <= 10; wave++) {
+            assertFalse(model.isPowerupDue(), "No offer during wave " + wave);
+            for (EnemyShip enemy : model.getEnemies()) {
+                enemy.collideWithProjectile(new Projectile(model.getPlayer(), Point2D.ZERO, 100));
+            }
+            assertTrue(model.isWaveCleared());
+            assertEquals(List.of(1, 4, 7, 10).contains(wave), model.isPowerupDue(), "Cleared wave " + wave);
+            model.spawnWave();
+        }
+    }
 
     @Test
     void startsPlayersWithTwentyHealthAndKeepsDamageSeparateFromScore() {

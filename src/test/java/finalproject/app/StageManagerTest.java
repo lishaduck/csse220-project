@@ -40,6 +40,7 @@ class StageManagerTest {
             assertShipsFlashOnHits();
             assertBossBackground();
             assertGameScreens();
+            assertPowerupCadenceAndExhaustedUpgrades();
             GameModel model = new GameModel(new Dimension2D(640, 480));
             double initialX = model.getPlayer().getPosition().getX();
             Battle battle = onFxThread(() -> new Battle(model));
@@ -309,6 +310,53 @@ class StageManagerTest {
                 assertNull(stage.getScene().lookup("#try-again"));
                 return null;
             });
+        } finally {
+            onFxThread(() -> { stage.close(); return null; });
+        }
+    }
+
+    private static void assertPowerupCadenceAndExhaustedUpgrades() throws Exception {
+        GameModel model = new GameModel(new Dimension2D(640, 480), LevelLoader.parse(List.of(
+                "WAVE Stationary", "SKILIFT 0.4625 0.85 0.4625 2 0")));
+        for (var powerUp : finalproject.model.PowerUp.values()) model.addPowerup(powerUp);
+        Battle battle = onFxThread(() -> new Battle(model));
+        Stage stage = onFxThread(Stage::new);
+        try {
+            onFxThread(() -> { new StageManager(stage).show(battle); return null; });
+            await(() -> !model.getEnemies().isEmpty());
+            for (int wave = 1; wave <= 7; wave++) {
+                int scoreBefore = onFxThread(model::getScore);
+                onFxThread(() -> {
+                    model.update(new finalproject.model.PlayerInput(
+                            finalproject.model.HorizontalDirection.NONE, true), 0, model.getPlayfield());
+                    assertTrue(model.isWaveCleared());
+                    return null;
+                });
+                if (List.of(1, 4, 7).contains(wave)) {
+                    await(() -> stage.getScene() != battle.getView());
+                    Scene choices = onFxThread(stage::getScene);
+                    await(() -> !choices.lookup(".powerup").isDisabled());
+                    onFxThread(() -> {
+                        var buttons = choices.getRoot().lookupAll(".powerup").stream()
+                                .map(node -> (Button) node).toList();
+                        assertEquals(2, buttons.size());
+                        assertEquals(Set.of(finalproject.model.PowerUp.HEALTH, finalproject.model.PowerUp.BONUS_POINTS),
+                                buttons.stream().map(Button::getUserData).collect(java.util.stream.Collectors.toSet()));
+                        buttons.stream().filter(button -> button.getUserData() == finalproject.model.PowerUp.HEALTH)
+                                .findFirst().orElseThrow().fire();
+                        assertSame(battle.getView(), stage.getScene());
+                        return null;
+                    });
+                } else {
+                    await(() -> model.getScore() == scoreBefore + 126);
+                    onFxThread(() -> { assertSame(battle.getView(), stage.getScene()); return null; });
+                }
+                onFxThread(() -> {
+                    assertFalse(model.isWaveCleared());
+                    assertEquals(scoreBefore + 126, model.getScore());
+                    return null;
+                });
+            }
         } finally {
             onFxThread(() -> { stage.close(); return null; });
         }

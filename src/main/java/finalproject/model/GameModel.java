@@ -20,6 +20,7 @@ public final class GameModel {
     private final Random random = new Random();
     private int nextWave;
     private int waveNumber;
+    private int wavesStarted;
     private boolean waveStarted;
     private Dimension2D playfield;
     private int score;
@@ -130,12 +131,28 @@ public final class GameModel {
         powerups.collect(powerUp, this);
     }
 
+    /** Returns up to three distinct pickups with benefits the player can collect. */
+    public List<PowerUp> getPowerupChoices() {
+        List<PowerUp> choices = new ArrayList<>();
+        for (PowerUp powerUp : PowerUp.values()) {
+            if (powerups.canOffer(powerUp)) choices.add(powerUp);
+        }
+        Collections.shuffle(choices, random);
+        return List.copyOf(choices.subList(0, Math.min(3, choices.size())));
+    }
+
+    /** Offers a pickup after the first cleared wave and every three waves thereafter. */
+    public boolean isPowerupDue() {
+        return isWaveCleared() && (wavesStarted - 1) % 3 == 0;
+    }
+
     public boolean isWaveCleared() {
         return waveStarted && enemies.stream().noneMatch(Ship::isAlive);
     }
 
     public void spawnWave() {
         waveStarted = true;
+        wavesStarted++;
         enemies.clear();
         projectiles.clear();
         waveNumber = nextWave + 1;

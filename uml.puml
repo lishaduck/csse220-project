@@ -1,33 +1,485 @@
 @startuml
-class GameApp
-class Battle
-class BattleView
-class PlayerView
-class GameModel
-abstract class Ship
-class PlayerShip
-class EnemyShip
-class Dimension2D
-class PlayerInput <<record>>
-enum HorizontalDirection
+' Generated from the Java sources with PetalNet/umldoclet.
+!pragma layout smetana
+set separator ::
 
-GameApp --> GameModel
-GameApp --> Battle
-Battle *-- BattleView
-Battle --> GameModel
-Battle ..> HorizontalDirection
-Battle ..> PlayerInput
-PlayerInput --> HorizontalDirection
-GameModel ..> PlayerInput
-GameModel *-- PlayerShip
-GameModel --> Dimension2D : playfield
-Ship <|-- PlayerShip
-Ship <|-- EnemyShip
-Ship --> Dimension2D : size
-Ship ..> Dimension2D : supplied bounds
-PlayerShip ..> HorizontalDirection
-BattleView ..> GameModel
-BattleView ..> Dimension2D
-BattleView *-- PlayerView
-PlayerView ..> PlayerShip
+	package finalproject {
+
+		class Launcher {
+			{static} +main(String[]): void
+		}
+
+	}
+
+	package finalproject.app {
+
+		interface Screen {
+			{abstract} +getView(): Scene
+		}
+
+		class GameApp {
+			{static} +main(String[]): void
+			+start(Stage): void
+		}
+
+		class StageManager {
+			-stage: Stage
+			+StageManager(Stage)
+			{static} +from(Node): StageManager
+			+show(Screen): void
+			+startNewGame(): void
+		}
+
+	}
+
+	package javafx.application {
+		abstract class Application {
+			{static} +STYLESHEET_CASPIAN: String
+			{static} +STYLESHEET_MODENA: String
+			-hostServices: HostServices
+			{static} -userAgentStylesheet: String
+			{abstract} +start(Stage): void
+		}
+	}
+
+	javafx.application::Application <|-- finalproject.app::GameApp
+	finalproject.app::StageManager ..> finalproject.app::Screen
+
+	package finalproject.model {
+
+		class BossEdge {
+			{static} -SIZE: Dimension2D
+			{static} -PROJECTILE_SPEED: double
+			{static} -ATTACK_SEQUENCE_SECONDS: double
+			{static} -WIDE_SPREAD_ANGLE: double
+			-random: Random
+			-attackSequenceElapsed: double
+			+BossEdge(Dimension2D, Point2D, int)
+			+update(Point2D, Dimension2D, double, List<Projectile>, PowerUps, List<EnemyShip>): void
+			-fireWideVolley(Point2D, List<Projectile>, PowerUps): void
+			-velocityAtOffset(Point2D, double): Point2D
+			+getImage(): URL
+		}
+
+		class Level {
+			-name: String
+			+Level(String, List<Enemy>)
+			+createEnemies(Dimension2D, RandomGenerator): List<EnemyShip>
+			+name(): String
+			+enemies(): List<Enemy>
+		}
+
+		enum Level.EnemyType {
+			{static} +SKILIFT
+			{static} +SPREADSHOT
+			{static} +MINE
+			{static} +BONUS
+			{static} +BOSSEDGE
+			{static} +BOSSMIDDLE
+			{static} +BOSSLASER
+		}
+
+		class Level.Enemy {
+			-health: int
+			-speed: double
+			+Enemy(EnemyType, Coordinate, Coordinate, Coordinate, Coordinate, int, double)
+			+type(): EnemyType
+			+x(): Coordinate
+			+y(): Coordinate
+			+targetX(): Coordinate
+			+targetY(): Coordinate
+			+health(): int
+			+speed(): double
+		}
+
+		class Level.Coordinate {
+			-minimum: double
+			-maximum: double
+			+Coordinate(double, double)
+			+sample(RandomGenerator): double
+			+minimum(): double
+			+maximum(): double
+		}
+
+		abstract class EnemyShip {
+			#movementSpeed: double
+			#target: Point2D
+			+EnemyShip(Dimension2D, Dimension2D, Point2D, Point2D, int, double)
+			{static} #crossedThreshold(double, double, double): boolean
+			#moveTowardTarget(Dimension2D, double): boolean
+			#velocityToward(Point2D, double): Point2D
+			#fireProjectile(List<Projectile>, Point2D, PowerUps, int): void
+			{abstract} +getImage(): URL
+			{abstract} +update(Point2D, Dimension2D, double, List<Projectile>, PowerUps, List<EnemyShip>): void
+		}
+
+		abstract class Ship {
+			-size: Dimension2D
+			~health: int
+			-hitCount: int
+			-position: Point2D
+			#Ship(Dimension2D, Dimension2D, Point2D)
+			+getPosition(): Point2D
+			#setPosition(Point2D, Dimension2D): void
+			+getWidth(): double
+			+getHeight(): double
+			+getHealth(): int
+			#translateX(double, Dimension2D): void
+			#translateY(double, Dimension2D): void
+			+collideWithProjectile(Projectile): void
+			+getHitCount(): int
+			+points(): int
+			+isAlive(): boolean
+		}
+
+		enum PowerUp {
+			{static} +KILL_SCORE
+			{static} +HEALTH
+			{static} +DAMAGE_AND_SCORE
+			{static} +FAST_PROJECTILES
+			{static} +GLASS_CANNON
+			{static} +RAPID_FIRE
+			{static} +BONUS_POINTS
+			{static} +SLOW_ENEMIES
+			-activation: Consumer<PowerUps>
+			-PowerUp()
+			-PowerUp(Consumer<PowerUps>)
+			~activate(PowerUps): void
+			~onCollect(GameModel): void
+		}
+
+		class Projectile {
+			{static} +SIZE: Dimension2D
+			~velocity: Point2D
+			~special: int[]
+			~damage: int
+			-position: Point2D
+			~Projectile(Ship, Point2D, int)
+			+getPosition(): Point2D
+			+updatePosition(double): boolean
+			+collide(Ship): boolean
+		}
+
+		class SpreadshotShip {
+			{static} -SIZE: Dimension2D
+			{static} -PROJECTILE_SPEED: double
+			{static} -ATTACK_SEQUENCE_SECONDS: double
+			{static} -FIRST_VOLLEY_SECONDS: double
+			{static} -SECOND_VOLLEY_SECONDS: double
+			{static} -THIRD_VOLLEY_SECONDS: double
+			{static} -RETARGET_SECONDS: double
+			{static} -WIDE_SPREAD_ANGLE: double
+			{static} -NARROW_SPREAD_ANGLE: double
+			-random: Random
+			-attackSequenceElapsed: double
+			+SpreadshotShip(Dimension2D, Point2D, Point2D, int, double)
+			+update(Point2D, Dimension2D, double, List<Projectile>, PowerUps, List<EnemyShip>): void
+			-fireWideVolley(Point2D, List<Projectile>, PowerUps): void
+			-fireNarrowVolley(Point2D, List<Projectile>, PowerUps): void
+			-velocityAtOffset(Point2D, double): Point2D
+			-chooseNextTarget(Dimension2D): Point2D
+			+getImage(): URL
+		}
+
+		class MineShip {
+			{static} -SIZE: Dimension2D
+			{static} -PROJECTILE_SPEED: double
+			-elapsedSinceLastShot: double
+			+MineShip(Dimension2D, Point2D, int, double)
+			+update(Point2D, Dimension2D, double, List<Projectile>, PowerUps, List<EnemyShip>): void
+			+getImage(): URL
+		}
+
+		class GameModel {
+			-random: Random
+			-nextWave: int
+			-waveNumber: int
+			-wavesStarted: int
+			-waveStarted: boolean
+			-playfield: Dimension2D
+			-score: int
+			+GameModel(Dimension2D)
+			+GameModel(Dimension2D, List<Level>)
+			+addScore(int): void
+			+getScore(): int
+			+getWaveNumber(): int
+			+getPlayfield(): Dimension2D
+			+update(PlayerInput, double, Dimension2D): void
+			-updateProjectiles(double): void
+			-isRefireable(): boolean
+			+addPowerup(PowerUp): void
+			+isPowerupDue(): boolean
+			+isWaveCleared(): boolean
+			+spawnWave(): void
+		}
+
+		class SkiLiftShip {
+			{static} -SIZE: Dimension2D
+			{static} -SHOT_INTERVAL_SECONDS: double
+			{static} -PROJECTILE_SPEED: double
+			-elapsedSinceLastShot: double
+			+SkiLiftShip(Dimension2D, Point2D, double, int, double)
+			+update(Point2D, Dimension2D, double, List<Projectile>, PowerUps, List<EnemyShip>): void
+			-updatePatrolTarget(Dimension2D): void
+			+getImage(): URL
+		}
+
+		class BossLaser {
+			{static} -SIZE: Dimension2D
+			{static} -PROJECTILE_SPEED: double
+			{static} -ATTACK_SEQUENCE_SECONDS: double
+			-random: Random
+			-attackSequenceElapsed: double
+			+BossLaser(Dimension2D, Point2D, int)
+			+update(Point2D, Dimension2D, double, List<Projectile>, PowerUps, List<EnemyShip>): void
+			+getImage(): URL
+		}
+
+		class PlayerInput {
+			-firing: boolean
+			+PlayerInput(HorizontalDirection, boolean)
+			+direction(): HorizontalDirection
+			+firing(): boolean
+		}
+
+		enum HorizontalDirection {
+			{static} +LEFT
+			{static} +NONE
+			{static} +RIGHT
+			-sign: int
+			-HorizontalDirection(int)
+			~getSign(): int
+		}
+
+		class PlayerShip {
+			{static} +SIZE: Dimension2D
+			{static} ~PROJECTILE_VELOCITY: Point2D
+			{static} -SPEED: double
+			{static} -BOTTOM_MARGIN: double
+			~PlayerShip(Dimension2D)
+			~move(HorizontalDirection, double, Dimension2D): void
+			~fitToPlayfield(Dimension2D): void
+			+heal(int): void
+		}
+
+		class BonusShip {
+			{static} -SIZE: Dimension2D
+			{static} -PROJECTILE_SPEED: double
+			-cycle: int
+			-elapsedSinceLastShot: double
+			+BonusShip(Dimension2D, Point2D, double, int, double)
+			+update(Point2D, Dimension2D, double, List<Projectile>, PowerUps, List<EnemyShip>): void
+			-updatePatrolTarget(Dimension2D): void
+			+points(): int
+			+getImage(): URL
+		}
+
+		class BossMiddle {
+			{static} -SIZE: Dimension2D
+			{static} -PROJECTILE_SPEED: double
+			{static} -ATTACK_SEQUENCE_SECONDS: double
+			-random: Random
+			-attackSequenceElapsed: double
+			+BossMiddle(Dimension2D, Point2D, int)
+			+update(Point2D, Dimension2D, double, List<Projectile>, PowerUps, List<EnemyShip>): void
+			-velocityAtOffset(Point2D, double): Point2D
+			+getImage(): URL
+		}
+
+		class LevelLoader {
+			{static} +load(String): List<Level>
+			{static} +parse(List<String>): List<Level>
+			{static} -coordinate(String): Coordinate
+			{static} -fraction(String): double
+			{static} -addLevel(List<Level>, String, List<Enemy>, int): void
+		}
+
+		class PowerUps {
+			-projectileDamage: int
+			-playerProjectileVelocity: Point2D
+			-refireDistance: double
+			-killScoreBonus: int
+			-killScoreMultiplier: int
+			-enemySpeedDivisor: double
+			~collect(PowerUp, GameModel): void
+			~canOffer(PowerUp): boolean
+			~upgradeWeapon(int, double, double): void
+			~upgradeKillReward(int, int): void
+			~slowEnemies(double): void
+			~projectileDamage(): int
+			~killScore(): int
+			~playerProjectileVelocity(): Point2D
+			~refireDistance(): double
+			~enemyElapsed(double): double
+			~enemyProjectileVelocity(Point2D): Point2D
+		}
+
+	}
+
+	package java.lang {
+		abstract class Record
+	}
+
+	finalproject.model::EnemyShip <|-- finalproject.model::BossEdge
+	finalproject.model::BossEdge ..> finalproject.model::Projectile
+	finalproject.model::BossEdge ..> finalproject.model::PowerUps
+	java.lang::Record <|-- finalproject.model::Level
+	finalproject.model::Level --> "*" finalproject.model::Level.Enemy: enemies
+	finalproject.model::Level ..> finalproject.model::EnemyShip
+	finalproject.model::Level +-- finalproject.model::Level.EnemyType
+	java.lang::Record <|-- finalproject.model::Level.Enemy
+	finalproject.model::Level +-- finalproject.model::Level.Enemy
+	finalproject.model::Level.Enemy --> finalproject.model::Level.EnemyType: type
+	finalproject.model::Level.Enemy --> finalproject.model::Level.Coordinate: x\ny\ntargetX\ntargetY
+	java.lang::Record <|-- finalproject.model::Level.Coordinate
+	finalproject.model::Level +-- finalproject.model::Level.Coordinate
+	finalproject.model::Ship <|-- finalproject.model::EnemyShip
+	finalproject.model::EnemyShip ..> finalproject.model::Projectile
+	finalproject.model::EnemyShip ..> finalproject.model::PowerUps
+	finalproject.model::Ship ..> finalproject.model::Projectile
+	finalproject.model::PowerUp ..> finalproject.model::PowerUps
+	finalproject.model::PowerUp ..> finalproject.model::GameModel
+	finalproject.model::Projectile --> finalproject.model::Ship: source
+	finalproject.model::EnemyShip <|-- finalproject.model::SpreadshotShip
+	finalproject.model::SpreadshotShip ..> finalproject.model::Projectile
+	finalproject.model::SpreadshotShip ..> finalproject.model::PowerUps
+	finalproject.model::EnemyShip <|-- finalproject.model::MineShip
+	finalproject.model::MineShip ..> finalproject.model::Projectile
+	finalproject.model::MineShip ..> finalproject.model::PowerUps
+	finalproject.model::GameModel --> finalproject.model::PowerUps: powerups
+	finalproject.model::GameModel --> "*" finalproject.model::Level: levels
+	finalproject.model::GameModel --> finalproject.model::PlayerShip: player
+	finalproject.model::GameModel --> "*" finalproject.model::Projectile: projectiles
+	finalproject.model::GameModel --> "*" finalproject.model::EnemyShip: enemies
+	finalproject.model::GameModel --> "*" finalproject.model::PowerUp: powerupChoices
+	finalproject.model::GameModel ..> finalproject.model::PlayerInput
+	finalproject.model::EnemyShip <|-- finalproject.model::SkiLiftShip
+	finalproject.model::SkiLiftShip ..> finalproject.model::Projectile
+	finalproject.model::SkiLiftShip ..> finalproject.model::PowerUps
+	finalproject.model::EnemyShip <|-- finalproject.model::BossLaser
+	finalproject.model::BossLaser ..> finalproject.model::Projectile
+	finalproject.model::BossLaser ..> finalproject.model::PowerUps
+	java.lang::Record <|-- finalproject.model::PlayerInput
+	finalproject.model::PlayerInput --> finalproject.model::HorizontalDirection: direction
+	finalproject.model::Ship <|-- finalproject.model::PlayerShip
+	finalproject.model::PlayerShip ..> finalproject.model::HorizontalDirection
+	finalproject.model::EnemyShip <|-- finalproject.model::BonusShip
+	finalproject.model::BonusShip ..> finalproject.model::Projectile
+	finalproject.model::BonusShip ..> finalproject.model::PowerUps
+	finalproject.model::EnemyShip <|-- finalproject.model::BossMiddle
+	finalproject.model::BossMiddle ..> finalproject.model::Projectile
+	finalproject.model::BossMiddle ..> finalproject.model::PowerUps
+	finalproject.model::LevelLoader ..> finalproject.model::Level
+	finalproject.model::LevelLoader ..> finalproject.model::Level.Coordinate
+	finalproject.model::LevelLoader ..> finalproject.model::Level.Enemy
+	finalproject.model::PowerUps --> "*" finalproject.model::PowerUp: active
+	finalproject.model::PowerUps ..> finalproject.model::GameModel
+
+	package finalproject.ui {
+
+		class LaserView {
+			-laserImage: Image
+			+render(GraphicsContext, Projectile): void
+		}
+
+		class GameOverScreen {
+			+GameOverScreen(int)
+		}
+
+		class PlayerView {
+			-playerImage: Image
+			+PlayerView(PlayerShip)
+			+render(GraphicsContext, PlayerShip): void
+			~stopAnimations(): void
+		}
+
+		class PowerupScreen {
+			+PowerupScreen(GameModel, Battle)
+			{static} -title(PowerUp): String
+			{static} -iconPath(PowerUp): String
+		}
+
+		class HitFlash {
+			-ship: Ship
+			-opacity: DoubleProperty
+			-animation: Timeline
+			-previousHits: int
+			~HitFlash(Ship)
+			~opacity(): double
+			~stop(): void
+		}
+
+		class Battle {
+			-model: GameModel
+			-pressedKeys: Set<KeyCode>
+			-scene: Scene
+			-gameLoop: AnimationTimer
+			-previousFrame: long
+			-focusListener: ChangeListener<Boolean>
+			-showingListener: ChangeListener<Boolean>
+			+Battle(GameModel)
+			-update(double): void
+			+start(): void
+			+clearInput(): void
+			+stop(): void
+			+getView(): Scene
+		}
+
+		abstract class MenuScreen {
+			#content: VBox
+			-scene: Scene
+			#MenuScreen(String, String)
+			{static} #createButton(String): Button
+			~releaseFireBeforeChoosing(boolean): void
+			+getView(): Scene
+		}
+
+		class BattleView {
+			-background: Image
+			-bossBody: Image
+			-canvas: Canvas
+			~BattleView(GameModel)
+			~render(GameModel): void
+			~stopAnimations(): void
+		}
+
+		class EnemyView {
+			-enemyImage: Image
+			-enemy: EnemyShip
+			+EnemyView(EnemyShip)
+			+render(GraphicsContext): void
+			~stopAnimations(): void
+		}
+
+		class GameBackground {
+			{static} ~IMAGE: Image
+		}
+
+		class StartScreen
+
+	}
+
+	package finalproject.app {
+		interface Screen {
+			{abstract} +getView(): Scene
+		}
+	}
+
+	package javafx.scene.layout {
+		class Pane
+	}
+
+	finalproject.ui::MenuScreen <|-- finalproject.ui::GameOverScreen
+	finalproject.ui::PlayerView --> finalproject.ui::HitFlash: hitFlash
+	finalproject.ui::MenuScreen <|-- finalproject.ui::PowerupScreen
+	finalproject.app::Screen <|.. finalproject.ui::Battle
+	finalproject.ui::Battle --> finalproject.ui::BattleView: view
+	finalproject.app::Screen <|.. finalproject.ui::MenuScreen
+	javafx.scene.layout::Pane <|-- finalproject.ui::BattleView
+	finalproject.ui::BattleView --> finalproject.ui::PlayerView: playerView
+	finalproject.ui::BattleView --> finalproject.ui::LaserView: laserView
+	finalproject.ui::BattleView --> "*" finalproject.ui::EnemyView: enemyViews
+	finalproject.ui::EnemyView --> finalproject.ui::HitFlash: hitFlash
+	finalproject.ui::MenuScreen <|-- finalproject.ui::StartScreen
+
 @enduml

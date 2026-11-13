@@ -47,6 +47,9 @@ public class Battle implements Screen {
                         : Math.min((now - previousFrame) / 1_000_000_000.0, 0.05);
                 previousFrame = now;
                 update(elapsed);
+                if (model.getPlayer().isAlive() && model.isWaveCleared() && !model.isPowerupDue()) {
+                    model.spawnWave();
+                }
                 view.render(model);
                 if (!model.getPlayer().isAlive() || model.isWaveCleared()) {
                     MenuScreen next = !model.getPlayer().isAlive()

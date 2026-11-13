@@ -24,6 +24,10 @@ public final class PowerUps {
         powerUp.onCollect(game);
     }
 
+    boolean canOffer(PowerUp powerUp) {
+        return !active.contains(powerUp) || powerUp == PowerUp.HEALTH || powerUp == PowerUp.BONUS_POINTS;
+    }
+
     void upgradeWeapon(int damageBonus, double speedMultiplier, double refireDistanceMultiplier) {
         projectileDamage += damageBonus;
         playerProjectileVelocity = playerProjectileVelocity.multiply(speedMultiplier);

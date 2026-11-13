@@ -45,7 +45,8 @@ class BattleView extends Pane {
         gc.setFill(Color.WHITE);
         gc.setFont(Font.font(16));
         gc.fillText("Hold A / D to move", 24, 32);
-        gc.fillText("Score: " + model.getScore(), 24, 100);
+        gc.fillText("Level: " + model.getWaveNumber() + "    Score: " + model.getScore()
+                + "    HP: " + model.getPlayer().getHealth(), 24, 100);
 
         for (Projectile projectile : model.getProjectiles()) {
             laserView.render(gc, projectile);
