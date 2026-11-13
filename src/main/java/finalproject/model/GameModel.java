@@ -71,7 +71,7 @@ public final class GameModel {
         if (input.firing() && isRefireable()) {
             projectiles.add(new Projectile(player, powerups.playerProjectileVelocity(), powerups.projectileDamage()));
         }
-        for (int i = 0; i < enemies.size();) {
+        for (int i = 0; i < enemies.size(); ) {
             enemies.get(i).update(player.getPosition(), playfield, elapsed, projectiles, powerups, enemies);
             if (!enemies.get(i).isAlive()) {
                 enemies.remove(i);
