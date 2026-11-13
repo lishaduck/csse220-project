@@ -4,6 +4,7 @@ import javafx.geometry.Dimension2D;
 import javafx.geometry.Point2D;
 
 import java.net.URL;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
 
@@ -37,7 +38,8 @@ public final class SkiLiftShip extends EnemyShip {
             Dimension2D playfield,
             double elapsedSeconds,
             List<Projectile> projectiles,
-            PowerUps powerUps
+            PowerUps powerUps,
+            ArrayList<EnemyShip> enemies
     ) {
         elapsedSeconds = powerUps.enemyElapsed(elapsedSeconds);
         double previousShotElapsed = elapsedSinceLastShot;
@@ -45,7 +47,7 @@ public final class SkiLiftShip extends EnemyShip {
         moveTowardTarget(playfield, elapsedSeconds);
 
         if (crossedThreshold(previousShotElapsed, elapsedSeconds, SHOT_INTERVAL_SECONDS)) {
-            fireProjectile(projectiles, new Point2D(0, PROJECTILE_SPEED), powerUps);
+            fireProjectile(projectiles, new Point2D(0, PROJECTILE_SPEED), powerUps, 2);
             elapsedSinceLastShot = 0;
         }
 

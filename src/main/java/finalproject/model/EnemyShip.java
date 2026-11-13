@@ -3,10 +3,11 @@ package finalproject.model;
 import javafx.geometry.Dimension2D;
 import javafx.geometry.Point2D;
 
+import java.util.ArrayList;
 import java.util.List;
 
-abstract sealed public class EnemyShip extends Ship permits SkiLiftShip, SpreadshotShip {
-    private final double movementSpeed;
+abstract sealed public class EnemyShip extends Ship permits SkiLiftShip, SpreadshotShip, MineShip, BonusShip, BossEdge, BossMiddle, BossLaser {
+    protected final double movementSpeed;
     protected Point2D target;
 
 
@@ -48,8 +49,8 @@ abstract sealed public class EnemyShip extends Ship permits SkiLiftShip, Spreads
         return direction.magnitude() == 0 ? Point2D.ZERO : direction.normalize().multiply(projectileSpeed);
     }
 
-    protected final void fireProjectile(List<Projectile> projectiles, Point2D velocity, PowerUps powerUps) {
-        projectiles.add(new Projectile(this, powerUps.enemyProjectileVelocity(velocity), 2));
+    protected final void fireProjectile(List<Projectile> projectiles, Point2D velocity, PowerUps powerUps, int damage) {
+        projectiles.add(new Projectile(this, powerUps.enemyProjectileVelocity(velocity), damage));
     }
 
     public abstract java.net.URL getImage();
@@ -59,6 +60,7 @@ abstract sealed public class EnemyShip extends Ship permits SkiLiftShip, Spreads
             Dimension2D playfield,
             double elapsedSeconds,
             List<Projectile> projectiles,
-            PowerUps powerUps
+            PowerUps powerUps,
+            ArrayList<EnemyShip> enemies
     );
 }

@@ -4,6 +4,7 @@ import javafx.geometry.Dimension2D;
 import javafx.geometry.Point2D;
 
 import java.net.URL;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
 
@@ -37,7 +38,7 @@ public final class BonusShip extends EnemyShip {
             double elapsedSeconds,
             List<Projectile> projectiles,
             PowerUps powerUps,
-            List<EnemyShip> enemies
+            ArrayList<EnemyShip> enemies
     ) {
         elapsedSeconds = powerUps.enemyElapsed(elapsedSeconds);
         moveTowardTarget(playfield, elapsedSeconds);
