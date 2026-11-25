@@ -1,5 +1,9 @@
 package finalproject.model;
 
+import finalproject.model.ship.EnemyShip;
+import finalproject.model.ship.Ship;
+import finalproject.model.ship.SkiLiftShip;
+import finalproject.model.ship.SpreadshotShip;
 import javafx.geometry.Dimension2D;
 import javafx.geometry.Point2D;
 import org.junit.jupiter.api.Test;
@@ -86,13 +90,13 @@ class LevelLoaderTest {
             assertEquals(ships.stream().map(Ship::getPosition).toList(),
                     repeatedSeed.stream().map(Ship::getPosition).toList());
             EnemyShip patrol = ships.getFirst();
-            assertTrue(patrol instanceof SkiLiftShip);
+            assertInstanceOf(SkiLiftShip.class, patrol);
             assertEquals(7, patrol.getHealth());
             assertTrue(patrol.getPosition().getX() >= 160 && patrol.getPosition().getX() < 320);
             assertTrue(patrol.getPosition().getY() >= 60 && patrol.getPosition().getY() < 120);
             patrolPositions.add(patrol.getPosition());
             EnemyShip boss = ships.get(1);
-            assertTrue(boss instanceof SpreadshotShip);
+            assertInstanceOf(SpreadshotShip.class, boss);
             assertEquals(13, boss.getHealth());
             assertTrue(boss.getPosition().getX() >= 480 && boss.getPosition().getX() < 560);
             assertTrue(boss.getPosition().getY() >= 180 && boss.getPosition().getY() < 240);

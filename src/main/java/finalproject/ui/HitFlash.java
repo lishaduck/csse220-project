@@ -1,6 +1,6 @@
 package finalproject.ui;
 
-import finalproject.model.Ship;
+import finalproject.model.ship.Ship;
 import javafx.animation.KeyFrame;
 import javafx.animation.KeyValue;
 import javafx.animation.Timeline;
@@ -8,7 +8,9 @@ import javafx.beans.property.DoubleProperty;
 import javafx.beans.property.SimpleDoubleProperty;
 import javafx.util.Duration;
 
-/** Blinks a ship's opacity when a projectile hits it. */
+/**
+ * Blinks a ship's opacity when a projectile hits it.
+ */
 final class HitFlash {
     private final Ship ship;
     private final DoubleProperty opacity = new SimpleDoubleProperty(1);

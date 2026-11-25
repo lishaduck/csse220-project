@@ -1,6 +1,7 @@
 # WAVE name starts a wave. Blank lines and # comments are ignored.
 # SKILIFT x y targetX health speed
 # SPREADSHOT x y targetX targetY health speed
+# TODO others
 # Coordinates are fractions of the playfield width/height (0 to 1).
 # A coordinate may be min..max, sampled independently on every spawn.
 # Equal bounds are fixed; otherwise the minimum is inclusive and maximum exclusive.

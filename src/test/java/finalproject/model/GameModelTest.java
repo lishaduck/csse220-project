@@ -1,5 +1,6 @@
 package finalproject.model;
 
+import finalproject.model.ship.*;
 import javafx.geometry.Dimension2D;
 import javafx.geometry.Point2D;
 import org.junit.jupiter.api.Test;
@@ -13,9 +14,7 @@ import java.util.List;
 
 import static finalproject.model.HorizontalDirection.*;
 import static finalproject.model.PowerUp.*;
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertFalse;
-import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.junit.jupiter.api.Assertions.*;
 
 class GameModelTest {
     private static final PlayerInput MOVE_LEFT = new PlayerInput(LEFT, false);
@@ -458,7 +457,7 @@ class GameModelTest {
             assertFalse(model.getEnemies().isEmpty());
             if (wave == 5) {
                 assertEquals(1, model.getEnemies().size());
-                assertTrue(model.getEnemies().getFirst() instanceof SpreadshotShip);
+                assertInstanceOf(SpreadshotShip.class, model.getEnemies().getFirst());
             } else {
                 assertTrue(model.getEnemies().stream().allMatch(enemy -> enemy instanceof SkiLiftShip));
             }
@@ -496,7 +495,7 @@ class GameModelTest {
         GameModel model = new GameModel(playfield, levels);
         model.update(IDLE, 0, playfield);
         EnemyShip patrol = model.getEnemies().getFirst();
-        assertTrue(patrol instanceof SkiLiftShip);
+        assertInstanceOf(SkiLiftShip.class, patrol);
         assertEquals(new Point2D(160, 180), patrol.getPosition());
         assertEquals(7, patrol.getHealth());
         model.update(IDLE, 0.4, playfield);
@@ -508,7 +507,7 @@ class GameModelTest {
         model.spawnWave();
         EnemyShip boss = model.getEnemies().getFirst();
         assertEquals(1, model.getEnemies().size());
-        assertTrue(boss instanceof SpreadshotShip);
+        assertInstanceOf(SpreadshotShip.class, boss);
         assertEquals(new Point2D(280, 30), boss.getPosition());
         assertEquals(13, boss.getHealth());
         model.update(IDLE, 0.5, resized);
@@ -529,7 +528,7 @@ class GameModelTest {
         }
         GameModel separateGame = new GameModel(playfield, levels);
         separateGame.update(IDLE, 0, playfield);
-        assertTrue(separateGame.getEnemies().getFirst() instanceof SkiLiftShip);
+        assertInstanceOf(SkiLiftShip.class, separateGame.getEnemies().getFirst());
         assertEquals(7, separateGame.getEnemies().getFirst().getHealth());
     }
 

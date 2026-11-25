@@ -20,7 +20,6 @@ public class Battle implements Screen {
     private final Set<KeyCode> pressedKeys = new HashSet<>();
     private final Scene scene;
     private final AnimationTimer gameLoop;
-    private long previousFrame;
     private final ChangeListener<Boolean> focusListener = (observable, wasFocused, isFocused) -> {
         if (!isFocused) {
             clearInput();
@@ -33,33 +32,14 @@ public class Battle implements Screen {
             stop();
         }
     };
+    private long previousFrame;
 
-    public Battle(GameModel model) {
-        this.model = model;
+    public Battle(GameModel mod) {
+        this.model = mod;
         view = new BattleView(model);
         scene = new Scene(view);
 
-        gameLoop = new AnimationTimer() {
-            @Override
-            public void handle(long now) {
-                double elapsed = previousFrame == 0
-                        ? 0
-                        : Math.min((now - previousFrame) / 1_000_000_000.0, 0.05);
-                previousFrame = now;
-                update(elapsed);
-                if (model.getPlayer().isAlive() && model.isWaveCleared() && !model.isPowerupDue()) {
-                    model.spawnWave();
-                }
-                view.render(model);
-                if (!model.getPlayer().isAlive() || model.isWaveCleared()) {
-                    MenuScreen next = !model.getPlayer().isAlive()
-                            ? new GameOverScreen(model.getScore())
-                            : new PowerupScreen(model, Battle.this);
-                    next.releaseFireBeforeChoosing(pressedKeys.contains(KeyCode.SPACE));
-                    StageManager.from(view).show(next);
-                }
-            }
-        };
+        gameLoop = new GameLoop();
 
         scene.setOnKeyPressed(event -> pressedKeys.add(event.getCode()));
         scene.setOnKeyReleased(event -> pressedKeys.remove(event.getCode()));
@@ -82,10 +62,11 @@ public class Battle implements Screen {
     private void update(double elapsed) {
         boolean left = pressedKeys.contains(KeyCode.A);
         boolean right = pressedKeys.contains(KeyCode.D);
-        HorizontalDirection direction = HorizontalDirection.NONE;
-        if (left != right) {
-            direction = left ? HorizontalDirection.LEFT : HorizontalDirection.RIGHT;
-        }
+        HorizontalDirection direction = left == right ?
+                HorizontalDirection.NONE
+                : left
+                ? HorizontalDirection.LEFT
+                : HorizontalDirection.RIGHT;
         PlayerInput input = new PlayerInput(direction, pressedKeys.contains(KeyCode.SPACE));
         model.update(input, elapsed, new Dimension2D(view.getWidth(), view.getHeight()));
     }
@@ -108,5 +89,32 @@ public class Battle implements Screen {
     @Override
     public Scene getView() {
         return scene;
+    }
+
+    private class GameLoop extends AnimationTimer {
+        @Override
+        public void handle(long now) {
+            double elapsed = previousFrame == 0
+                    ? 0
+                    : Math.min((now - previousFrame) / 1_000_000_000.0, 0.05);
+            previousFrame = now;
+            update(elapsed);
+
+            if (!model.hasWon() && model.getPlayer().isAlive() && model.isWaveCleared() && !model.isPowerupDue()) {
+                model.spawnWave();
+                model.addScore(100);
+            } else if (model.getPlayer().isAlive() && !model.isWaveCleared()) {
+                view.render(model);
+                return;
+            }
+
+            MenuScreen next = model.getPlayer().isAlive()
+                    ? model.hasWon()
+                    ? new GameOverScreen(model.getScore(), true)
+                    : new PowerupScreen(model, Battle.this)
+                    : new GameOverScreen(model.getScore(), false);
+            next.releaseFireBeforeChoosing(pressedKeys.contains(KeyCode.SPACE));
+            StageManager.from(view).show(next);
+        }
     }
 }

@@ -1,5 +1,8 @@
 package finalproject.model;
 
+import finalproject.model.ship.EnemyShip;
+import finalproject.model.ship.SkiLiftShip;
+import finalproject.model.ship.SpreadshotShip;
 import javafx.geometry.Dimension2D;
 import javafx.geometry.Point2D;
 import org.junit.jupiter.api.Test;

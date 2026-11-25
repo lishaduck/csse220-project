@@ -1,5 +1,7 @@
-package finalproject.model;
+package finalproject.model.ship;
 
+import finalproject.model.PowerUps;
+import finalproject.model.Projectile;
 import javafx.geometry.Dimension2D;
 import javafx.geometry.Point2D;
 

@@ -1,8 +1,8 @@
 package finalproject.ui;
 
-import finalproject.model.EnemyShip;
 import finalproject.model.GameModel;
 import finalproject.model.Projectile;
+import finalproject.model.ship.EnemyShip;
 import javafx.geometry.Dimension2D;
 import javafx.scene.canvas.Canvas;
 import javafx.scene.image.Image;

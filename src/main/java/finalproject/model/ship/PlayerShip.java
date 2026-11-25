@@ -1,5 +1,6 @@
-package finalproject.model;
+package finalproject.model.ship;
 
+import finalproject.model.HorizontalDirection;
 import javafx.geometry.Dimension2D;
 import javafx.geometry.Point2D;
 
@@ -8,12 +9,12 @@ import javafx.geometry.Point2D;
  */
 public final class PlayerShip extends Ship {
     public static final Dimension2D SIZE = new Dimension2D(48, 44);
-    static final Point2D PROJECTILE_VELOCITY = new Point2D(0, -600);
+    public static final Point2D PROJECTILE_VELOCITY = new Point2D(0, -600);
 
     private static final double SPEED = 300;
     private static final double BOTTOM_MARGIN = 24;
 
-    PlayerShip(Dimension2D playfield) {
+    public PlayerShip(Dimension2D playfield) {
         super(
                 playfield,
                 SIZE,
@@ -25,12 +26,12 @@ public final class PlayerShip extends Ship {
         health = 20;
     }
 
-    void move(HorizontalDirection direction, double elapsed, Dimension2D playfield) {
+    public void move(HorizontalDirection direction, double elapsed, Dimension2D playfield) {
         double distance = direction.getSign() * SPEED * elapsed;
         translateX(distance, playfield);
     }
 
-    void fitToPlayfield(Dimension2D playfield) {
+    public void fitToPlayfield(Dimension2D playfield) {
         Point2D position = getPosition();
         double destinationY = playfield.getHeight() - getHeight() - BOTTOM_MARGIN;
         translateY(destinationY - position.getY(), playfield);

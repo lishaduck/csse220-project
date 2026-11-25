@@ -1,5 +1,7 @@
-package finalproject.model;
+package finalproject.model.ship;
 
+import finalproject.model.PowerUps;
+import finalproject.model.Projectile;
 import javafx.geometry.Dimension2D;
 import javafx.geometry.Point2D;
 
@@ -41,8 +43,7 @@ public final class SpreadshotShip extends EnemyShip {
             PowerUps powerUps,
             List<EnemyShip> enemies
     ) {
-        elapsedSeconds = powerUps.enemyElapsed(elapsedSeconds);
-        boolean reachedTarget = moveTowardTarget(playfield, elapsedSeconds);
+        boolean reachedTarget = moveTowardTarget(playfield, powerUps.enemyElapsed(elapsedSeconds));
         if (!reachedTarget) {
             return;
         }

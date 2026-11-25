@@ -1,5 +1,6 @@
 package finalproject.model;
 
+import finalproject.model.ship.*;
 import javafx.geometry.Dimension2D;
 import javafx.geometry.Point2D;
 import org.junit.jupiter.api.Test;
@@ -61,7 +62,8 @@ class ShipTest {
         Dimension2D playfield = new Dimension2D(640, 480);
         PlayerShip player = new PlayerShip(playfield);
         player.setPosition(new Point2D(100, 100), playfield);
-        Ship target = new Ship(playfield, new Dimension2D(width, height), new Point2D(122 + dx, 100 + dy)) {};
+        Ship target = new Ship(playfield, new Dimension2D(width, height), new Point2D(122 + dx, 100 + dy)) {
+        };
         target.health = 2;
 
         assertEquals(hit, new Projectile(player, PlayerShip.PROJECTILE_VELOCITY, 2).collide(target));
@@ -89,7 +91,8 @@ class ShipTest {
     @CsvSource({"83, 27", "19, 91"})
     void boundsTranslationByTheShipsOwnSizeAndCanReverseAtEveryEdge(double width, double height) {
         Dimension2D playfield = new Dimension2D(301, 197);
-        Ship ship = new Ship(playfield, new Dimension2D(width, height), Point2D.ZERO) {};
+        Ship ship = new Ship(playfield, new Dimension2D(width, height), Point2D.ZERO) {
+        };
 
         ship.translateX(17.5, playfield);
         ship.translateY(11.25, playfield);

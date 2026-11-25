@@ -1,6 +1,8 @@
 package finalproject.model;
 
-/** Horizontal movement intent, independent of an input device. */
+/**
+ * Horizontal movement intent, independent of an input device.
+ */
 public enum HorizontalDirection {
     LEFT(-1),
     NONE(0),
@@ -12,7 +14,7 @@ public enum HorizontalDirection {
         this.sign = sign;
     }
 
-    int getSign() {
+    public int getSign() {
         return sign;
     }
 }
