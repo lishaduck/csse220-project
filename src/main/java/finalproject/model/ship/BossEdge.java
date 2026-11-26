@@ -1,22 +1,23 @@
-package finalproject.model;
+package finalproject.model.ship;
 
+import finalproject.model.PowerUps;
+import finalproject.model.Projectile;
 import javafx.geometry.Dimension2D;
 import javafx.geometry.Point2D;
 
 import java.net.URL;
 import java.util.List;
 import java.util.Objects;
-import java.util.Random;
 
-public final class BossMiddle extends EnemyShip {
-    private static final Dimension2D SIZE = new Dimension2D(80, 86);
+public final class BossEdge extends EnemyShip {
+    private static final Dimension2D SIZE = new Dimension2D(56, 86);
     private static final double PROJECTILE_SPEED = 200;
-    private static final double ATTACK_SEQUENCE_SECONDS = 15;
+    private static final double ATTACK_SEQUENCE_SECONDS = 1.5;
+    private static final double WIDE_SPREAD_ANGLE = Math.PI / 10;
 
-    private final Random random = new Random();
     private double attackSequenceElapsed;
 
-    public BossMiddle(
+    public BossEdge(
             Dimension2D playfield,
             Point2D position,
             int health
@@ -24,7 +25,7 @@ public final class BossMiddle extends EnemyShip {
         super(playfield, SIZE, position, new Point2D(0, 0), health, 0);
     }
 
-
+    @Override
     public void update(
             Point2D playerPosition,
             Dimension2D playfield,
@@ -34,14 +35,21 @@ public final class BossMiddle extends EnemyShip {
             List<EnemyShip> enemies
     ) {
         elapsedSeconds = powerUps.enemyElapsed(elapsedSeconds);
+
         double previousAttackElapsed = attackSequenceElapsed;
         attackSequenceElapsed += elapsedSeconds;
         if (crossedThreshold(previousAttackElapsed, elapsedSeconds, ATTACK_SEQUENCE_SECONDS)) {
-            enemies.add(new MineShip(playfield, getPosition(), 30, 10));
+            fireWideVolley(playerPosition, projectiles, powerUps);
         }
         if (attackSequenceElapsed >= ATTACK_SEQUENCE_SECONDS) {
             attackSequenceElapsed = 0;
         }
+    }
+
+    private void fireWideVolley(Point2D playerPosition, List<Projectile> projectiles, PowerUps powerUps) {
+        fireProjectile(projectiles, velocityToward(playerPosition, PROJECTILE_SPEED), powerUps, 1);
+        fireProjectile(projectiles, velocityAtOffset(playerPosition, WIDE_SPREAD_ANGLE), powerUps, 1);
+        fireProjectile(projectiles, velocityAtOffset(playerPosition, -WIDE_SPREAD_ANGLE), powerUps, 1);
     }
 
 
@@ -57,8 +65,8 @@ public final class BossMiddle extends EnemyShip {
     @Override
     public URL getImage() {
         return Objects.requireNonNull(
-                getClass().getResource("/BossHead.png"),
-                "Missing laser resource: /BossHead.png"
+                getClass().getResource("/BossCannon.png"),
+                "Missing laser resource: /BossCannon.png"
         );
     }
 }

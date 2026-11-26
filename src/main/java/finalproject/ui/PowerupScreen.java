@@ -4,7 +4,6 @@ import finalproject.app.StageManager;
 import finalproject.model.GameModel;
 import finalproject.model.PowerUp;
 import javafx.animation.PauseTransition;
-import javafx.util.Duration;
 import javafx.geometry.Insets;
 import javafx.geometry.Pos;
 import javafx.scene.control.Button;
@@ -12,10 +11,13 @@ import javafx.scene.control.ContentDisplay;
 import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
 import javafx.scene.layout.HBox;
+import javafx.util.Duration;
 
 import java.util.Objects;
 
-/** Offers up to three distinct eligible powerups between waves. */
+/**
+ * Offers up to three distinct eligible powerups between waves.
+ */
 public final class PowerupScreen extends MenuScreen {
     public PowerupScreen(GameModel model, Battle battle) {
         super("Wave cleared", "Choose one powerup to continue");
@@ -23,7 +25,8 @@ public final class PowerupScreen extends MenuScreen {
         buttons.setAlignment(Pos.CENTER);
         for (PowerUp powerup : model.getPowerupChoices()) {
             ImageView icon = new ImageView(new Image(Objects.requireNonNull(
-                    PowerupScreen.class.getResource(iconPath(powerup)), "Missing powerup resource").toExternalForm()));
+                    PowerupScreen.class.getResource(iconPath(powerup)), "Missing powerup resource").toExternalForm())
+            );
             icon.setFitWidth(48);
             icon.setFitHeight(48);
             icon.setPreserveRatio(true);
@@ -40,13 +43,8 @@ public final class PowerupScreen extends MenuScreen {
             choice.setOnAction(event -> {
                 if (choice.isDisabled()) return;
                 buttons.getChildren().forEach(button -> button.setDisable(true));
-                model.addPowerup(powerup);
-                if (model.getPlayer().isAlive()) {
-                    model.spawnWave();
-                    StageManager.from(choice).show(battle);
-                } else {
-                    StageManager.from(choice).show(new GameOverScreen(model.getScore()));
-                }
+                model.choosePowerup(powerup);
+                StageManager.from(choice).show(battle);
             });
             buttons.getChildren().add(choice);
         }

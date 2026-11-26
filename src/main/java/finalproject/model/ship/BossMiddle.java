@@ -1,22 +1,22 @@
-package finalproject.model;
+package finalproject.model.ship;
 
+import finalproject.model.PowerUps;
+import finalproject.model.Projectile;
 import javafx.geometry.Dimension2D;
 import javafx.geometry.Point2D;
 
 import java.net.URL;
 import java.util.List;
 import java.util.Objects;
-import java.util.Random;
 
-public final class BossLaser extends EnemyShip {
-    private static final Dimension2D SIZE = new Dimension2D(56, 86);
+public final class BossMiddle extends EnemyShip {
+    private static final Dimension2D SIZE = new Dimension2D(80, 86);
     private static final double PROJECTILE_SPEED = 200;
-    private static final double ATTACK_SEQUENCE_SECONDS = 20;
+    private static final double ATTACK_SEQUENCE_SECONDS = 15;
 
-    private final Random random = new Random();
     private double attackSequenceElapsed;
 
-    public BossLaser(
+    public BossMiddle(
             Dimension2D playfield,
             Point2D position,
             int health
@@ -24,7 +24,7 @@ public final class BossLaser extends EnemyShip {
         super(playfield, SIZE, position, new Point2D(0, 0), health, 0);
     }
 
-    @Override
+
     public void update(
             Point2D playerPosition,
             Dimension2D playfield,
@@ -34,11 +34,10 @@ public final class BossLaser extends EnemyShip {
             List<EnemyShip> enemies
     ) {
         elapsedSeconds = powerUps.enemyElapsed(elapsedSeconds);
-
         double previousAttackElapsed = attackSequenceElapsed;
         attackSequenceElapsed += elapsedSeconds;
-        if (attackSequenceElapsed > ATTACK_SEQUENCE_SECONDS / 2) {
-            fireProjectile(projectiles, new Point2D(0, PROJECTILE_SPEED), powerUps, 1);
+        if (crossedThreshold(previousAttackElapsed, elapsedSeconds, ATTACK_SEQUENCE_SECONDS)) {
+            enemies.add(new MineShip(playfield, getPosition(), 30, 10));
         }
         if (attackSequenceElapsed >= ATTACK_SEQUENCE_SECONDS) {
             attackSequenceElapsed = 0;
@@ -46,11 +45,20 @@ public final class BossLaser extends EnemyShip {
     }
 
 
+    private Point2D velocityAtOffset(Point2D playerPosition, double angleOffset) {
+        Point2D velocity = velocityToward(playerPosition, PROJECTILE_SPEED);
+        return new Point2D(
+                velocity.getX() * Math.cos(angleOffset) - velocity.getY() * Math.sin(angleOffset),
+                velocity.getX() * Math.sin(angleOffset) + velocity.getY() * Math.cos(angleOffset)
+        );
+    }
+
+
     @Override
     public URL getImage() {
         return Objects.requireNonNull(
-                getClass().getResource("/BossCannon.png"),
-                "Missing laser resource: /BossCannon.png"
+                getClass().getResource("/BossHead.png"),
+                "Missing laser resource: /BossHead.png"
         );
     }
 }

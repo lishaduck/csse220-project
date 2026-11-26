@@ -1,6 +1,6 @@
 package finalproject.ui;
 
-import finalproject.model.PlayerShip;
+import finalproject.model.ship.PlayerShip;
 import javafx.geometry.Point2D;
 import javafx.scene.canvas.GraphicsContext;
 import javafx.scene.image.Image;
@@ -8,7 +8,9 @@ import javafx.scene.image.Image;
 import java.net.URL;
 import java.util.Objects;
 
-/** Loads player artwork and draws the player at its model position and size. */
+/**
+ * Loads player artwork and draws the player at its model position and size.
+ */
 public class PlayerView {
     private final Image playerImage;
     private final HitFlash hitFlash;

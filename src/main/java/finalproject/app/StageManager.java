@@ -1,12 +1,16 @@
 package finalproject.app;
 
 import finalproject.model.GameModel;
+import finalproject.model.Level;
+import finalproject.model.LevelLoader;
 import finalproject.ui.Battle;
 import javafx.geometry.Dimension2D;
 import javafx.scene.Node;
 import javafx.scene.Scene;
 import javafx.scene.control.Label;
 import javafx.stage.Stage;
+
+import java.util.List;
 
 /**
  * Owns the application's stage and active screen. Use on the JavaFX thread.
@@ -40,7 +44,8 @@ public final class StageManager {
     public void startNewGame() {
         GameModel model;
         try {
-            model = new GameModel(new Dimension2D(640, 480));
+            List<Level> levels = LevelLoader.load("/levels/levels.txt");
+            model = new GameModel(new Dimension2D(640, 480), levels);
         } catch (IllegalArgumentException exception) {
             Label message = new Label("Unable to load levels:\n" + exception.getMessage());
             message.setWrapText(true);

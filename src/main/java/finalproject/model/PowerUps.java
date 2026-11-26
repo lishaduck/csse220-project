@@ -1,5 +1,6 @@
 package finalproject.model;
 
+import finalproject.model.ship.PlayerShip;
 import javafx.geometry.Point2D;
 
 import java.util.EnumSet;
@@ -39,7 +40,7 @@ public final class PowerUps {
         killScoreMultiplier *= multiplier;
     }
 
-    void slowEnemies(double divisor) {
+    public void slowEnemies(double divisor) {
         enemySpeedDivisor *= divisor;
     }
 
@@ -59,11 +60,11 @@ public final class PowerUps {
         return refireDistance;
     }
 
-    double enemyElapsed(double elapsed) {
+    public double enemyElapsed(double elapsed) {
         return elapsed / enemySpeedDivisor;
     }
 
-    Point2D enemyProjectileVelocity(Point2D velocity) {
+    public Point2D enemyProjectileVelocity(Point2D velocity) {
         return new Point2D(velocity.getX() / enemySpeedDivisor, velocity.getY() / enemySpeedDivisor);
     }
 }

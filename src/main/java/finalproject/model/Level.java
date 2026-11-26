@@ -1,5 +1,6 @@
 package finalproject.model;
 
+import finalproject.model.ship.*;
 import javafx.geometry.Dimension2D;
 import javafx.geometry.Point2D;
 
@@ -22,7 +23,9 @@ public record Level(String name, List<Enemy> enemies) {
                     enemy.y().sample(random) * playfield.getHeight());
             double targetX = enemy.targetX().sample(random) * playfield.getWidth();
             ships.add(switch (enemy.type()) {
-                case SKILIFT -> new SkiLiftShip(playfield, position, targetX, enemy.health(), enemy.speed());
+                case SKILIFT -> new SkiLiftShip(playfield, position,
+                        random.nextBoolean() ? targetX : playfield.getWidth() - targetX,
+                        enemy.health(), enemy.speed());
                 case SPREADSHOT -> new SpreadshotShip(playfield, position,
                         new Point2D(targetX, enemy.targetY().sample(random) * playfield.getHeight()),
                         enemy.health(), enemy.speed());
@@ -40,8 +43,15 @@ public record Level(String name, List<Enemy> enemies) {
         SKILIFT, SPREADSHOT, MINE, BONUS, BOSSEDGE, BOSSMIDDLE, BOSSLASER
     }
 
-    public record Enemy(EnemyType type, Coordinate x, Coordinate y, Coordinate targetX,
-                        Coordinate targetY, int health, double speed) {
+    public record Enemy(
+            EnemyType type,
+            Coordinate x,
+            Coordinate y,
+            Coordinate targetX,
+            Coordinate targetY,
+            int health,
+            double speed
+    ) {
     }
 
     public record Coordinate(double minimum, double maximum) {

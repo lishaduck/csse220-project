@@ -1,5 +1,6 @@
-package finalproject.model;
+package finalproject.model.ship;
 
+import finalproject.model.Projectile;
 import javafx.geometry.Dimension2D;
 import javafx.geometry.Point2D;
 
@@ -48,11 +49,13 @@ public abstract class Ship {
     }
 
     public void collideWithProjectile(Projectile projectile) {
-        health -= projectile.damage;
+        health -= projectile.getDamage();
         hitCount++;
     }
 
-    /** Counts projectile hits independently of healing and powerup health costs. */
+    /**
+     * Counts projectile hits independently of healing and powerup health costs.
+     */
     public final int getHitCount() {
         return hitCount;
     }
@@ -63,5 +66,9 @@ public abstract class Ship {
 
     public boolean isAlive() {
         return health > 0;
+    }
+
+    public boolean isBonus() {
+        return false;
     }
 }

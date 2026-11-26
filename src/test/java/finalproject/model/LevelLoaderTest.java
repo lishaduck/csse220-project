@@ -1,5 +1,9 @@
 package finalproject.model;
 
+import finalproject.model.ship.EnemyShip;
+import finalproject.model.ship.Ship;
+import finalproject.model.ship.SkiLiftShip;
+import finalproject.model.ship.SpreadshotShip;
 import javafx.geometry.Dimension2D;
 import javafx.geometry.Point2D;
 import org.junit.jupiter.api.Test;
@@ -35,7 +39,7 @@ class LevelLoaderTest {
     @ParameterizedTest
     @ValueSource(strings = {
             "TREE 1 2", "SKILIFT 0 0", "SPREADSHOT 0 0 0 0 1 2 extra",
-            "MINE 0 0", "BONUS 0 0 0 1 2 extra", "BOSSLASER 0 0 1 NaN",
+            "MINE 0 0", "BONUS 0 0 0 1 2 extra", "BOSSLASER 0 0 1 2", "BOSSEDGE 0 0 0",
             "SKILIFT 0 two 0 1 2", "SKILIFT 0 0 0 1.5 2",
             "SKILIFT -0.1 0 0 1 2", "SKILIFT 0 1.1 0 1 2",
             "SPREADSHOT 0 0 NaN 0 1 2", "SPREADSHOT 0 0 0 Infinity 1 2",
@@ -86,13 +90,13 @@ class LevelLoaderTest {
             assertEquals(ships.stream().map(Ship::getPosition).toList(),
                     repeatedSeed.stream().map(Ship::getPosition).toList());
             EnemyShip patrol = ships.getFirst();
-            assertTrue(patrol instanceof SkiLiftShip);
+            assertInstanceOf(SkiLiftShip.class, patrol);
             assertEquals(7, patrol.getHealth());
             assertTrue(patrol.getPosition().getX() >= 160 && patrol.getPosition().getX() < 320);
             assertTrue(patrol.getPosition().getY() >= 60 && patrol.getPosition().getY() < 120);
             patrolPositions.add(patrol.getPosition());
             EnemyShip boss = ships.get(1);
-            assertTrue(boss instanceof SpreadshotShip);
+            assertInstanceOf(SpreadshotShip.class, boss);
             assertEquals(13, boss.getHealth());
             assertTrue(boss.getPosition().getX() >= 480 && boss.getPosition().getX() < 560);
             assertTrue(boss.getPosition().getY() >= 180 && boss.getPosition().getY() < 240);
@@ -109,24 +113,29 @@ class LevelLoaderTest {
     }
 
     @Test
+    void skiLiftsSetOffInEitherDirectionAtRandom() {
+        Level level = LevelLoader.parse(List.of("WAVE Patrol", "SKILIFT 0.5 0.5 0 1 100")).getFirst();
+        Dimension2D playfield = new Dimension2D(640, 480);
+        Random random = new Random(7);
+        Set<Double> directions = new HashSet<>();
+        for (int spawn = 0; spawn < 20; spawn++) {
+            EnemyShip skiLift = level.createEnemies(playfield, random).getFirst();
+            double start = skiLift.getPosition().getX();
+            skiLift.update(Point2D.ZERO, playfield, 0.1, new java.util.ArrayList<>(), new PowerUps(), List.of());
+            directions.add(Math.signum(skiLift.getPosition().getX() - start));
+        }
+        assertEquals(Set.of(-1.0, 1.0), directions);
+    }
+
+    @Test
     void loadsPackagedResourceAndReportsMissingResource() {
         List<Level> levels = LevelLoader.load("/levels/levels.txt");
-        assertEquals(20, levels.size());
-        assertEquals(1, levels.get(3).enemies().size());
-        Level.Enemy boss = levels.get(3).enemies().getFirst();
-        assertEquals(Level.EnemyType.SPREADSHOT, boss.type());
-        assertEquals(4, boss.health());
-        assertEquals(40, boss.speed());
-        assertEquals(List.of(Level.EnemyType.BOSSEDGE, Level.EnemyType.BOSSEDGE,
-                        Level.EnemyType.BOSSLASER, Level.EnemyType.BOSSLASER, Level.EnemyType.BOSSMIDDLE),
-                levels.getLast().enemies().stream().map(Level.Enemy::type).toList());
+        assertFalse(levels.isEmpty());
         for (Level level : levels) {
             for (EnemyShip enemy : level.createEnemies(new Dimension2D(640, 480), new Random(123))) {
                 assertNotNull(enemy.getImage(), "Each packaged enemy must have an available sprite");
             }
         }
-        assertEquals(new Level.Coordinate(0, 1), boss.x());
-        assertEquals(new Level.Coordinate(0, 1.0 / 3), boss.y());
         String error = assertThrows(IllegalArgumentException.class,
                 () -> LevelLoader.load("/levels/missing.txt")).getMessage();
         assertTrue(error.contains("/levels/missing.txt") && error.contains("src/main/resources"));

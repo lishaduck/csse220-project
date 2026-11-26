@@ -1,5 +1,8 @@
 package finalproject.model;
 
+import finalproject.model.ship.EnemyShip;
+import finalproject.model.ship.PlayerShip;
+import finalproject.model.ship.Ship;
 import javafx.geometry.Dimension2D;
 
 import java.util.ArrayList;
@@ -18,21 +21,17 @@ public final class GameModel {
     private final PowerUps powerups = new PowerUps();
     private final List<Level> levels;
     private final Random random = new Random();
-    private int nextWave;
     private int waveNumber;
-    private int wavesStarted;
     private boolean waveStarted;
+    /** Bonus ships hold a wave open only when nothing else is in it. */
+    private boolean bonusWave;
     private Dimension2D playfield;
     private int score;
-
-    public GameModel(Dimension2D playfield) {
-        this(playfield, LevelLoader.load("/levels/levels.txt"));
-    }
 
     public GameModel(Dimension2D playfield, List<Level> levels) {
         this.levels = List.copyOf(levels);
         this.playfield = playfield;
-        player = new PlayerShip(playfield);
+        this.player = new PlayerShip(playfield);
     }
 
     public void addScore(int num) {
@@ -74,11 +73,11 @@ public final class GameModel {
             playfield = visiblePlayfield;
             player.fitToPlayfield(playfield);
         }
-        if (!player.isAlive() || isWaveCleared()) {
-            return;
-        }
-        if (!waveStarted) {
+        if (!waveStarted || isWaveCleared() && getPhase() == Phase.PLAYING) {
             spawnWave();
+        }
+        if (getPhase() != Phase.PLAYING) {
+            return;
         }
         player.move(input.direction(), elapsed, playfield);
         if (input.firing() && isRefireable()) {
@@ -100,18 +99,17 @@ public final class GameModel {
             if (projectile.updatePosition(elapsed)) {
                 return true;
             }
-            if (projectile.getSource() == player) {
-                for (EnemyShip enemy : enemies) {
-                    boolean wasAlive = enemy.isAlive();
-                    if (projectile.collide(enemy)) {
-                        if (wasAlive && !enemy.isAlive()) {
-                            score += powerups.killScore() * enemy.points();
-                        }
-                        return true;
+
+            for (EnemyShip enemy : enemies) {
+                boolean wasAlive = enemy.isAlive();
+                if (projectile.collide(enemy)) {
+                    if (wasAlive && !enemy.isAlive()) {
+                        score += powerups.killScore() * enemy.points();
                     }
+                    return true;
                 }
-                return false;
             }
+
             return projectile.collide(player);
         });
     }
@@ -120,7 +118,7 @@ public final class GameModel {
         double minDis = powerups.refireDistance();
         for (int i = projectiles.size() - 1; i >= 0; i--) {
             Projectile projectile = projectiles.get(i);
-            if (projectile.getSource() == player) {
+            if (projectile.isSourcedFrom(player)) {
                 return projectile.getPosition().getY() < player.getPosition().getY() - minDis;
             }
         }
@@ -131,7 +129,9 @@ public final class GameModel {
         powerups.collect(powerUp, this);
     }
 
-    /** Returns up to three distinct pickups with benefits the player can collect. */
+    /**
+     * Returns up to three distinct pickups with benefits the player can collect.
+     */
     public List<PowerUp> getPowerupChoices() {
         List<PowerUp> choices = new ArrayList<>();
         for (PowerUp powerUp : PowerUp.values()) {
@@ -141,23 +141,58 @@ public final class GameModel {
         return List.copyOf(choices.subList(0, Math.min(3, choices.size())));
     }
 
-    /** Offers a pickup after the first cleared wave and every three waves thereafter. */
+    /**
+     * Offers a pickup after the first cleared wave and every three waves thereafter.
+     */
     public boolean isPowerupDue() {
-        return isWaveCleared() && (wavesStarted - 1) % 3 == 0;
+        return isWaveCleared() && (waveNumber - 1) % 3 == 0;
     }
 
     public boolean isWaveCleared() {
-        return waveStarted && enemies.stream().noneMatch(Ship::isAlive);
+        return waveStarted && enemies.stream().noneMatch(ship -> ship.isAlive() && (bonusWave || !ship.isBonus()));
+    }
+
+    /**
+     * Reports whether the player cleared the final wave.
+     */
+    public boolean hasWon() {
+        return isWaveCleared() && waveNumber == levels.size();
+    }
+
+    /**
+     * Reports what the game waits on. A cleared wave with no pickup due stays PLAYING;
+     * the next update spawns the following wave.
+     */
+    public Phase getPhase() {
+        if (!player.isAlive()) return Phase.LOST;
+        if (hasWon()) return Phase.WON;
+        if (isPowerupDue()) return Phase.CHOOSING_POWERUP;
+        return Phase.PLAYING;
+    }
+
+    /**
+     * Collects the chosen pickup and starts the next wave unless the pickup was fatal.
+     */
+    public void choosePowerup(PowerUp powerUp) {
+        addPowerup(powerUp);
+        if (player.isAlive()) {
+            spawnWave();
+        }
+    }
+
+    public enum Phase {
+        PLAYING, CHOOSING_POWERUP, WON, LOST
     }
 
     public void spawnWave() {
-        waveStarted = true;
-        wavesStarted++;
         enemies.clear();
         projectiles.clear();
-        waveNumber = nextWave + 1;
-        enemies.addAll(levels.get(nextWave).createEnemies(playfield, random));
-        nextWave = Math.min(nextWave + 1, levels.size() - 1);
-        score += 100;
+        waveStarted = true;
+        enemies.addAll(levels.get(waveNumber).createEnemies(playfield, random));
+        bonusWave = enemies.stream().allMatch(Ship::isBonus);
+        if (waveNumber > 0) {
+            score += 100;
+        }
+        waveNumber++;
     }
 }

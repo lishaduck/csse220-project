@@ -3,7 +3,9 @@ package finalproject.ui;
 import finalproject.app.StageManager;
 import javafx.scene.control.Button;
 
-/** Welcomes the player and starts a fresh game. */
+/**
+ * Welcomes the player and starts a fresh game.
+ */
 public final class StartScreen extends MenuScreen {
     public StartScreen() {
         super("Flapping finches", "A / D to move · Space to fire");

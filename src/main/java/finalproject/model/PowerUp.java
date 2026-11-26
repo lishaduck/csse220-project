@@ -10,7 +10,7 @@ public enum PowerUp {
     HEALTH {
         @Override
         void onCollect(GameModel game) {
-            game.getPlayer().heal(2);
+            game.getPlayer().heal(4);
         }
     },
     DAMAGE_AND_SCORE(effects -> {

@@ -2,6 +2,7 @@ package finalproject.app;
 
 import finalproject.model.GameModel;
 import finalproject.model.LevelLoader;
+import finalproject.model.ship.Ship;
 import finalproject.ui.Battle;
 import javafx.animation.AnimationTimer;
 import javafx.application.Platform;
@@ -32,6 +33,309 @@ import static org.junit.jupiter.api.Assertions.*;
  */
 @EnabledIfEnvironmentVariable(named = "DISPLAY", matches = ".+")
 class StageManagerTest {
+    private static void assertShipsFlashOnHits() throws Exception {
+        GameModel model = new GameModel(new Dimension2D(640, 480), LevelLoader.parse(List.of(
+                "WAVE Flash", "SKILIFT 0.25 0.25 0.25 7 0")));
+        model.update(new finalproject.model.PlayerInput(finalproject.model.HorizontalDirection.NONE, true),
+                0, model.getPlayfield());
+        var enemy = model.getEnemies().getFirst();
+        var player = model.getPlayer();
+        var shot = model.getProjectiles().getFirst();
+        var canvas = onFxThread(() -> new javafx.scene.canvas.Canvas(640, 480));
+        var playerView = onFxThread(() -> new finalproject.ui.PlayerView(player));
+        var enemyView = onFxThread(() -> new finalproject.ui.EnemyView(enemy));
+        java.util.concurrent.Callable<double[]> render = () -> {
+            var gc = canvas.getGraphicsContext2D();
+            gc.clearRect(0, 0, 640, 480);
+            enemyView.render(gc);
+            playerView.render(gc, player);
+            var params = new javafx.scene.SnapshotParameters();
+            params.setFill(javafx.scene.paint.Color.TRANSPARENT);
+            var pixels = canvas.snapshot(params, null).getPixelReader();
+            return new double[]{spriteAlpha(pixels, player), spriteAlpha(pixels, enemy)};
+        };
+        double[] opaque = onFxThread(render);
+        assertTrue(opaque[0] > 0 && opaque[1] > 0, "Both sprites must render");
+        onFxThread(() -> {
+            player.heal(-1);
+            return null;
+        });
+        double[] healthCost = onFxThread(render);
+        assertEquals(opaque[0], healthCost[0], "Health costs are not projectile hits");
+        double[] enemyHit = onFxThread(() -> {
+            enemy.collideWithProjectile(shot);
+            return render.call();
+        });
+        assertTrue(enemyHit[1] < opaque[1] * 0.4, "An enemy hit must reduce its rendered opacity");
+        assertEquals(opaque[0], enemyHit[0], "An enemy flash must not fade the player");
+        double[] playerHit = onFxThread(() -> {
+            player.collideWithProjectile(shot);
+            return render.call();
+        });
+        assertTrue(playerHit[0] < opaque[0] * 0.4, "A player hit must reduce its rendered opacity");
+        Thread.sleep(350);
+        double[] restored = onFxThread(render);
+        assertTrue(restored[0] > opaque[0] * 0.8, "The player must return to full opacity");
+        assertTrue(restored[1] > opaque[1] * 0.8, "The enemy must return to full opacity");
+    }
+
+    private static double spriteAlpha(javafx.scene.image.PixelReader pixels, Ship ship) {
+        double sum = 0;
+        for (int y = 0; y < ship.getHeight(); y++) {
+            for (int x = 0; x < ship.getWidth(); x++) {
+                sum += pixels.getArgb((int) ship.getPosition().getX() + x,
+                        (int) ship.getPosition().getY() + y) >>> 24;
+            }
+        }
+        return sum;
+    }
+
+    private static void assertBossBackground() throws Exception {
+        GameModel model = new GameModel(new Dimension2D(640, 480), LevelLoader.load("/levels/levels.txt"));
+        for (int wave = 1; wave <= 19; wave++) model.spawnWave();
+        Stage stage = onFxThread(Stage::new);
+        try {
+            onFxThread(() -> {
+                new StageManager(stage).show(new Battle(model));
+                return null;
+            });
+            Thread.sleep(100);
+            int bodyPixel = 0xff715f5f;
+            assertEquals(19, model.getWaveNumber());
+            assertNotEquals(bodyPixel, onFxThread(() -> stage.getScene().getRoot()
+                    .snapshot(null, null).getPixelReader().getArgb(8, 8)));
+            onFxThread(() -> {
+                model.spawnWave();
+                return null;
+            });
+            assertEquals(20, model.getWaveNumber());
+            await(() -> stage.getScene().getRoot().snapshot(null, null)
+                    .getPixelReader().getArgb(8, 8) == bodyPixel);
+        } finally {
+            onFxThread(() -> {
+                stage.close();
+                return null;
+            });
+        }
+    }
+
+    private static void assertGameScreens() throws Exception {
+        Stage stage = onFxThread(Stage::new);
+        GameModel model = new GameModel(new Dimension2D(640, 480), LevelLoader.parse(List.of(
+                "WAVE First", "SKILIFT 0.4625 0.85 0.4625 2 0",
+                "WAVE Second", "SKILIFT 0.75 0.25 0.75 7 0")));
+        Battle battle = onFxThread(() -> new Battle(model));
+        StageManager screens = onFxThread(() -> new StageManager(stage));
+        try {
+            onFxThread(() -> {
+                new GameApp().start(stage);
+                assertEquals("Start game", ((Button) stage.getScene().lookup("#start-game")).getText());
+                ((Button) stage.getScene().lookup("#start-game")).fire();
+                assertNull(stage.getScene().lookup("#start-game"));
+                screens.show(battle);
+                return null;
+            });
+            await(() -> !model.getEnemies().isEmpty());
+            onFxThread(() -> {
+                battle.getView().getOnKeyPressed().handle(new KeyEvent(
+                        KeyEvent.KEY_PRESSED, "", "", KeyCode.D, false, false, false, false));
+                battle.getView().getOnKeyPressed().handle(new KeyEvent(
+                        KeyEvent.KEY_PRESSED, "", "", KeyCode.SPACE, false, false, false, false));
+                model.update(new finalproject.model.PlayerInput(
+                        finalproject.model.HorizontalDirection.NONE, true), 0, model.getPlayfield());
+                assertTrue(model.isWaveCleared(), "Shot must clear fixture wave: player "
+                        + model.getPlayer().getPosition() + " enemy " + model.getEnemies().getFirst().getPosition()
+                        + " health " + model.getEnemies().getFirst().getHealth());
+                return null;
+            });
+            await(() -> stage.getScene() != battle.getView());
+            Scene choices = onFxThread(stage::getScene);
+            onFxThread(() -> {
+                Button earlyChoice = (Button) choices.lookup(".powerup");
+                assertTrue(earlyChoice.isDisabled(), "Choices must ignore input during the opening delay");
+                earlyChoice.fire();
+                assertSame(choices, stage.getScene());
+                return null;
+            });
+            await(() -> !choices.lookup(".powerup").isDisabled());
+            Point2D paused = onFxThread(() -> model.getPlayer().getPosition());
+            Thread.sleep(150);
+            onFxThread(() -> {
+                assertEquals(paused, model.getPlayer().getPosition());
+                var buttons = choices.getRoot().lookupAll(".powerup").stream()
+                        .map(node -> (Button) node).toList();
+                assertEquals(3, buttons.size());
+                assertEquals(3, buttons.stream().map(Button::getUserData).distinct().count());
+                for (Button button : buttons) {
+                    assertFalse(button.getText().isBlank());
+                    var image = ((javafx.scene.image.ImageView) button.getGraphic()).getImage();
+                    assertFalse(image.isError());
+                    assertTrue(image.getWidth() > 0);
+                }
+                Button chosen = buttons.getFirst();
+                chosen.requestFocus();
+                for (int repeat = 0; repeat < 3; repeat++) {
+                    chosen.fireEvent(new KeyEvent(KeyEvent.KEY_PRESSED, " ", " ", KeyCode.SPACE,
+                            false, false, false, false));
+                }
+                chosen.fireEvent(new KeyEvent(KeyEvent.KEY_RELEASED, " ", " ", KeyCode.SPACE,
+                        false, false, false, false));
+                assertSame(choices, stage.getScene(), "Held fire must not choose a powerup");
+                chosen.fire();
+                assertSame(battle.getView(), stage.getScene());
+                assertEquals(2, model.getWaveNumber(), "Choosing a powerup starts the next wave");
+                assertEquals(7, model.getEnemies().getFirst().getHealth());
+                assertTrue(model.getProjectiles().isEmpty());
+                return null;
+            });
+            Thread.sleep(150);
+            onFxThread(() -> {
+                assertEquals(paused, model.getPlayer().getPosition(), "Held movement must clear on resume");
+                model.addScore(137);
+                model.getPlayer().heal(-model.getPlayer().getHealth());
+                return null;
+            });
+            await(() -> stage.getScene() != battle.getView());
+            onFxThread(() -> {
+                assertTrue(stage.getScene().getRoot().lookupAll(".label").stream()
+                        .map(node -> ((javafx.scene.control.Label) node).getText())
+                        .anyMatch(text -> text.equals("Final score: " + model.getScore())));
+                ((Button) stage.getScene().lookup("#try-again")).fire();
+                assertNotSame(battle.getView(), stage.getScene());
+                assertNull(stage.getScene().lookup("#try-again"));
+                return null;
+            });
+        } finally {
+            onFxThread(() -> {
+                stage.close();
+                return null;
+            });
+        }
+    }
+
+    private static void assertPowerupCadenceAndExhaustedUpgrades() throws Exception {
+        GameModel model = new GameModel(new Dimension2D(640, 480), java.util.Collections.nCopies(8,
+                LevelLoader.parse(List.of("WAVE Stationary", "SKILIFT 0.4625 0.85 0.4625 2 0")).getFirst()));
+        for (var powerUp : finalproject.model.PowerUp.values()) model.addPowerup(powerUp);
+        Battle battle = onFxThread(() -> new Battle(model));
+        Stage stage = onFxThread(Stage::new);
+        try {
+            onFxThread(() -> {
+                new StageManager(stage).show(battle);
+                return null;
+            });
+            await(() -> !model.getEnemies().isEmpty());
+            for (int wave = 1; wave <= 7; wave++) {
+                int waveBefore = onFxThread(model::getWaveNumber);
+                onFxThread(() -> {
+                    model.update(new finalproject.model.PlayerInput(
+                            finalproject.model.HorizontalDirection.NONE, true), 0, model.getPlayfield());
+                    assertTrue(model.isWaveCleared());
+                    return null;
+                });
+                if (List.of(1, 4, 7).contains(wave)) {
+                    await(() -> stage.getScene() != battle.getView());
+                    Scene choices = onFxThread(stage::getScene);
+                    await(() -> !choices.lookup(".powerup").isDisabled());
+                    onFxThread(() -> {
+                        var buttons = choices.getRoot().lookupAll(".powerup").stream()
+                                .map(node -> (Button) node).toList();
+                        assertEquals(2, buttons.size());
+                        assertEquals(Set.of(finalproject.model.PowerUp.HEALTH, finalproject.model.PowerUp.BONUS_POINTS),
+                                buttons.stream().map(Button::getUserData).collect(java.util.stream.Collectors.toSet()));
+                        buttons.stream().filter(button -> button.getUserData() == finalproject.model.PowerUp.HEALTH)
+                                .findFirst().orElseThrow().fire();
+                        assertSame(battle.getView(), stage.getScene());
+                        return null;
+                    });
+                } else {
+                    await(() -> model.getWaveNumber() == waveBefore + 1);
+                    onFxThread(() -> {
+                        assertSame(battle.getView(), stage.getScene());
+                        return null;
+                    });
+                }
+                onFxThread(() -> {
+                    assertFalse(model.isWaveCleared());
+                    assertEquals(waveBefore + 1, model.getWaveNumber());
+                    return null;
+                });
+            }
+            onFxThread(() -> {
+                model.update(new finalproject.model.PlayerInput(
+                        finalproject.model.HorizontalDirection.NONE, true), 0, model.getPlayfield());
+                assertTrue(model.hasWon());
+                return null;
+            });
+            await(() -> stage.getScene() != battle.getView());
+            onFxThread(() -> {
+                var labels = stage.getScene().getRoot().lookupAll(".label").stream()
+                        .map(node -> ((javafx.scene.control.Label) node).getText()).toList();
+                assertTrue(labels.contains("You won!"), "Clearing the last wave must show the win screen: " + labels);
+                assertTrue(labels.contains("Final score: " + model.getScore()));
+                assertEquals(8, model.getWaveNumber());
+                assertEquals("Play again", ((Button) stage.getScene().lookup("#try-again")).getText());
+                return null;
+            });
+        } finally {
+            onFxThread(() -> {
+                stage.close();
+                return null;
+            });
+        }
+    }
+
+    private static void await(java.util.concurrent.Callable<Boolean> condition) throws Exception {
+        long deadline = System.nanoTime() + TimeUnit.SECONDS.toNanos(5);
+        while (!onFxThread(condition) && System.nanoTime() < deadline) Thread.sleep(20);
+        assertTrue(onFxThread(condition), "The screen transition must complete");
+    }
+
+    private static void assertEnemyGifAnimates() throws Exception {
+        CompletableFuture<Set<Integer>> result = new CompletableFuture<>();
+        onFxThread(() -> {
+            GameModel model = new GameModel(new Dimension2D(640, 480), LevelLoader.parse(List.of(
+                    "WAVE Animation", "SKILIFT 0.25 0.25 0.25 2 0")));
+            Battle battle = new Battle(model);
+            Stage stage = new Stage();
+            new StageManager(stage).show(battle);
+            new AnimationTimer() {
+                private final Set<Integer> frames = new HashSet<>();
+                private long start;
+
+                @Override
+                public void handle(long now) {
+                    try {
+                        if (start == 0) start = now;
+                        if (now - start < 200_000_000L) return;
+                        int[] pixels = new int[48 * 36];
+                        battle.getView().getRoot().snapshot(null, null).getPixelReader().getPixels(
+                                160, 120, 48, 36, PixelFormat.getIntArgbInstance(), pixels, 0, 48);
+                        frames.add(Arrays.hashCode(pixels));
+                        if (now - start >= 1_200_000_000L) {
+                            stop();
+                            stage.close();
+                            result.complete(frames);
+                        }
+                    } catch (Throwable error) {
+                        stop();
+                        stage.close();
+                        result.completeExceptionally(error);
+                    }
+                }
+            }.start();
+            return null;
+        });
+        assertTrue(result.get(15, TimeUnit.SECONDS).size() > 1,
+                "The stationary enemy must display more than its GIF's initial frame during battle");
+    }
+
+    private static <T> T onFxThread(java.util.concurrent.Callable<T> action) throws Exception {
+        FutureTask<T> task = new FutureTask<>(action);
+        Platform.runLater(task);
+        return task.get(5, TimeUnit.SECONDS);
+    }
+
     @Test
     void switchesScreensStopsTheBattleAndStartsAnotherGame() throws Exception {
         Platform.startup(() -> Platform.setImplicitExit(false));
@@ -41,7 +345,7 @@ class StageManagerTest {
             assertBossBackground();
             assertGameScreens();
             assertPowerupCadenceAndExhaustedUpgrades();
-            GameModel model = new GameModel(new Dimension2D(640, 480));
+            GameModel model = new GameModel(new Dimension2D(640, 480), LevelLoader.load("/levels/levels.txt"));
             double initialX = model.getPlayer().getPosition().getX();
             Battle battle = onFxThread(() -> new Battle(model));
             Stage stage = onFxThread(Stage::new);
@@ -132,284 +436,5 @@ class StageManagerTest {
         } finally {
             Platform.exit();
         }
-    }
-
-    private static void assertShipsFlashOnHits() throws Exception {
-        GameModel model = new GameModel(new Dimension2D(640, 480), LevelLoader.parse(List.of(
-                "WAVE Flash", "SKILIFT 0.25 0.25 0.25 7 0")));
-        model.update(new finalproject.model.PlayerInput(finalproject.model.HorizontalDirection.NONE, true),
-                0, model.getPlayfield());
-        var enemy = model.getEnemies().getFirst();
-        var player = model.getPlayer();
-        var shot = model.getProjectiles().getFirst();
-        var canvas = onFxThread(() -> new javafx.scene.canvas.Canvas(640, 480));
-        var playerView = onFxThread(() -> new finalproject.ui.PlayerView(player));
-        var enemyView = onFxThread(() -> new finalproject.ui.EnemyView(enemy));
-        java.util.concurrent.Callable<double[]> render = () -> {
-            var gc = canvas.getGraphicsContext2D();
-            gc.clearRect(0, 0, 640, 480);
-            enemyView.render(gc);
-            playerView.render(gc, player);
-            var params = new javafx.scene.SnapshotParameters();
-            params.setFill(javafx.scene.paint.Color.TRANSPARENT);
-            var pixels = canvas.snapshot(params, null).getPixelReader();
-            return new double[] {spriteAlpha(pixels, player), spriteAlpha(pixels, enemy)};
-        };
-        double[] opaque = onFxThread(render);
-        assertTrue(opaque[0] > 0 && opaque[1] > 0, "Both sprites must render");
-        onFxThread(() -> {
-            player.heal(-1);
-            return null;
-        });
-        double[] healthCost = onFxThread(render);
-        assertEquals(opaque[0], healthCost[0], "Health costs are not projectile hits");
-        double[] enemyHit = onFxThread(() -> {
-            enemy.collideWithProjectile(shot);
-            return render.call();
-        });
-        assertTrue(enemyHit[1] < opaque[1] * 0.4, "An enemy hit must reduce its rendered opacity");
-        assertEquals(opaque[0], enemyHit[0], "An enemy flash must not fade the player");
-        double[] playerHit = onFxThread(() -> {
-            player.collideWithProjectile(shot);
-            return render.call();
-        });
-        assertTrue(playerHit[0] < opaque[0] * 0.4, "A player hit must reduce its rendered opacity");
-        Thread.sleep(350);
-        double[] restored = onFxThread(render);
-        assertTrue(restored[0] > opaque[0] * 0.8, "The player must return to full opacity");
-        assertTrue(restored[1] > opaque[1] * 0.8, "The enemy must return to full opacity");
-    }
-
-    private static double spriteAlpha(javafx.scene.image.PixelReader pixels, finalproject.model.Ship ship) {
-        double sum = 0;
-        for (int y = 0; y < ship.getHeight(); y++) {
-            for (int x = 0; x < ship.getWidth(); x++) {
-                sum += pixels.getArgb((int) ship.getPosition().getX() + x,
-                        (int) ship.getPosition().getY() + y) >>> 24;
-            }
-        }
-        return sum;
-    }
-
-    private static void assertBossBackground() throws Exception {
-        GameModel model = new GameModel(new Dimension2D(640, 480));
-        for (int wave = 1; wave <= 19; wave++) model.spawnWave();
-        Stage stage = onFxThread(Stage::new);
-        try {
-            onFxThread(() -> {
-                new StageManager(stage).show(new Battle(model));
-                return null;
-            });
-            Thread.sleep(100);
-            int bodyPixel = 0xff715f5f;
-            assertEquals(19, model.getWaveNumber());
-            assertNotEquals(bodyPixel, onFxThread(() -> stage.getScene().getRoot()
-                    .snapshot(null, null).getPixelReader().getArgb(8, 8)));
-            onFxThread(() -> { model.spawnWave(); return null; });
-            assertEquals(20, model.getWaveNumber());
-            await(() -> stage.getScene().getRoot().snapshot(null, null)
-                    .getPixelReader().getArgb(8, 8) == bodyPixel);
-            onFxThread(() -> { model.spawnWave(); return null; });
-            assertEquals(20, model.getWaveNumber(), "The final boss wave repeats without advancing its number");
-        } finally {
-            onFxThread(() -> { stage.close(); return null; });
-        }
-    }
-
-    private static void assertGameScreens() throws Exception {
-        Stage stage = onFxThread(Stage::new);
-        GameModel model = new GameModel(new Dimension2D(640, 480), LevelLoader.parse(List.of(
-                "WAVE First", "SKILIFT 0.4625 0.85 0.4625 2 0",
-                "WAVE Second", "SKILIFT 0.75 0.25 0.75 7 0")));
-        Battle battle = onFxThread(() -> new Battle(model));
-        StageManager screens = onFxThread(() -> new StageManager(stage));
-        try {
-            onFxThread(() -> {
-                new GameApp().start(stage);
-                assertEquals("Start game", ((Button) stage.getScene().lookup("#start-game")).getText());
-                ((Button) stage.getScene().lookup("#start-game")).fire();
-                assertNull(stage.getScene().lookup("#start-game"));
-                screens.show(battle);
-                return null;
-            });
-            await(() -> !model.getEnemies().isEmpty());
-            onFxThread(() -> {
-                battle.getView().getOnKeyPressed().handle(new KeyEvent(
-                        KeyEvent.KEY_PRESSED, "", "", KeyCode.D, false, false, false, false));
-                battle.getView().getOnKeyPressed().handle(new KeyEvent(
-                        KeyEvent.KEY_PRESSED, "", "", KeyCode.SPACE, false, false, false, false));
-                model.update(new finalproject.model.PlayerInput(
-                        finalproject.model.HorizontalDirection.NONE, true), 0, model.getPlayfield());
-                assertTrue(model.isWaveCleared(), "Shot must clear fixture wave: player "
-                        + model.getPlayer().getPosition() + " enemy " + model.getEnemies().getFirst().getPosition()
-                        + " health " + model.getEnemies().getFirst().getHealth());
-                return null;
-            });
-            await(() -> stage.getScene() != battle.getView());
-            Scene choices = onFxThread(stage::getScene);
-            onFxThread(() -> {
-                Button earlyChoice = (Button) choices.lookup(".powerup");
-                assertTrue(earlyChoice.isDisabled(), "Choices must ignore input during the opening delay");
-                earlyChoice.fire();
-                assertSame(choices, stage.getScene());
-                return null;
-            });
-            await(() -> !choices.lookup(".powerup").isDisabled());
-            Point2D paused = onFxThread(() -> model.getPlayer().getPosition());
-            Thread.sleep(150);
-            onFxThread(() -> {
-                assertEquals(paused, model.getPlayer().getPosition());
-                var buttons = choices.getRoot().lookupAll(".powerup").stream()
-                        .map(node -> (Button) node).toList();
-                assertEquals(3, buttons.size());
-                assertEquals(3, buttons.stream().map(Button::getUserData).distinct().count());
-                for (Button button : buttons) {
-                    assertFalse(button.getText().isBlank());
-                    var image = ((javafx.scene.image.ImageView) button.getGraphic()).getImage();
-                    assertFalse(image.isError());
-                    assertTrue(image.getWidth() > 0);
-                }
-                Button chosen = buttons.getFirst();
-                chosen.requestFocus();
-                for (int repeat = 0; repeat < 3; repeat++) {
-                    chosen.fireEvent(new KeyEvent(KeyEvent.KEY_PRESSED, " ", " ", KeyCode.SPACE,
-                            false, false, false, false));
-                }
-                chosen.fireEvent(new KeyEvent(KeyEvent.KEY_RELEASED, " ", " ", KeyCode.SPACE,
-                        false, false, false, false));
-                assertSame(choices, stage.getScene(), "Held fire must not choose a powerup");
-                var powerup = (finalproject.model.PowerUp) chosen.getUserData();
-                int expectedScore = powerup == finalproject.model.PowerUp.BONUS_POINTS ? 310 : 210;
-                int expectedHealth = switch (powerup) {
-                    case HEALTH -> 22;
-                    case GLASS_CANNON -> 19;
-                    default -> 20;
-                };
-                chosen.fire();
-                assertSame(battle.getView(), stage.getScene());
-                assertEquals(expectedScore, model.getScore());
-                assertEquals(expectedHealth, model.getPlayer().getHealth());
-                assertEquals(7, model.getEnemies().getFirst().getHealth());
-                assertTrue(model.getProjectiles().isEmpty());
-                return null;
-            });
-            Thread.sleep(150);
-            onFxThread(() -> {
-                assertEquals(paused, model.getPlayer().getPosition(), "Held movement must clear on resume");
-                model.addScore(137);
-                model.getPlayer().heal(-model.getPlayer().getHealth());
-                return null;
-            });
-            await(() -> stage.getScene() != battle.getView());
-            onFxThread(() -> {
-                assertTrue(stage.getScene().getRoot().lookupAll(".label").stream()
-                        .map(node -> ((javafx.scene.control.Label) node).getText())
-                        .anyMatch(text -> text.equals("Final score: " + model.getScore())));
-                ((Button) stage.getScene().lookup("#try-again")).fire();
-                assertNotSame(battle.getView(), stage.getScene());
-                assertNull(stage.getScene().lookup("#try-again"));
-                return null;
-            });
-        } finally {
-            onFxThread(() -> { stage.close(); return null; });
-        }
-    }
-
-    private static void assertPowerupCadenceAndExhaustedUpgrades() throws Exception {
-        GameModel model = new GameModel(new Dimension2D(640, 480), LevelLoader.parse(List.of(
-                "WAVE Stationary", "SKILIFT 0.4625 0.85 0.4625 2 0")));
-        for (var powerUp : finalproject.model.PowerUp.values()) model.addPowerup(powerUp);
-        Battle battle = onFxThread(() -> new Battle(model));
-        Stage stage = onFxThread(Stage::new);
-        try {
-            onFxThread(() -> { new StageManager(stage).show(battle); return null; });
-            await(() -> !model.getEnemies().isEmpty());
-            for (int wave = 1; wave <= 7; wave++) {
-                int scoreBefore = onFxThread(model::getScore);
-                onFxThread(() -> {
-                    model.update(new finalproject.model.PlayerInput(
-                            finalproject.model.HorizontalDirection.NONE, true), 0, model.getPlayfield());
-                    assertTrue(model.isWaveCleared());
-                    return null;
-                });
-                if (List.of(1, 4, 7).contains(wave)) {
-                    await(() -> stage.getScene() != battle.getView());
-                    Scene choices = onFxThread(stage::getScene);
-                    await(() -> !choices.lookup(".powerup").isDisabled());
-                    onFxThread(() -> {
-                        var buttons = choices.getRoot().lookupAll(".powerup").stream()
-                                .map(node -> (Button) node).toList();
-                        assertEquals(2, buttons.size());
-                        assertEquals(Set.of(finalproject.model.PowerUp.HEALTH, finalproject.model.PowerUp.BONUS_POINTS),
-                                buttons.stream().map(Button::getUserData).collect(java.util.stream.Collectors.toSet()));
-                        buttons.stream().filter(button -> button.getUserData() == finalproject.model.PowerUp.HEALTH)
-                                .findFirst().orElseThrow().fire();
-                        assertSame(battle.getView(), stage.getScene());
-                        return null;
-                    });
-                } else {
-                    await(() -> model.getScore() == scoreBefore + 126);
-                    onFxThread(() -> { assertSame(battle.getView(), stage.getScene()); return null; });
-                }
-                onFxThread(() -> {
-                    assertFalse(model.isWaveCleared());
-                    assertEquals(scoreBefore + 126, model.getScore());
-                    return null;
-                });
-            }
-        } finally {
-            onFxThread(() -> { stage.close(); return null; });
-        }
-    }
-
-    private static void await(java.util.concurrent.Callable<Boolean> condition) throws Exception {
-        long deadline = System.nanoTime() + TimeUnit.SECONDS.toNanos(5);
-        while (!onFxThread(condition) && System.nanoTime() < deadline) Thread.sleep(20);
-        assertTrue(onFxThread(condition), "The screen transition must complete");
-    }
-
-    private static void assertEnemyGifAnimates() throws Exception {
-        CompletableFuture<Set<Integer>> result = new CompletableFuture<>();
-        onFxThread(() -> {
-            GameModel model = new GameModel(new Dimension2D(640, 480), LevelLoader.parse(List.of(
-                    "WAVE Animation", "SKILIFT 0.25 0.25 0.25 2 0")));
-            Battle battle = new Battle(model);
-            Stage stage = new Stage();
-            new StageManager(stage).show(battle);
-            new AnimationTimer() {
-                private long start;
-                private final Set<Integer> frames = new HashSet<>();
-
-                @Override
-                public void handle(long now) {
-                    try {
-                        if (start == 0) start = now;
-                        if (now - start < 200_000_000L) return;
-                        int[] pixels = new int[48 * 36];
-                        battle.getView().getRoot().snapshot(null, null).getPixelReader().getPixels(
-                                160, 120, 48, 36, PixelFormat.getIntArgbInstance(), pixels, 0, 48);
-                        frames.add(Arrays.hashCode(pixels));
-                        if (now - start >= 1_200_000_000L) {
-                            stop();
-                            stage.close();
-                            result.complete(frames);
-                        }
-                    } catch (Throwable error) {
-                        stop();
-                        stage.close();
-                        result.completeExceptionally(error);
-                    }
-                }
-            }.start();
-            return null;
-        });
-        assertTrue(result.get(15, TimeUnit.SECONDS).size() > 1,
-                "The stationary enemy must display more than its GIF's initial frame during battle");
-    }
-
-    private static <T> T onFxThread(java.util.concurrent.Callable<T> action) throws Exception {
-        FutureTask<T> task = new FutureTask<>(action);
-        Platform.runLater(task);
-        return task.get(5, TimeUnit.SECONDS);
     }
 }
