@@ -4,8 +4,7 @@
 # MINE x y health speed  (falls at speed and bursts near the bottom)
 # BONUS x y targetX health speed  (worth 10x points; leaves after five passes;
 #   holds a wave open only when the wave has nothing else)
-# BOSSEDGE x y health speed, BOSSMIDDLE x y health speed, BOSSLASER x y health speed
-#   (bosses stay put, so speed is ignored)
+# BOSSEDGE x y health, BOSSMIDDLE x y health, BOSSLASER x y health  (bosses stay put)
 # Coordinates are fractions of the playfield width/height (0 to 1).
 # A coordinate may be min..max, sampled independently on every spawn.
 # Equal bounds are fixed; otherwise the minimum is inclusive and maximum exclusive.
@@ -166,8 +165,8 @@ SKILIFT 0..1 0..0.3333333333333333 0 19 47.5
 SPREADSHOT 0..1 0..0.3333333333333333 0..1 0..0.3333333333333333 9 190
 
 WAVE Boss
-BOSSEDGE 0.1666666666666666 0 50 0
-BOSSEDGE 0.8333333333333333 0 50 0
-BOSSLASER 0.3333333333333333 0 50 0
-BOSSLASER 0.6666666666666666 0 50 0
-BOSSMIDDLE 0.5 0 50 0
+BOSSEDGE 0.1666666666666666 0 50
+BOSSEDGE 0.8333333333333333 0 50
+BOSSLASER 0.3333333333333333 0 50
+BOSSLASER 0.6666666666666666 0 50
+BOSSMIDDLE 0.5 0 50

@@ -70,18 +70,23 @@ public final class LevelLoader {
                 if (name == null) {
                     throw new IllegalArgumentException(keyword + " appears before any WAVE line");
                 }
+                boolean stationary = switch (type) {
+                    case BOSSEDGE, BOSSMIDDLE, BOSSLASER -> true;
+                    default -> false;
+                };
                 int expectedParts = switch (type) {
                     case SPREADSHOT -> 7;
                     case SKILIFT, BONUS -> 6;
-                    case MINE, BOSSEDGE, BOSSMIDDLE, BOSSLASER -> 5;
+                    case MINE -> 5;
+                    case BOSSEDGE, BOSSMIDDLE, BOSSLASER -> 4;
                 };
                 if (parts.length != expectedParts) {
                     throw new IllegalArgumentException("expected " + expectedParts + " fields for " + keyword);
                 }
                 Level.Coordinate x = coordinate(parts[1]);
                 Level.Coordinate y = coordinate(parts[2]);
-                int health = Integer.parseInt(parts[expectedParts - 2]);
-                double speed = Double.parseDouble(parts[expectedParts - 1]);
+                int health = Integer.parseInt(parts[stationary ? expectedParts - 1 : expectedParts - 2]);
+                double speed = stationary ? 0 : Double.parseDouble(parts[expectedParts - 1]);
                 Level.Coordinate targetX;
                 Level.Coordinate targetY;
                 switch (type) {

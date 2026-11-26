@@ -43,13 +43,8 @@ public final class PowerupScreen extends MenuScreen {
             choice.setOnAction(event -> {
                 if (choice.isDisabled()) return;
                 buttons.getChildren().forEach(button -> button.setDisable(true));
-                model.addPowerup(powerup);
-                if (model.getPlayer().isAlive()) {
-                    model.spawnWave();
-                    StageManager.from(choice).show(battle);
-                } else {
-                    StageManager.from(choice).show(new GameOverScreen(model.getScore(), false));
-                }
+                model.choosePowerup(powerup);
+                StageManager.from(choice).show(battle);
             });
             buttons.getChildren().add(choice);
         }

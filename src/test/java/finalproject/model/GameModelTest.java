@@ -210,7 +210,7 @@ class GameModelTest {
         Point2D paused = cleared.getPlayer().getPosition();
         cleared.update(MOVE_RIGHT, 1, PLAYFIELD);
         assertEquals(paused, cleared.getPlayer().getPosition());
-        assertEquals(1, cleared.getWaveNumber(), "Only spawnWave starts the next wave");
+        assertEquals(1, cleared.getWaveNumber(), "A due powerup holds the next wave");
 
         GameModel dead = started("SKILIFT 0.5 0.2 0 100 100");
         dead.getPlayer().heal(-dead.getPlayer().getHealth());
@@ -236,6 +236,33 @@ class GameModelTest {
             assertEquals(wave == 10, model.hasWon(), "Cleared wave " + wave);
             if (wave < 10) model.spawnWave();
         }
+    }
+
+    @Test
+    void advancesOnItsOwnUntilAPowerupChoiceOrTheGameEnds() {
+        GameModel model = new GameModel(PLAYFIELD, Collections.nCopies(3,
+                LevelLoader.parse(List.of("WAVE Test", atPlayer("SKILIFT", 1))).getFirst()));
+        model.update(IDLE, 0, PLAYFIELD);
+        assertEquals(GameModel.Phase.PLAYING, model.getPhase());
+        shootUntilWaveCleared(model);
+        assertEquals(GameModel.Phase.CHOOSING_POWERUP, model.getPhase());
+        model.update(IDLE, 1, PLAYFIELD);
+        assertEquals(1, model.getWaveNumber(), "Waits for the choice");
+
+        model.choosePowerup(BONUS_POINTS);
+        assertEquals(2, model.getWaveNumber());
+        shootUntilWaveCleared(model);
+        assertEquals(GameModel.Phase.PLAYING, model.getPhase(), "No pickup is due, so play continues");
+        model.update(IDLE, 0, PLAYFIELD);
+        assertEquals(3, model.getWaveNumber());
+        shootUntilWaveCleared(model);
+        assertEquals(GameModel.Phase.WON, model.getPhase());
+
+        GameModel fatal = started(HARMLESS);
+        fatal.getPlayer().heal(1 - fatal.getPlayer().getHealth());
+        fatal.choosePowerup(GLASS_CANNON);
+        assertEquals(GameModel.Phase.LOST, fatal.getPhase());
+        assertEquals(1, fatal.getWaveNumber(), "A fatal pickup does not start another wave");
     }
 
     @Test

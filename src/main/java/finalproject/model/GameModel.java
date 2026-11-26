@@ -73,11 +73,11 @@ public final class GameModel {
             playfield = visiblePlayfield;
             player.fitToPlayfield(playfield);
         }
-        if (!player.isAlive() || isWaveCleared()) {
-            return;
-        }
-        if (!waveStarted) {
+        if (!waveStarted || isWaveCleared() && getPhase() == Phase.PLAYING) {
             spawnWave();
+        }
+        if (getPhase() != Phase.PLAYING) {
+            return;
         }
         player.move(input.direction(), elapsed, playfield);
         if (input.firing() && isRefireable()) {
@@ -157,6 +157,31 @@ public final class GameModel {
      */
     public boolean hasWon() {
         return isWaveCleared() && waveNumber == levels.size();
+    }
+
+    /**
+     * Reports what the game waits on. A cleared wave with no pickup due stays PLAYING;
+     * the next update spawns the following wave.
+     */
+    public Phase getPhase() {
+        if (!player.isAlive()) return Phase.LOST;
+        if (hasWon()) return Phase.WON;
+        if (isPowerupDue()) return Phase.CHOOSING_POWERUP;
+        return Phase.PLAYING;
+    }
+
+    /**
+     * Collects the chosen pickup and starts the next wave unless the pickup was fatal.
+     */
+    public void choosePowerup(PowerUp powerUp) {
+        addPowerup(powerUp);
+        if (player.isAlive()) {
+            spawnWave();
+        }
+    }
+
+    public enum Phase {
+        PLAYING, CHOOSING_POWERUP, WON, LOST
     }
 
     public void spawnWave() {
