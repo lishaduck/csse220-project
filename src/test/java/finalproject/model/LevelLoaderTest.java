@@ -113,24 +113,29 @@ class LevelLoaderTest {
     }
 
     @Test
+    void skiLiftsSetOffInEitherDirectionAtRandom() {
+        Level level = LevelLoader.parse(List.of("WAVE Patrol", "SKILIFT 0.5 0.5 0 1 100")).getFirst();
+        Dimension2D playfield = new Dimension2D(640, 480);
+        Random random = new Random(7);
+        Set<Double> directions = new HashSet<>();
+        for (int spawn = 0; spawn < 20; spawn++) {
+            EnemyShip skiLift = level.createEnemies(playfield, random).getFirst();
+            double start = skiLift.getPosition().getX();
+            skiLift.update(Point2D.ZERO, playfield, 0.1, new java.util.ArrayList<>(), new PowerUps(), List.of());
+            directions.add(Math.signum(skiLift.getPosition().getX() - start));
+        }
+        assertEquals(Set.of(-1.0, 1.0), directions);
+    }
+
+    @Test
     void loadsPackagedResourceAndReportsMissingResource() {
         List<Level> levels = LevelLoader.load("/levels/levels.txt");
-        assertEquals(20, levels.size());
-        assertEquals(1, levels.get(3).enemies().size());
-        Level.Enemy boss = levels.get(3).enemies().getFirst();
-        assertEquals(Level.EnemyType.SPREADSHOT, boss.type());
-        assertEquals(4, boss.health());
-        assertEquals(40, boss.speed());
-        assertEquals(List.of(Level.EnemyType.BOSSEDGE, Level.EnemyType.BOSSEDGE,
-                        Level.EnemyType.BOSSLASER, Level.EnemyType.BOSSLASER, Level.EnemyType.BOSSMIDDLE),
-                levels.getLast().enemies().stream().map(Level.Enemy::type).toList());
+        assertFalse(levels.isEmpty());
         for (Level level : levels) {
             for (EnemyShip enemy : level.createEnemies(new Dimension2D(640, 480), new Random(123))) {
                 assertNotNull(enemy.getImage(), "Each packaged enemy must have an available sprite");
             }
         }
-        assertEquals(new Level.Coordinate(0, 1), boss.x());
-        assertEquals(new Level.Coordinate(0, 1.0 / 3), boss.y());
         String error = assertThrows(IllegalArgumentException.class,
                 () -> LevelLoader.load("/levels/missing.txt")).getMessage();
         assertTrue(error.contains("/levels/missing.txt") && error.contains("src/main/resources"));

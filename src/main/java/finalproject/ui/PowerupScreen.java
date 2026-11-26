@@ -46,7 +46,6 @@ public final class PowerupScreen extends MenuScreen {
                 model.addPowerup(powerup);
                 if (model.getPlayer().isAlive()) {
                     model.spawnWave();
-                    model.addScore(100);
                     StageManager.from(choice).show(battle);
                 } else {
                     StageManager.from(choice).show(new GameOverScreen(model.getScore(), false));

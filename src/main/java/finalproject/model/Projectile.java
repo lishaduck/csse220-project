@@ -27,6 +27,10 @@ public class Projectile {
         return position;
     }
 
+    public Point2D getVelocity() {
+        return velocity;
+    }
+
     public int getDamage() {
         return damage;
     }

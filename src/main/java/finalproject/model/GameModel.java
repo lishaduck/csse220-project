@@ -2,6 +2,7 @@ package finalproject.model;
 
 import finalproject.model.ship.EnemyShip;
 import finalproject.model.ship.PlayerShip;
+import finalproject.model.ship.Ship;
 import javafx.geometry.Dimension2D;
 
 import java.util.ArrayList;
@@ -20,8 +21,10 @@ public final class GameModel {
     private final PowerUps powerups = new PowerUps();
     private final List<Level> levels;
     private final Random random = new Random();
-    private int waveNumber = 19;
+    private int waveNumber;
     private boolean waveStarted;
+    /** Bonus ships hold a wave open only when nothing else is in it. */
+    private boolean bonusWave;
     private Dimension2D playfield;
     private int score;
 
@@ -146,11 +149,14 @@ public final class GameModel {
     }
 
     public boolean isWaveCleared() {
-        return waveStarted && enemies.stream().noneMatch(ship -> ship.isAlive() && !ship.isBonus());
+        return waveStarted && enemies.stream().noneMatch(ship -> ship.isAlive() && (bonusWave || !ship.isBonus()));
     }
 
+    /**
+     * Reports whether the player cleared the final wave.
+     */
     public boolean hasWon() {
-        return levels.size() == waveNumber;
+        return isWaveCleared() && waveNumber == levels.size();
     }
 
     public void spawnWave() {
@@ -158,6 +164,10 @@ public final class GameModel {
         projectiles.clear();
         waveStarted = true;
         enemies.addAll(levels.get(waveNumber).createEnemies(playfield, random));
+        bonusWave = enemies.stream().allMatch(Ship::isBonus);
+        if (waveNumber > 0) {
+            score += 100;
+        }
         waveNumber++;
     }
 }

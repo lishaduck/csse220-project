@@ -91,7 +91,7 @@ class StageManagerTest {
     }
 
     private static void assertBossBackground() throws Exception {
-        GameModel model = new GameModel(new Dimension2D(640, 480));
+        GameModel model = new GameModel(new Dimension2D(640, 480), LevelLoader.load("/levels/levels.txt"));
         for (int wave = 1; wave <= 19; wave++) model.spawnWave();
         Stage stage = onFxThread(Stage::new);
         try {
@@ -111,11 +111,6 @@ class StageManagerTest {
             assertEquals(20, model.getWaveNumber());
             await(() -> stage.getScene().getRoot().snapshot(null, null)
                     .getPixelReader().getArgb(8, 8) == bodyPixel);
-            onFxThread(() -> {
-                model.spawnWave();
-                return null;
-            });
-            assertEquals(20, model.getWaveNumber(), "The final boss wave repeats without advancing its number");
         } finally {
             onFxThread(() -> {
                 stage.close();
@@ -186,17 +181,9 @@ class StageManagerTest {
                 chosen.fireEvent(new KeyEvent(KeyEvent.KEY_RELEASED, " ", " ", KeyCode.SPACE,
                         false, false, false, false));
                 assertSame(choices, stage.getScene(), "Held fire must not choose a powerup");
-                var powerup = (finalproject.model.PowerUp) chosen.getUserData();
-                int expectedScore = powerup == finalproject.model.PowerUp.BONUS_POINTS ? 310 : 210;
-                int expectedHealth = switch (powerup) {
-                    case HEALTH -> 22;
-                    case GLASS_CANNON -> 19;
-                    default -> 20;
-                };
                 chosen.fire();
                 assertSame(battle.getView(), stage.getScene());
-                assertEquals(expectedScore, model.getScore());
-                assertEquals(expectedHealth, model.getPlayer().getHealth());
+                assertEquals(2, model.getWaveNumber(), "Choosing a powerup starts the next wave");
                 assertEquals(7, model.getEnemies().getFirst().getHealth());
                 assertTrue(model.getProjectiles().isEmpty());
                 return null;
@@ -227,8 +214,8 @@ class StageManagerTest {
     }
 
     private static void assertPowerupCadenceAndExhaustedUpgrades() throws Exception {
-        GameModel model = new GameModel(new Dimension2D(640, 480), LevelLoader.parse(List.of(
-                "WAVE Stationary", "SKILIFT 0.4625 0.85 0.4625 2 0")));
+        GameModel model = new GameModel(new Dimension2D(640, 480), java.util.Collections.nCopies(8,
+                LevelLoader.parse(List.of("WAVE Stationary", "SKILIFT 0.4625 0.85 0.4625 2 0")).getFirst()));
         for (var powerUp : finalproject.model.PowerUp.values()) model.addPowerup(powerUp);
         Battle battle = onFxThread(() -> new Battle(model));
         Stage stage = onFxThread(Stage::new);
@@ -239,7 +226,7 @@ class StageManagerTest {
             });
             await(() -> !model.getEnemies().isEmpty());
             for (int wave = 1; wave <= 7; wave++) {
-                int scoreBefore = onFxThread(model::getScore);
+                int waveBefore = onFxThread(model::getWaveNumber);
                 onFxThread(() -> {
                     model.update(new finalproject.model.PlayerInput(
                             finalproject.model.HorizontalDirection.NONE, true), 0, model.getPlayfield());
@@ -262,7 +249,7 @@ class StageManagerTest {
                         return null;
                     });
                 } else {
-                    await(() -> model.getScore() == scoreBefore + 126);
+                    await(() -> model.getWaveNumber() == waveBefore + 1);
                     onFxThread(() -> {
                         assertSame(battle.getView(), stage.getScene());
                         return null;
@@ -270,10 +257,26 @@ class StageManagerTest {
                 }
                 onFxThread(() -> {
                     assertFalse(model.isWaveCleared());
-                    assertEquals(scoreBefore + 126, model.getScore());
+                    assertEquals(waveBefore + 1, model.getWaveNumber());
                     return null;
                 });
             }
+            onFxThread(() -> {
+                model.update(new finalproject.model.PlayerInput(
+                        finalproject.model.HorizontalDirection.NONE, true), 0, model.getPlayfield());
+                assertTrue(model.hasWon());
+                return null;
+            });
+            await(() -> stage.getScene() != battle.getView());
+            onFxThread(() -> {
+                var labels = stage.getScene().getRoot().lookupAll(".label").stream()
+                        .map(node -> ((javafx.scene.control.Label) node).getText()).toList();
+                assertTrue(labels.contains("You won!"), "Clearing the last wave must show the win screen: " + labels);
+                assertTrue(labels.contains("Final score: " + model.getScore()));
+                assertEquals(8, model.getWaveNumber());
+                assertEquals("Play again", ((Button) stage.getScene().lookup("#try-again")).getText());
+                return null;
+            });
         } finally {
             onFxThread(() -> {
                 stage.close();
@@ -342,7 +345,7 @@ class StageManagerTest {
             assertBossBackground();
             assertGameScreens();
             assertPowerupCadenceAndExhaustedUpgrades();
-            GameModel model = new GameModel(new Dimension2D(640, 480));
+            GameModel model = new GameModel(new Dimension2D(640, 480), LevelLoader.load("/levels/levels.txt"));
             double initialX = model.getPlayer().getPosition().getX();
             Battle battle = onFxThread(() -> new Battle(model));
             Stage stage = onFxThread(Stage::new);

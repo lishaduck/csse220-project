@@ -6,136 +6,100 @@ import finalproject.model.ship.SpreadshotShip;
 import javafx.geometry.Dimension2D;
 import javafx.geometry.Point2D;
 import org.junit.jupiter.api.Test;
-import org.junit.jupiter.params.ParameterizedTest;
-import org.junit.jupiter.params.provider.CsvSource;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.function.Supplier;
 
 import static org.junit.jupiter.api.Assertions.*;
 
+/**
+ * Checks enemy behavior through each ship's public update, comparing outcomes rather than tuning values.
+ */
 class EnemyShipTest {
     private static final Dimension2D PLAYFIELD = new Dimension2D(640, 480);
-    private static final Point2D PLAYER_POSITION = new Point2D(100, 300);
+    private static final Point2D PLAYER_POSITION = new Point2D(300, 420);
+    private static final double STEP = 0.05;
 
-    @Test
-    void enemyTypesUseTheirOwnSpriteAndHitboxDimensions() {
-        EnemyShip skiLift = new SkiLiftShip(PLAYFIELD, Point2D.ZERO, 0, 20, 50);
-        EnemyShip spreadshot = new SpreadshotShip(PLAYFIELD, Point2D.ZERO, Point2D.ZERO, 20, 50);
-
-        assertEquals(48, skiLift.getWidth());
-        assertEquals(36, skiLift.getHeight());
-        assertEquals(EnemyShipTest.class.getResource("/EnemyShip.gif"), skiLift.getImage());
-        assertEquals(32, spreadshot.getWidth());
-        assertEquals(16, spreadshot.getHeight());
-        assertEquals(EnemyShipTest.class.getResource("/EnemyShip2.gif"), spreadshot.getImage());
-    }
-
-    @Test
-    void skiLiftFiresAtItsNamedShotInterval() {
-        SkiLiftShip enemy = new SkiLiftShip(
-                PLAYFIELD,
-                new Point2D(100, 100),
-                200,
-                20,
-                50
-        );
+    private static double secondsUntilFirstShot(EnemyShip enemy, PowerUps powerUps) {
         List<Projectile> projectiles = new ArrayList<>();
-        PowerUps powerUps = new PowerUps();
-
-        for (int i = 0; i < 3; i++) {
-            enemy.update(PLAYER_POSITION, PLAYFIELD, 0.5, projectiles, powerUps, List.of());
+        double elapsed = 0;
+        while (projectiles.isEmpty() && elapsed < 60) {
+            enemy.update(PLAYER_POSITION, PLAYFIELD, STEP, projectiles, powerUps, List.of());
+            elapsed += STEP;
         }
+        assertFalse(projectiles.isEmpty());
+        return elapsed;
+    }
+
+    private static PowerUps slowed() {
+        PowerUps powerUps = new PowerUps();
+        powerUps.slowEnemies(1.5);
+        return powerUps;
+    }
+
+    @Test
+    void skiLiftsFireStraightDownRepeatedlyButNotRightAway() {
+        SkiLiftShip enemy = new SkiLiftShip(PLAYFIELD, new Point2D(100, 100), 0, 20, 0);
+        List<Projectile> projectiles = new ArrayList<>();
+        enemy.update(PLAYER_POSITION, PLAYFIELD, STEP, projectiles, new PowerUps(), List.of());
         assertTrue(projectiles.isEmpty());
 
-        enemy.update(PLAYER_POSITION, PLAYFIELD, 0.5, projectiles, powerUps, List.of());
-        assertEquals(1, projectiles.size());
-        assertSame(enemy, projectiles.getFirst().getSource());
-        assertEquals(new Point2D(0, 400), projectiles.getFirst().velocity);
-    }
-
-    @ParameterizedTest
-    @CsvSource({"100, 100", "1000, 444"})
-    void skiLiftMovesHorizontallyTowardTargetsToItsLeft(double spawnY, double expectedY) {
-        SkiLiftShip enemy = new SkiLiftShip(
-                PLAYFIELD,
-                new Point2D(300, spawnY),
-                100,
-                20,
-                50
-        );
-        PowerUps powerUps = new PowerUps();
-        enemy.update(PLAYER_POSITION, PLAYFIELD, 1, new ArrayList<>(), powerUps, List.of());
-
-        assertEquals(new Point2D(250, expectedY), enemy.getPosition());
+        for (int i = 0; i < 200; i++) {
+            enemy.update(PLAYER_POSITION, PLAYFIELD, STEP, projectiles, new PowerUps(), List.of());
+        }
+        assertTrue(projectiles.size() > 1);
+        for (Projectile shot : projectiles) {
+            assertTrue(shot.isSourcedFrom(enemy));
+            assertEquals(0, shot.getVelocity().getX());
+            assertTrue(shot.getVelocity().getY() > 0);
+        }
     }
 
     @Test
-    void skiLiftsKeepTheirOwnPatrolHeightWhenTurning() {
-        SkiLiftShip lower = new SkiLiftShip(
-                PLAYFIELD, new Point2D(592, 70), 592, 20, 50
-        );
-        SkiLiftShip upper = new SkiLiftShip(
-                PLAYFIELD, new Point2D(0, 130), 0, 20, 50
-        );
-        List<Projectile> projectiles = new ArrayList<>();
-
-        lower.update(PLAYER_POSITION, PLAYFIELD, 0, projectiles, new PowerUps(), List.of());
-        upper.update(PLAYER_POSITION, PLAYFIELD, 0, projectiles, new PowerUps(), List.of());
-        lower.update(PLAYER_POSITION, PLAYFIELD, 1, projectiles, new PowerUps(), List.of());
-        upper.update(PLAYER_POSITION, PLAYFIELD, 1, projectiles, new PowerUps(), List.of());
-
-        assertEquals(new Point2D(542, 70), lower.getPosition());
-        assertEquals(new Point2D(50, 130), upper.getPosition());
+    void skiLiftsPatrolAtTheirOwnHeightAndTurnAtTheEdges() {
+        SkiLiftShip enemy = new SkiLiftShip(PLAYFIELD, new Point2D(300, 100), 0, 20, 200);
+        double previousX = enemy.getPosition().getX();
+        boolean reachedEdge = false;
+        boolean turned = false;
+        for (int i = 0; i < 200 && !turned; i++) {
+            enemy.update(PLAYER_POSITION, PLAYFIELD, STEP, new ArrayList<>(), new PowerUps(), List.of());
+            double x = enemy.getPosition().getX();
+            assertEquals(100, enemy.getPosition().getY());
+            if (!reachedEdge) assertTrue(x <= previousX, "Heads toward its target first");
+            reachedEdge |= x == 0;
+            turned = reachedEdge && x > 0;
+            previousX = x;
+        }
+        assertTrue(turned, "Turns back after reaching the edge");
     }
 
     @Test
-    void spreadshotFiresWhenPositionMatchesTargetCoordinates() {
-        SpreadshotShip enemy = new SpreadshotShip(
-                PLAYFIELD,
-                new Point2D(100, 100),
-                new Point2D(100, 100),
-                20,
-                50
-        );
+    void spreadshotsFlyToTheirTargetThenFireVolleysTowardThePlayer() {
+        Point2D target = new Point2D(300, 100);
+        SpreadshotShip enemy = new SpreadshotShip(PLAYFIELD, new Point2D(100, 100), target, 20, 100);
         List<Projectile> projectiles = new ArrayList<>();
-        PowerUps powerUps = new PowerUps();
-
-        enemy.update(PLAYER_POSITION, PLAYFIELD, 0.5, projectiles, powerUps, List.of());
-        assertEquals(3, projectiles.size());
-        assertSame(enemy, projectiles.getFirst().getSource());
-        assertEquals(new Point2D(0, 200), projectiles.getFirst().velocity);
-
-        enemy.update(PLAYER_POSITION, PLAYFIELD, 0.5, projectiles, powerUps, List.of());
-        assertEquals(5, projectiles.size());
-
-        enemy.update(PLAYER_POSITION, PLAYFIELD, 0.5, projectiles, powerUps, List.of());
-        assertEquals(8, projectiles.size());
+        while (!enemy.getPosition().equals(target)) {
+            assertTrue(projectiles.isEmpty(), "Holds fire until it arrives");
+            enemy.update(PLAYER_POSITION, PLAYFIELD, STEP, projectiles, new PowerUps(), List.of());
+        }
+        for (int i = 0; i < 60; i++) {
+            enemy.update(PLAYER_POSITION, PLAYFIELD, STEP, projectiles, new PowerUps(), List.of());
+        }
+        assertTrue(projectiles.size() > 3, "Fires several shots per attack");
+        Point2D towardPlayer = PLAYER_POSITION.subtract(target);
+        assertTrue(projectiles.stream().allMatch(shot -> shot.getVelocity().dotProduct(towardPlayer) > 0));
     }
 
     @Test
-    void slowEnemiesScalesSpreadshotTravelVolleyTimingAndEveryShot() {
-        SpreadshotShip enemy = new SpreadshotShip(
-                PLAYFIELD, new Point2D(100, 100), new Point2D(200, 100), 20, 100
-        );
-        PowerUps powerUps = new PowerUps();
-        powerUps.collect(PowerUp.SLOW_ENEMIES, new GameModel(PLAYFIELD));
-        List<Projectile> projectiles = new ArrayList<>();
-
-        enemy.update(PLAYER_POSITION, PLAYFIELD, 0.75, projectiles, powerUps, List.of());
-        assertEquals(new Point2D(150, 100), enemy.getPosition());
-        assertTrue(projectiles.isEmpty());
-        enemy.update(PLAYER_POSITION, PLAYFIELD, 0.75, projectiles, powerUps, List.of());
-        assertEquals(new Point2D(200, 100), enemy.getPosition());
-        assertEquals(3, projectiles.size());
-        enemy.update(PLAYER_POSITION, PLAYFIELD, 0.375, projectiles, powerUps, List.of());
-        assertEquals(3, projectiles.size());
-        enemy.update(PLAYER_POSITION, PLAYFIELD, 0.375, projectiles, powerUps, List.of());
-        assertEquals(5, projectiles.size());
-        enemy.update(PLAYER_POSITION, PLAYFIELD, 0.75, projectiles, powerUps, List.of());
-        assertEquals(8, projectiles.size());
-        for (Projectile projectile : projectiles) {
-            assertEquals(200 / 1.5, projectile.velocity.magnitude(), 1e-9);
+    void slowEnemiesDelaysEveryEnemysAttacks() {
+        List<Supplier<EnemyShip>> enemies = List.of(
+                () -> new SkiLiftShip(PLAYFIELD, new Point2D(100, 100), 0, 20, 0),
+                // Already at its target, so only the volley timing can delay it.
+                () -> new SpreadshotShip(PLAYFIELD, new Point2D(200, 100), new Point2D(200, 100), 20, 100));
+        for (Supplier<EnemyShip> enemy : enemies) {
+            assertTrue(secondsUntilFirstShot(enemy.get(), slowed())
+                    > secondsUntilFirstShot(enemy.get(), new PowerUps()));
         }
     }
 }

@@ -100,19 +100,19 @@ public class Battle implements Screen {
             previousFrame = now;
             update(elapsed);
 
-            if (!model.hasWon() && model.getPlayer().isAlive() && model.isWaveCleared() && !model.isPowerupDue()) {
+            if (model.getPlayer().isAlive() && model.isWaveCleared() && !model.hasWon() && !model.isPowerupDue()) {
                 model.spawnWave();
-                model.addScore(100);
-            } else if (model.getPlayer().isAlive() && !model.isWaveCleared()) {
-                view.render(model);
+            }
+            view.render(model);
+            if (model.getPlayer().isAlive() && !model.isWaveCleared()) {
                 return;
             }
 
-            MenuScreen next = model.getPlayer().isAlive()
-                    ? model.hasWon()
+            MenuScreen next = !model.getPlayer().isAlive()
+                    ? new GameOverScreen(model.getScore(), false)
+                    : model.hasWon()
                     ? new GameOverScreen(model.getScore(), true)
-                    : new PowerupScreen(model, Battle.this)
-                    : new GameOverScreen(model.getScore(), false);
+                    : new PowerupScreen(model, Battle.this);
             next.releaseFireBeforeChoosing(pressedKeys.contains(KeyCode.SPACE));
             StageManager.from(view).show(next);
         }

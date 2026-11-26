@@ -43,7 +43,8 @@ public final class SpreadshotShip extends EnemyShip {
             PowerUps powerUps,
             List<EnemyShip> enemies
     ) {
-        boolean reachedTarget = moveTowardTarget(playfield, powerUps.enemyElapsed(elapsedSeconds));
+        elapsedSeconds = powerUps.enemyElapsed(elapsedSeconds);
+        boolean reachedTarget = moveTowardTarget(playfield, elapsedSeconds);
         if (!reachedTarget) {
             return;
         }
